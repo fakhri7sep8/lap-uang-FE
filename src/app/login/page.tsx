@@ -76,6 +76,7 @@ const LoginPage = () => {
             </div>
             <div className="border-t border-y-2 border-y-[#ECF1F6]  py-4 w-full flex flex-row items-center gap-5">
               <input
+                title="Ingat perangkat ini"
                 type="checkbox"
                 id="accept"
                 className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
