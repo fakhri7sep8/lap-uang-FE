@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={'px-5'}>
+      <body className={''}>
         <ReactQuery>
           {children}
         </ReactQuery>
