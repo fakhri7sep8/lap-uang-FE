@@ -6,7 +6,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       <section className='w-1/5 h-full p-4'>
         <div className='w-full h-full rounded-xl bg-white'></div>
       </section>
-      <section className='w-4/5 h-full flex flex-col gap-2 py-4 pr-6 pl-4  h-full overflow-auto'>
+      <section className='w-4/5 flex flex-col gap-2 py-4 pr-6 pl-4  h-full overflow-auto'>
         <div className='w-full h-18 mb-6'>
           <div className='flex justify-between items-center'>
             <div className='flex flex-col gap-2 w-2/3'>
