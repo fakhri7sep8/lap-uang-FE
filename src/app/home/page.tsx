@@ -81,7 +81,7 @@ const HomePage = () => {
             >
               <span className="text-3xl font-bold">Log Out</span>
               <Image
-                src="/img/logout.png"
+                src="/img/Pintu_keluar.png"
                 alt="Log Out"
                 width={200}
                 height={200}

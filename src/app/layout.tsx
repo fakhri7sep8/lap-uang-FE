@@ -25,7 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={''}>
+      <body className={`bg-[#F7F8FA] min-h-screen`}>
         <ReactQuery>
           {children}
         </ReactQuery>
