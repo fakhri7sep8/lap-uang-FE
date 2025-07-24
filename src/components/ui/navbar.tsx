@@ -12,7 +12,7 @@ export default function Navbar() {
         <div className="w-full h-14 flex items-center px-4 shadow-md bg-white">
             <div
                 key={state} // ini opsional tapi bisa paksa re-render
-                className={`transition-all duration-300 ${state === 'collapsed' ? 'ml-[4rem]' : 'ml-[15rem]'
+                className={`transition-all duration-300 ${state == 'collapsed' ? 'ml-0' : 'ml-[15rem]'
                     }`}
             >
                 <Image
