@@ -10,8 +10,8 @@ export const ChartPage: React.FC = () => {
       key={state}
       className={`p-6 transition-all duration-300 ${
         state == "collapsed"
-          ? "ml-5 flex items-center justify-between"
-          : "ml-[18rem] flex items-center justify-between"
+          ? "ml-15 flex items-center justify-between"
+          : "ml-[20rem] flex items-center justify-between"
       }`}
     >
       <div className="flex gap-2.5">
@@ -51,7 +51,7 @@ export const ChartPage: React.FC = () => {
               cardHeight={200}
             />
           </div>
-          <div className="flex">
+          <div className="flex gap-2.5">
             <FinanceSummaryCard
               title="Penerimaan bulan ini"
               amount={10000000}
