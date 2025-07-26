@@ -8,14 +8,14 @@ export const ChartPage: React.FC = () => {
   return (
     <div className="">
       <div
-        key={state}
-        className={`transition-all duration-300 ${
-          state == "collapsed"
-            ? "ml-5 flex items-center justify-between"
-            : "ml-[18rem] flex items-center justify-between"
-        }`}
+      key={state}
+      className={`transition-all duration-300 ${
+        state == "collapsed"
+          ? "ml-5 flex items-center justify-between"
+          : "ml-[18rem] flex items-center justify-between"
+      }`}
       >
-        <div className="w-[90%] min-h-56 bg-white ml-16 mt-5 rounded-lg flex flex-row items-start justify-between gap-6 p-6 shadow">
+        <div key={state} className={`${state == "collapsed" ? "w-[93%] min-h-56 ml-10 mt-5 rounded-lg flex flex-row items-start justify-between p-6": "w-[93%] min-h-56 ml-10 mt-5 rounded-lg flex flex-row items-start justify-between px-6 py-6 shadow"}`}>
           <div className="flex flex-col gap-6 flex-1">
             <SaldoCard saldo={130000000} ownerName="Lap Uang" />
             <FinanceSummaryCard
@@ -25,11 +25,11 @@ export const ChartPage: React.FC = () => {
               percentage={100}
               color="purple"
               logo="dompet_kosong"
-              cardWidth={400}
-              cardHeight={200}
+              cardWidth={604}
+              cardHeight={240}
             />
           </div>
-          <div className="flex flex-col gap-6 flex-1">
+          <div className="flex flex-col gap-6">
             <div className="flex gap-6">
               <FinanceSummaryCard
                 title="Saldo awal bulan ini"
@@ -39,7 +39,7 @@ export const ChartPage: React.FC = () => {
                 color="blue"
                 logo="dompet_masuk"
                 cardWidth={340}
-                cardHeight={200}
+                cardHeight={240}
               />
               <FinanceSummaryCard
                 title="Saldo akhir bulan ini"
@@ -49,7 +49,7 @@ export const ChartPage: React.FC = () => {
                 color="yellow"
                 logo="dompet_masuk"
                 cardWidth={340}
-                cardHeight={200}
+                cardHeight={240}
               />
             </div>
             <div className="flex gap-6">
@@ -61,7 +61,7 @@ export const ChartPage: React.FC = () => {
                 color="green"
                 logo="dompet_masuk"
                 cardWidth={340}
-                cardHeight={200}
+                cardHeight={240}
               />
               <FinanceSummaryCard
                 title="Pengeluaran bulan ini"
@@ -71,7 +71,7 @@ export const ChartPage: React.FC = () => {
                 color="red"
                 logo="dompet_kosong"
                 cardWidth={340}
-                cardHeight={200}
+                cardHeight={240}
               />
             </div>
           </div>
