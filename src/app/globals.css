@@ -121,6 +121,17 @@
   }
 }
 
+@font-face {
+  font-family: 'DS-Digital';
+  src: url('/fonts/DS-DIGIT.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.digital-font {
+  font-family: 'DS-Digital', monospace;
+}
+
 
 
 

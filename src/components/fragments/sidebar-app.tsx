@@ -1,4 +1,4 @@
-'use client'
+    'use client'
 import { Calendar, ChevronUp, Home, Inbox, Search, Settings, User2, ChevronDown, ChevronLeft, ChevronRight, LayoutDashboard, History as HistoryIcon, Star, Settings as SettingsIcon, Package, BookText, SlidersHorizontal, Menu, CalendarCheck2, Database, Coins, LucideCircleDollarSign, CircleDollarSignIcon, School, LucideBadgeDollarSign, LogOut, Edit } from "lucide-react"
 import React, { useState } from "react"
 
@@ -229,9 +229,9 @@ export function AppSidebar() {
                                             <ChevronUp className="ml-2 text-gray-400" size={18} />
                                         </SidebarMenuButton>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent side="top" className="w-[250px] bg-gray-100 border border-gray-400 rounded-lg shadow-lg p-0 ml-64">
+                                    <DropdownMenuContent side="top" className="w-[250px] bg-gray-200 backdrop-blur-md bg-opacity-30 border border-black rounded-lg shadow-lg p-0 ml-64">
                                         {/* Header: Avatar, Name, Email */}
-                                        <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-400">
+                                        <div className="flex items-center gap-3 px-4 py-3 border-b border-black">
                                             <img
                                                 src="https://github.com/shadcn.png"
                                                 alt="avatar"
@@ -243,29 +243,29 @@ export function AppSidebar() {
                                             </div>
                                         </div>
                                         {/* Upgrade */}
-                                        <DropdownMenuItem className="px-4 py-2 text-white hover:bg-gray-200 gap-2 cursor-pointer hover:font-semibold">
+                                        <DropdownMenuItem className="px-4 py-2 text-black hover:bg-white gap-2 cursor-pointer hover:font-semibold">
                                             <Star size={18} className="text-yellow-400" />
                                             <span className={`text-black ${poppins.className}`}>Upgrade to Pro</span>
                                         </DropdownMenuItem>
                                         {/* Account */}
-                                        <DropdownMenuItem className="px-4 py-2 text-white hover:bg-gray-200 hover:font-semibold cursor-pointer gap-2">
+                                        <DropdownMenuItem className="px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2">
                                             <User2 size={18} className="text-gray-400" />
                                             <span className={`${poppins.className}`}>Account</span>
                                         </DropdownMenuItem>
                                         {/* Billing */}
-                                        <DropdownMenuItem className="px-4 py-2 text-white hover:bg-gray-200 hover:font-semibold cursor-pointer gap-2">
+                                        <DropdownMenuItem className="px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2">
                                             <Package size={18} className="text-gray-400" />
                                             <span className={`${poppins.className}`}>Billing</span>
                                         </DropdownMenuItem>
                                         {/* Notifications */}
-                                        <DropdownMenuItem className="px-4 py-2 text-white hover:bg-gray-200 hover:font-semibold cursor-pointer gap-2">
+                                        <DropdownMenuItem className="px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2">
                                             <Inbox size={18} className="text-gray-400" />
                                             <span className={`${poppins.className}`}>Notifications</span>
                                         </DropdownMenuItem>
                                         {/* Divider */}
                                         <div className="border-t border-[#232329] my-1" />
                                         {/* Log out */}
-                                        <DropdownMenuItem className="px-4 py-2 text-white hover:bg-gray-200 hover:font-semibold cursor-pointer gap-2">
+                                        <DropdownMenuItem className="px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2">
                                             <LogOut size={18} className="text-gray-400" />
                                             <span className={`${poppins.className}`}>Log out</span>
                                         </DropdownMenuItem>
