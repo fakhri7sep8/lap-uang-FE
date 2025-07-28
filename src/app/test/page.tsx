@@ -2,6 +2,7 @@ import SaldoCard from "@/components/fragments/wallet";
 import FinanceSummaryCard from "@/components/fragments/financeCard";
 import { useSidebar } from "@/components/ui/sidebar";
 import React from "react";
+import DonutChart from "@/components/fragments/donutChart";
 
 export const ChartPage: React.FC = () => {
   const { state } = useSidebar();
