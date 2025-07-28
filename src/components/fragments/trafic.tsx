@@ -36,6 +36,7 @@ const TrafficChart: React.FC = () => {
         data: [15000, 30000, 25000, 32000, 12000, 26000],
         type: "bar",
         itemStyle: {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           color: (params: any) => {
             const colors = [
               "#FF9800",

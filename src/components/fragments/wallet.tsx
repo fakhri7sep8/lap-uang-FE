@@ -11,8 +11,8 @@ interface SaldoCardProps {
 export default function SaldoCard({
   saldo,
   ownerName,
-  cardWidth = 400,
-  cardHeight = 200,
+  cardWidth = 604,
+  cardHeight = 240,
 }: SaldoCardProps) {
   return (
     <div
