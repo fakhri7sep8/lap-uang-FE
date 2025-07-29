@@ -2,78 +2,132 @@ import SaldoCard from "@/components/fragments/wallet";
 import FinanceSummaryCard from "@/components/fragments/financeCard";
 import { useSidebar } from "@/components/ui/sidebar";
 import React from "react";
-import DonutChart from "@/components/fragments/donutChart";
+import FinanceBarChart from "@/components/fragments/financeBarChart";
+import DonutFinanceChart from "@/components/fragments/donutChart";
+import TopUpChartBox from "@/components/fragments/sideChart";
+import BillingPieChart from "@/components/fragments/pieChart";
 
 export const ChartPage: React.FC = () => {
   const { state } = useSidebar();
   return (
-    <div className="">
-      <div
+    <div
       key={state}
       className={`transition-all duration-300 ${
         state == "collapsed"
-          ? "ml-5 flex items-center justify-between"
-          : "ml-[18rem] flex items-center justify-between"
+          ? "ml-15 flex items-center justify-between flex-col"
+          : "ml-[23rem] flex items-center justify-between flex-col"
       }`}
-      >
-        <div key={state} className={`${state == "collapsed" ? "w-[93%] min-h-56 ml-10 mt-5 rounded-lg flex flex-row items-start justify-between p-6": "w-[93%] min-h-56 ml-10 mt-5 rounded-lg flex flex-row items-start justify-between px-6 py-6 shadow"}`}>
-          <div className="flex flex-col gap-6 flex-1">
-            <SaldoCard saldo={130000000} ownerName="Lap Uang" />
-            <FinanceSummaryCard
-              title="Surplus"
-              amount={3500000000}
-              month="Juli"
-              percentage={100}
-              color="purple"
-              logo="dompet_kosong"
-              cardWidth={604}
-              cardHeight={240}
-            />
+    >
+      <div className="w-full">
+        <div
+          key={state}
+          className={`${
+            state == "collapsed"
+              ? "w-[90%] min-h-56 mt-5 rounded-lg flex flex-col items-start justify-between ml-10 px-10 py-6 shadow shadow-md"
+              : "w-[93%] min-h-56 mt-5 rounded-lg flex flex-col items-start justify-between px-10 py-6 shadow shadow-md"
+          }`}
+        >
+          <div className="w-full mb-4">
+            <h1 className="text-2xl font-semibold text-[#25BF65]">
+              Ringkasan Keuangan
+            </h1>
           </div>
-          <div className="flex flex-col gap-6">
-            <div className="flex gap-6">
+          <div className="w-full flex gap-3">
+            <div className="flex flex-col gap-6 flex-1">
+              <SaldoCard saldo={130000000} ownerName="Lap Uang" />
               <FinanceSummaryCard
-                title="Saldo awal bulan ini"
-                amount={100000000}
+                title="Surplus"
+                amount={3500000000}
                 month="Juli"
-                percentage={59}
-                color="blue"
-                logo="dompet_masuk"
-                cardWidth={340}
+                percentage={100}
+                color="purple"
+                logo="dompet_kosong"
+                cardWidth={557}
                 cardHeight={240}
-              />
-              <FinanceSummaryCard
-                title="Saldo akhir bulan ini"
-                amount={100000000}
-                month="Juli"
-                percentage={59}
-                color="yellow"
-                logo="dompet_masuk"
-                cardWidth={340}
-                cardHeight={240}
+
               />
             </div>
-            <div className="flex gap-6">
-              <FinanceSummaryCard
-                title="Penerimaan bulan ini"
-                amount={10000000}
-                month="Juli"
-                percentage={59}
-                color="green"
-                logo="dompet_masuk"
-                cardWidth={340}
-                cardHeight={240}
-              />
-              <FinanceSummaryCard
-                title="Pengeluaran bulan ini"
-                amount={1000000000}
-                month="Juli"
-                percentage={15}
-                color="red"
-                logo="dompet_kosong"
-                cardWidth={340}
-                cardHeight={240}
-              />
+            <div className="w-full flex flex-col gap-6">
+              <div className="flex gap-6">
+                <FinanceSummaryCard
+                  title="Saldo awal bulan ini"
+                  amount={100000000}
+                  month="Juli"
+                  percentage={59}
+                  color="blue"
+                  logo="dompet_masuk"
+                  cardWidth={'50%'}
+                  cardHeight={240}
+                />
+                <FinanceSummaryCard
+                  title="Saldo akhir bulan ini"
+                  amount={100000000}
+                  month="Juli"
+                  percentage={59}
+                  color="yellow"
+                  logo="dompet_masuk"
+                  cardWidth={'50%'}
+                  cardHeight={240}
+                />
+              </div>
+              <div className="flex gap-6">
+                <FinanceSummaryCard
+                  title="Penerimaan bulan ini"
+                  amount={10000000}
+                  month="Juli"
+                  percentage={59}
+                  color="green"
+                  logo="dompet_masuk"
+                  cardWidth={'50%'}
+                  cardHeight={240}
+                />
+                <FinanceSummaryCard
+                  title="Pengeluaran bulan ini"
+                  amount={1000000000}
+                  month="Juli"
+                  percentage={15}
+                  color="red"
+                  logo="dompet_kosong"
+                  cardWidth={'50%'}
+                  cardHeight={240}
+                />
+              </div>
+            </div>
+          </div>
+          {/* Batas */}
+          <div className="w-full mt-10 gap- flex">
+            <div>
+              <FinanceBarChart width={804} height={380} />
+            </div>
+            <div className="flex justify-center">
+              <DonutFinanceChart width={574} />
+            </div>
+          </div>
+          {/* batas */}
+          <div className="w-full flex justify-end">
+            <h2 className="text-2xl font-semibold text-[#25BF65] my-10">
+              Ringkasan Penerimaan
+            </h2>
+          </div>
+          <div className="w-full flex gap-6">
+            <div className="w-[50%]">
+              <TopUpChartBox width="100%" height="340px" />
+            </div>
+            <div className="w-[48%]">
+              <BillingPieChart />
+            </div>
+          </div>
+          <div className="w-full flex">
+            <h2 className="text-2xl font-semibold text-[#25BF65] my-10">
+              Ringkasan Pengeluaran
+            </h2>
+          </div>
+          <div className="w-full flex gap-6 flex-row-reverse">
+            <div className="w-[50%]">
+              <TopUpChartBox width="100%" height="340px" />
+            </div>
+            <div className="w-[50%]">
+              <BillingPieChart />
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { FaFileInvoiceDollar } from "react-icons/fa";
+import { useSidebar } from "../ui/sidebar";
 
 interface SaldoCardProps {
   saldo: number;
@@ -11,19 +12,20 @@ interface SaldoCardProps {
 export default function SaldoCard({
   saldo,
   ownerName,
-  cardWidth = 604,
+  cardWidth = 557,
   cardHeight = 240,
 }: SaldoCardProps) {
+  const { state } = useSidebar();
   return (
-    <div
-      className="rounded-xl p-5 shadow-md flex flex-col justify-between"
+    <div key={state}
+      className="rounded-xl p-5 w-full shadow-md flex flex-col justify-between"
       style={{
         backgroundColor: "#CCE2D0",
         width: typeof cardWidth === "number" ? `${cardWidth}px` : cardWidth,
         height: typeof cardHeight === "number" ? `${cardHeight}px` : cardHeight,
       }}
     >
-      <div className="text-sm text-gray-600">saldo yang tersedia saat ini</div>
+      <div className="text-sm text-gray-600 text-[20px]">Saldo yang tersedia saat ini</div>
 
       <div className="text-3xl font-semibold text-gray-800">
         RP. {saldo.toLocaleString("id-ID")}
