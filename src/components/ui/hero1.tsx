@@ -31,7 +31,7 @@ export const Hero1 = () => {
     })
   return (
     <div className=''>
-      <div key={state} className={`transition-all duration-300 ${state == 'collapsed' ? 'ml-5 flex items-center justify-between' : 'ml-[18rem] flex items-center justify-between'}`}>
+      <div key={state} className={'transition-all duration-300 flex items-center justify-between'}>
         <div className="w-[90%] h-56 bg-[url('/img/flayer.png')] bg-no-repeat bg-cover ml-16 mt-5 rounded-lg flex justify-between px-4 items-center">
           <div className="flex flex-col space-y-2 mb-5">
             <span className="text-white text-4xl font-bold">Selamat Datang</span>

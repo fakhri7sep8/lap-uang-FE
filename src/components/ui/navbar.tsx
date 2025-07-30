@@ -14,16 +14,9 @@ const poppins = Poppins({
 })
 
 export default function Navbar() {
-    const { state } = useSidebar()
-    console.log("Sidebar state:", state)
 
     return (
-        <div className="w-full h-14 flex items-center px-4 shadow-md bg-white">
-            <div
-                key={state} // ini opsional tapi bisa paksa re-render
-                className={`transition-all duration-300 ${state == 'collapsed' ? 'ml-0 flex items-center justify-between w-full' : 'ml-[15rem] flex items-center justify-between w-full'
-                    }`}
-            >
+        <div className="w-full h-14 flex items-center px-4 shadow-md bg-white justify-between">
                 <Image
                     src="/img/Logo.png"
                     alt="Logo"
@@ -36,8 +29,6 @@ export default function Navbar() {
                         <IoIosPaper /> Cetak Ringkasan
                     </Button>
                 </div>
-            </div>
-
         </div>
     )
 }
