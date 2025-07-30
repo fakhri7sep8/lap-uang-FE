@@ -96,11 +96,11 @@ export const ChartPage: React.FC = () => {
           </div>
           {/* Batas */}
           <div className="w-full mt-10 gap- flex">
-            <div>
-              <FinanceBarChart width={804} height={380} />
+            <div className="w-full">
+              <FinanceBarChart/>
             </div>
-            <div className="flex justify-center">
-              <DonutFinanceChart width={574} />
+            <div className=" w-full flex justify-center">
+              <DonutFinanceChart width={574} height={500} />
             </div>
           </div>
           {/* batas */}
@@ -109,11 +109,11 @@ export const ChartPage: React.FC = () => {
               Ringkasan Penerimaan
             </h2>
           </div>
-          <div className="w-full flex gap-6">
-            <div className="w-[50%]">
+          <div className="w-full flex flex-col md:flex-row-reverse gap-6">
+            <div className="w-full md:w-[50%]">
               <TopUpChartBox width="100%" height="340px" />
             </div>
-            <div className="w-[48%]">
+            <div className="w-full md:w-[50%]">
               <BillingPieChart />
             </div>
           </div>
@@ -122,11 +122,11 @@ export const ChartPage: React.FC = () => {
               Ringkasan Pengeluaran
             </h2>
           </div>
-          <div className="w-full flex gap-6 flex-row-reverse">
-            <div className="w-[50%]">
+          <div className="w-full flex flex-col md:flex-row-reverse gap-6">
+            <div className="w-full md:w-[50%]">
               <TopUpChartBox width="100%" height="340px" />
             </div>
-            <div className="w-[50%]">
+            <div className="w-full md:w-[50%]">
               <BillingPieChart />
             </div>
           </div>
