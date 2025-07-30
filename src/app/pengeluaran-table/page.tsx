@@ -3,13 +3,6 @@
 import React, { useState } from "react";
 import { Trash2 } from "lucide-react";
 import Swal from "sweetalert2";
-import { Poppins } from "next/font/google";
-
-const poppins = Poppins({
-  variable: "--font-poppins",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
 
 interface RowData {
   name: string;
@@ -86,7 +79,7 @@ export default function JenisPengeluaranPage() {
   const total = rows.reduce((sum, row) => sum + row.amount, 0);
 
   return (
-    <div className={`relative min-h-screen p-6 space-y-6 bg-gray-50 ${poppins.className}`}>
+    <div className="relative min-h-screen p-6 space-y-6 bg-gray-50">
       <div
         className={`transition-all duration-500 ease-in-out ${
           showModal ? "blur-sm scale-[0.98] opacity-70" : "opacity-100 scale-100"
@@ -94,7 +87,7 @@ export default function JenisPengeluaranPage() {
       >
         <div className="flex justify-between items-center border-b pb-4">
           <h1 className="text-2xl font-bold text-gray-800">Jenis Pengeluaran</h1>
-          <button className="border border-green-600 text-green-700 hover:bg-green-50 rounded-lg px-5 py-2 font-medium">
+          <button className="border border-green-600 text-green-700 hover:bg-green-50 rounded-lg px-5 py-2">
             Simpan
           </button>
         </div>
