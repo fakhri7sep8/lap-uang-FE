@@ -3,7 +3,7 @@ import { Geist, Geist_Mono, Poppins } from "next/font/google";
 import "./globals.css";
 import ReactQuery from "@/lib/react-query";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import AppSidebar from "@/components/fragment/sidebar-app";
+import AppSidebar from "@/components/fragments/sidebar-app";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={poppins.className}>
-      <body className={''}>
+    <html lang="en">
+      <body className={`bg-[#F7F8FA] min-h-screen`}>
         <ReactQuery>
             {children}
         </ReactQuery>
