@@ -9,3 +9,7 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), /* Bayangan vertikal */
               0 8px 10px -6px rgba(0, 0, 0, 0.1); /* Bayangan horizontal */
 }
+
+body {
+  font-family: 'Poppins', sans-serif;
+}
