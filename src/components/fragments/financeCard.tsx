@@ -66,7 +66,7 @@ const CardWithCircle: FC<CardWithCircleProps> = ({
           />
           <div className="flex flex-col gap-2 items-start text-start">
             <p className="text-lg text-gray-500">{title}</p>
-            <p className="text-xl font-bold text-gray-900">
+            <p className="text-xl font-semibold text-gray-900">
               Rp. {amount.toLocaleString("id-ID")}
             </p>
             <p className="text-xs text-gray-400">Bulan {month}</p>

@@ -15,7 +15,7 @@ export const ChartPage: React.FC = () => {
       className={`transition-all duration-300 ${
         state == "collapsed"
           ? "ml-15 flex items-center justify-between flex-col"
-          : "ml-[23rem] flex items-center justify-between flex-col"
+          : "ml-15 flex items-center justify-between flex-col"
       }`}
     >
       <div className="w-full">
@@ -42,13 +42,13 @@ export const ChartPage: React.FC = () => {
                 percentage={100}
                 color="purple"
                 logo="dompet_kosong"
-                cardWidth={557}
+                cardWidth={'100%'}
                 cardHeight={240}
 
               />
             </div>
             <div className="w-full flex flex-col gap-6">
-              <div className="flex gap-6">
+              <div className="w-full flex gap-6">
                 <FinanceSummaryCard
                   title="Saldo awal bulan ini"
                   amount={100000000}
@@ -56,7 +56,7 @@ export const ChartPage: React.FC = () => {
                   percentage={59}
                   color="blue"
                   logo="dompet_masuk"
-                  cardWidth={'50%'}
+                  cardWidth={'40%'}
                   cardHeight={240}
                 />
                 <FinanceSummaryCard
@@ -66,11 +66,11 @@ export const ChartPage: React.FC = () => {
                   percentage={59}
                   color="yellow"
                   logo="dompet_masuk"
-                  cardWidth={'50%'}
+                  cardWidth={'40%'}
                   cardHeight={240}
                 />
               </div>
-              <div className="flex gap-6">
+              <div className="w-full flex gap-6">
                 <FinanceSummaryCard
                   title="Penerimaan bulan ini"
                   amount={10000000}
@@ -78,7 +78,7 @@ export const ChartPage: React.FC = () => {
                   percentage={59}
                   color="green"
                   logo="dompet_masuk"
-                  cardWidth={'50%'}
+                  cardWidth={'40%'}
                   cardHeight={240}
                 />
                 <FinanceSummaryCard
@@ -88,19 +88,19 @@ export const ChartPage: React.FC = () => {
                   percentage={15}
                   color="red"
                   logo="dompet_kosong"
-                  cardWidth={'50%'}
+                  cardWidth={'40%'}
                   cardHeight={240}
                 />
               </div>
             </div>
           </div>
           {/* Batas */}
-          <div className="w-full mt-10 gap- flex">
-            <div className="w-full">
-              <FinanceBarChart/>
+          <div className="w-full mt-10 flex flex-col md:flex-row gap-6">
+            <div className=" md:w-[80%]">
+              <FinanceBarChart />
             </div>
-            <div className=" w-full flex justify-center">
-              <DonutFinanceChart width={574} height={500} />
+            <div className="w-1/2 h-1/2 md:flex justify-center">
+              <DonutFinanceChart />
             </div>
           </div>
           {/* batas */}
@@ -109,11 +109,11 @@ export const ChartPage: React.FC = () => {
               Ringkasan Penerimaan
             </h2>
           </div>
-          <div className="w-full flex flex-col md:flex-row-reverse gap-6">
+          <div className="w-full flex flex-col-reverse md:flex-row gap-6">
             <div className="w-full md:w-[50%]">
               <TopUpChartBox width="100%" height="340px" />
             </div>
-            <div className="w-full md:w-[50%]">
+            <div className="w-1/2 md:w-[50%]">
               <BillingPieChart />
             </div>
           </div>
@@ -122,11 +122,12 @@ export const ChartPage: React.FC = () => {
               Ringkasan Pengeluaran
             </h2>
           </div>
+          {/* Batas */}
           <div className="w-full flex flex-col md:flex-row-reverse gap-6">
             <div className="w-full md:w-[50%]">
-              <TopUpChartBox width="100%" height="340px" />
+              <TopUpChartBox width="100%" height="340px"  />
             </div>
-            <div className="w-full md:w-[50%]">
+            <div className="w-1/2 md:w-[50%]">
               <BillingPieChart />
             </div>
           </div>

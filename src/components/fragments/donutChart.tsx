@@ -21,8 +21,8 @@ const DonutFinanceChart: React.FC<DonutFinanceChartProps> = ({
     { value: 120, name: "Saldo Awal" },
     { value: 67.55, name: "Saldo Akhir" },
   ],
-  width = "100%",
-  height = 300,
+  width = 500,
+  height = 340,
 }) => {
   const colorMap: Record<string, string> = {
     Penerimaan: "#6C63FF",
@@ -38,14 +38,7 @@ const DonutFinanceChart: React.FC<DonutFinanceChartProps> = ({
       formatter: "{b}: Rp.{c} ({d}%)",
     },
     legend: {
-      orient: "horizontal",
-      bottom: 10,
-      itemWidth: 10,
-      itemHeight: 10,
-      textStyle: {
-        fontSize: 12,
-      },
-      data: data.map((d) => d.name),
+      show: false, // Sembunyikan legend bawaan
     },
     series: [
       {
@@ -79,7 +72,7 @@ const DonutFinanceChart: React.FC<DonutFinanceChartProps> = ({
       className={`${
         state == "collapsed"
           ? "rounded-2xl shadow-md bg-white p-4 w-[704px] flex flex-col items-center ml-6 justify-center"
-          : "rounded-2xl shadow-md bg-white p-4 flex flex-col items-center justify-center ml-6 "
+          : "rounded-2xl shadow-md bg-white p-4 flex flex-col items-center justify-center "
       }`}
     >
       <div className="text-center mb-2">
@@ -87,11 +80,27 @@ const DonutFinanceChart: React.FC<DonutFinanceChartProps> = ({
       </div>
       <ReactECharts
         option={option}
-  style={{
-    width: typeof width === "number" ? `500px` : width,
-    height: typeof height === "number" ? `${height}px` : height,
-  }}
+        style={{
+          width: typeof width === "number" ? `500px` : width,
+          height: typeof height === "number" ? `${height}px` : height,
+        }}
       />
+      {/* Custom legend 2 kolom, 2 baris di bawah chart */}
+      <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 w-full max-w-xs">
+        {data.map((item) => (
+          <div key={item.name} className="flex items-center gap-2">
+            <span
+              className="inline-block rounded-full"
+              style={{
+                width: 12,
+                height: 12,
+                background: colorMap[item.name],
+              }}
+            />
+            <span className="text-xs">{item.name}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

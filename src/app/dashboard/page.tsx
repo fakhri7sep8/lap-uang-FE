@@ -14,7 +14,7 @@ export const Dashboard = () => {
     <section className='w-full'>
       <div className='flex flex-col'>
         <Hero1/>
-        {/* <ChartPage/> */}
+        <ChartPage/>
       </div>
     </section>
   )

@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { useSidebar } from '../ui/sidebar';
+import { Spline } from 'lucide-react';
 
 interface FinanceBarChartProps {
   width?: string | number;
@@ -11,8 +12,8 @@ interface FinanceBarChartProps {
 }
 
 const FinanceBarChart: React.FC<FinanceBarChartProps> = ({
-  width = '100%',
-  height = 500,
+  width = 800,
+  height = 340,
   title = 'Grafik Keuangan Bulanan'
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -32,20 +33,27 @@ const FinanceBarChart: React.FC<FinanceBarChartProps> = ({
    const { state } = useSidebar();
 
   const option = {
+    color: [
+      '#6BD6A9', // Penerimaan
+      '#8B7DF7', // Pengeluaran
+      '#F7C873', // Saldo awal
+      '#FF7F7F', // Saldo akhir
+      '#4FC3F7', '#FFD54F', '#81C784', '#BA68C8', '#FF8A65', '#A1887F', '#90A4AE', '#DCE775'
+    ],
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' }
     },
     legend: {
       top: 10,
-      itemWidth: 18,
-      itemHeight: 18,
+      itemWidth: 16,
+      itemHeight: 16,
       textStyle: {
-        fontSize: 16
+        fontSize: 14  
       }
     },
     grid: {
-      left: '3%',
+      left: '2%',
       right: '4%',
       bottom: '3%',
       top: 80, // kasih jarak buat legend & title
@@ -82,10 +90,12 @@ const FinanceBarChart: React.FC<FinanceBarChartProps> = ({
     },
     xAxis: {
       type: 'category',
-      axisTick: { alignWithLabel: true }
+      Splitline: { show: true },
+      axisTick: { alignWithLabel: true },
     },
     yAxis: {
       type: 'value',
+      splitLine: { show: true },
       axisLabel: {
         formatter: (value: number) => 'Rp.' + value.toLocaleString('id-ID')
       }

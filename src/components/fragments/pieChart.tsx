@@ -26,7 +26,7 @@ const BillingPieChart = () => {
     series: [
       {
         type: 'pie',
-        radius: '65%', // 👈 full pie, bukan donut
+        radius: '65%',
         center: ['50%', '45%'],
         label: {
           show: true,
@@ -57,9 +57,10 @@ const BillingPieChart = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow p-4">
-      <h2 className="text-lg font-semibold text-gray-800 mb-2">Grafik Tagihan</h2>
-      <ReactECharts option={option} style={{ height: 360, width: '100%' }} />
+    <div className="bg-white rounded-xl shadow p-4 w-full">
+      <div className="w-full h-[320px] md:h-[388px]">
+        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />
+      </div>
     </div>
   );
 };
