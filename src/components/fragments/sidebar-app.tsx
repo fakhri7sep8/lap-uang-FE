@@ -207,7 +207,7 @@ export function AppSidebar() {
                                     <SidebarMenuButton asChild>
                                         <a href="#tunggakan">
                                             <AlertTriangle className="mr-2" size={18} />
-                                            <span className={`font-semibold ${poppins.className}`}>Tunggakan</span>
+                                            <span className={`font-semibold ${poppins.className}`}>Tunggakan SPP</span>
                                         </a>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
