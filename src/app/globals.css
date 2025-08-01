@@ -132,3 +132,9 @@
   font-family: 'DS-Digital', monospace;
 }
 
+
+.bg-finance {
+  background-image: url('/backgrounds/bg-current-finance.png');
+  background-size: cover;
+  background-position: top;
+}

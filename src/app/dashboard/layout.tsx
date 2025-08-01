@@ -4,18 +4,14 @@ import Navbar from '@/components/ui/navbar'
 import { SidebarProvider } from '@/components/ui/sidebar'
 import React from 'react'
 
-const DashboardLayout = ({
-  children,
-}: {
-  children: React.ReactNode
-}) => {
+const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
-      <div className='flex w-full min-h-screen'>
+      <div className='flex w-full h-full'>
         <AppSidebar />
-        <div className="flex flex-col flex-1">
+        <div className='flex flex-col w-full gap-6'>
           <Navbar />
-          {children}
+          <div className='w-full px-6'>{children}</div>
         </div>
       </div>
     </SidebarProvider>
