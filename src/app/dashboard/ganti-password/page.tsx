@@ -44,10 +44,7 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 px-96 py-10 relative">
-      <h1 className="text-lg font-semibold mb-6 absolute top-6 left-6">
-        Account Settings
-      </h1>
+    <div className="min-h-screen bg-gray-100 px-96 py-10 ">
 
       <div className="p-6 rounded-lg w-full pt-20">
         <label htmlFor="name" className="text-sm font-medium cursor-pointer">
