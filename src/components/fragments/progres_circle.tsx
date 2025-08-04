@@ -62,7 +62,7 @@ export const CircleProgress: FC<CircleProgressProps> = ({
         className="absolute font-semibold text-gray-800 dark:text-white"
         style={{ fontSize: pixelSize / 4 }}
       >
-        {label ?? `+${value}%`}
+        {label ?? `${value}%`}
       </div>
     </div>
   );
