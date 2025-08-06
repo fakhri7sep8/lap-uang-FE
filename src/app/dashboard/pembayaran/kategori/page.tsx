@@ -1,5 +1,6 @@
 'use client'
 
+import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
 import SelectLimitData from '@/components/fragments/dashboard/select-dataLimit'
 import {
   Pagination,
@@ -10,16 +11,6 @@ import {
   PaginationNext,
   PaginationPrevious
 } from '@/components/ui/pagination'
-// import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -34,38 +25,18 @@ import React, { useState } from 'react'
 
 const KategoriPembayaran = () => {
   const [showFilter, setShowFilter] = useState(false)
+  const [showCount, setShowCount] = useState(10)
+  const [searchTerm, setSearchTerm] = useState('')
 
   return (
     <div className='w-full rounded-xl flex flex-col gap-4 px-2 '>
-      <div className='flex justify-between items-center w-full h-full py-2 gap-4 '>
-        <div className='flex items-center gap-2 w-2/3 '>
-          <h3 className='text-xl font-bold capitalize w-1/3 '>
-            Kategori Pembayaran
-          </h3>
-          <div className='w-2/3 h-8 rounded-sm  px-2 gap-2 flex items-center ml-4 border border-transparent bg-white py-5'>
-            <Search size={22} className='' />
-            <input
-              type='text'
-              placeholder='Search by name or NISN'
-              className='focus:outline-none w-full'
-              title='search'
-              //   value={searchTerm}
-              //   onChange={handleSearch}
-            />
-          </div>
-        </div>
-        <div className='w-1/3 items-center flex flex-row-reverse gap-4 justify-end'>
-          <button
-            title='button filter'
-            onClick={() => setShowFilter(true)}
-            className='w-1/2 flex justify-center items-center gap-2  px-6 py-2 h-full bg-green-400 text-white rounded-md shadow-sm hover:bg-green-500 transition'
-          >
-            <SlidersHorizontal />
-            <span>Filter</span>
-          </button>
-          <SelectLimitData />
-        </div>
-      </div>
+      <SearchDataTable
+        title={'Management Kategori Pembayaran'}
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        setShowFilter={setShowFilter}
+        setShowCount={setShowCount}
+      />
       <div className='w-full h-[82vh] bg-white  dark:text-[#ABB2BF] rounded-xl p-4 flex flex-col  justify-between'>
         <Table className='w-full table-auto bg-white text-gray-700'>
           <TableHeader className='text-sm font-semibold text-center'>

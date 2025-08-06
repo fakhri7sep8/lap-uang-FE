@@ -17,7 +17,7 @@ const SearchDataTable = ({
   setShowCount: React.Dispatch<React.SetStateAction<number>>
 }) => {
   return (
-    <div className='flex flex-col gap-2'>
+    <div className='flex flex-col gap-4'>
       <h2 className='text-2xl font-semibold w-full'>{title}</h2>
       <div className='flex items-center gap-4 w-full h-12 '>
         <div className='w-2/3 h-full border border-slate-200  bg-white rounded-md flex flex-row-reverse gap-2 items-center px-4'>
