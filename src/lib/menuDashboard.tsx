@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { link } from "fs";
 import {
   GraduationCap,
   UserPlus,
@@ -49,27 +48,28 @@ export function generateMenuDashboard({
         {
           name: "Lihat Semua Siswa",
           icon: <Users2 className="mr-2" size={16} />,
-          link: "/dashboard/siswa",
+          link: "/dashboard/siswa/view",
         },
       ],
     },
     {
-      name: "Pembayaran SPP",
+      name: "Pembayaran Siswa",
       handleOpen: setOpenSPP,
       icon: <Coins className="mr-2" size={18} />,
       open: openSPP,
       children: [
         {
-          name: "Input Pembayaran",
+          name: "Kategori Pembayaran",
           icon: <Banknote className="mr-2" size={16} />,
+          link: "/dashboard/pembayaran/kategori"
         },
         {
-          name: "Riwayat Pembayaran",
+          name: "Input Pembayaran",
           icon: <History className="mr-2" size={16} />,
-          link: "/dashboard/riwayat-pembayaran",
+          link: "/dashboard/pembayaran/riwayat-pembayaran",
         },
         {
-          name: "Kwitansi Pembayaran",
+          name: "Data Pembayaran",
           icon: <FileText className="mr-2" size={16} />,
         },
       ],
