@@ -1,6 +1,14 @@
 "use client";
 
-import { AlertOctagon, GraduationCap, Users, Wallet } from "lucide-react";
+import {
+  AlertOctagon,
+  Eye,
+  GraduationCap,
+  ListFilter,
+  SlidersHorizontal,
+  Users,
+  Wallet,
+} from "lucide-react";
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -12,7 +20,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 
 const dummyData = [
   {
@@ -158,10 +174,10 @@ const LihatSemuaSiswa = () => {
   };
 
   return (
-    <div className="p-6 flex flex-col gap-10 relative ">
-      <section className="grid grid-cols-2 gap-4 w-full">
-        <div className="rounded-xl bg-blue-400 p-9 text-white h-40 flex justify-between items-center shadow-md">
-          <div>
+    <section className="flex flex-col gap-10 w-full ">
+      <section className="grid grid-cols-2 gap-4 ">
+        <div className="rounded-xl p-9 bg-blue-400  text-white h-40 flex justify-between items-center shadow-md">
+          <div className="flex flex-col gap-2">
             <h2 className="font-medium text-2xl">Jumlah Siswa</h2>
             <p className="text-6xl font-medium">{dummyData.length}</p>
           </div>
@@ -170,105 +186,104 @@ const LihatSemuaSiswa = () => {
           </div>
         </div>
         <div className="rounded-xl bg-green-400 p-9 text-white h-40 flex justify-between items-center shadow-md">
-          <div>
-            <h2 className="font-medium text-2xl">Siswa Aktif</h2>
+          <div className="flex flex-col gap-2">
+            <h2 className="font-medium text-2xl">Total Data</h2>
             <p className="text-6xl font-medium">
-              {dummyData.filter((s) => s.status === "Aktif").length}
+              5
             </p>
           </div>
           <div className="bg-green-100 rounded-full w-20 h-20 flex justify-center items-center">
             <Users size={32} className="text-green-700" />
           </div>
         </div>
-        <div className="rounded-xl bg-emerald-400 p-9 text-white h-40 flex justify-between items-center shadow-md">
-          <div>
-            <h2 className="font-medium text-2xl">Sudah Bayar SPP</h2>
-            <p className="text-6xl font-medium">7</p>
-          </div>
-          <div className="bg-emerald-100 rounded-full w-20 h-20 flex justify-center items-center">
-            <Wallet size={32} className="text-emerald-700" />
-          </div>
-        </div>
-        <div className="rounded-xl bg-red-400 p-9 text-white h-40 flex justify-between items-center shadow-md">
-          <div>
-            <h2 className="font-medium text-2xl">Belum Bayar SPP</h2>
-            <p className="text-6xl font-medium">3</p>
-          </div>
-          <div className="bg-red-100 rounded-full w-20 h-20 flex justify-center items-center">
-            <AlertOctagon size={32} className="text-red-700" />
-          </div>
-        </div>
+
       </section>
 
-      <section className="flex flex-col gap-8">
-        <h2 className="text-2xl font-semibold">Cari Siswa</h2>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <input
+      <section className="w-full flex flex-col gap-6 h-full pb-6">
+        <h2 className="text-2xl font-semibold w-full">Tabel Siswa</h2>
+        <div className="flex items-center gap-4 w-full h-12 ">
+          <Input
             type="text"
             placeholder="Cari nama / no. registrasi / asrama..."
-            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm"
+            className="w-2/3 h-full  border border-gray-300 rounded-md shadow-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 w-1/3 h-full">
             <button
               onClick={() => setShowFilter(true)}
-              className="w-32 px-6 py-2 bg-green-400 text-white rounded-md shadow-sm hover:bg-green-500 transition"
+              className="w-1/2 flex justify-center items-center gap-2  px-6 py-2 h-full bg-green-400 text-white rounded-md shadow-sm hover:bg-green-500 transition"
             >
-              Filter
+              <SlidersHorizontal />
+              <span>Filter</span>
             </button>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="w-32 px-6 py-2 bg-blue-400 text-white rounded-md shadow-sm hover:bg-blue-400 transition">
-                  Show
+                <button className="w-1/2 flex justify-center items-center gap-2 h-full px-6 py-2 bg-blue-400 text-white rounded-md shadow-sm hover:bg-blue-400 transition">
+                  <Eye /> <span>Show</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent>
+              <DropdownMenuContent className="bg-white border-none w-[120px] px-2">
                 <DropdownMenuSeparator />
                 <DropdownMenuRadioGroup
                   value={String(showCount)}
                   onValueChange={(value) => setShowCount(parseInt(value))}
                 >
-                  <DropdownMenuRadioItem value="5">5</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="10">10</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="15">15</DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem
+                    value="5"
+                    className="hover:bg-black/10 transition-all"
+                  >
+                    5
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem
+                    value="10"
+                    className="hover:bg-black/10 transition-all"
+                  >
+                    10
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem
+                    value="15"
+                    className="hover:bg-black/10 transition-all"
+                  >
+                    15
+                  </DropdownMenuRadioItem>
                 </DropdownMenuRadioGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
 
-        <div className="overflow-auto rounded-lg shadow-md">
-          <Table className="min-w-full table-auto bg-white text-gray-700">
+        <div className="w-full h-full  shadow-sm">
+          <Table className="w-full table-auto bg-white text-gray-700">
             <TableHeader className="bg-gray-100 text-sm font-semibold text-center">
-              <TableRow>
-                <TableHead className="px-6 py-4">Id</TableHead>
-                <TableHead className="px-6 py-4">Nama</TableHead>
-                <TableHead className="px-6 py-4">No. Registrasi</TableHead>
-                <TableHead className="px-6 py-4">Asrama</TableHead>
-                <TableHead className="px-6 py-4">Angkatan</TableHead>
-                <TableHead className="px-6 py-4">Status</TableHead>
-                <TableHead className="px-6 py-4">Jurusan</TableHead>
-                <TableHead className="px-6 py-4">Tarif SPP</TableHead>
-                <TableHead className="px-6 py-4">Dibuat</TableHead>
+              <TableRow className="text-center">
+                <TableHead className="text-center py-4">Id</TableHead>
+                <TableHead className="text-center py-4">Nama</TableHead>
+                <TableHead className="text-center py-4">
+                  No. Registrasi
+                </TableHead>
+                <TableHead className="text-center py-4">Asrama</TableHead>
+                <TableHead className="text-center py-4">Angkatan</TableHead>
+                <TableHead className="text-center py-4">Status</TableHead>
+                <TableHead className="text-center py-4">Jurusan</TableHead>
+                <TableHead className="text-center py-4">Tarif SPP</TableHead>
+                <TableHead className="text-center py-4">Dibuat</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody className="text-sm divide-y divide-gray-200 text-center">
               {filteredData.slice(0, showCount).map((siswa) => (
                 <TableRow key={siswa.id}>
-                  <TableCell className="px-6 py-4">{siswa.id}</TableCell>
-                  <TableCell className="px-6 py-4 font-medium">
+                  <TableCell className=" py-4">{siswa.id}</TableCell>
+                  <TableCell className=" py-4 font-medium">
                     {siswa.nama}
                   </TableCell>
-                  <TableCell className="px-6 py-4">
-                    {siswa.noRegistrasi}
-                  </TableCell>
-                  <TableCell className="px-6 py-4">{siswa.asrama}</TableCell>
-                  <TableCell className="px-6 py-4">{siswa.angkatan}</TableCell>
-                  <TableCell className="px-6 py-4">
+                  <TableCell className=" py-4">{siswa.noRegistrasi}</TableCell>
+                  <TableCell className=" py-4">{siswa.asrama}</TableCell>
+                  <TableCell className=" py-4">{siswa.angkatan}</TableCell>
+                  <TableCell className=" py-4">
                     <span
                       className={`inline-block w-20 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
                         siswa.status
@@ -277,11 +292,11 @@ const LihatSemuaSiswa = () => {
                       {siswa.status}
                     </span>
                   </TableCell>
-                  <TableCell className="px-6 py-4">{siswa.jurusan}</TableCell>
-                  <TableCell className="px-6 py-4">
+                  <TableCell className=" py-4">{siswa.jurusan}</TableCell>
+                  <TableCell className=" py-4">
                     Rp {siswa.spp.toLocaleString("id-ID")}
                   </TableCell>
-                  <TableCell className="px-6 py-4">{siswa.dibuat}</TableCell>
+                  <TableCell className=" py-4">{siswa.dibuat}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -364,7 +379,7 @@ const LihatSemuaSiswa = () => {
           </>
         )}
       </AnimatePresence>
-    </div>
+    </section>
   );
 };
 

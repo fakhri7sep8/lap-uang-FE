@@ -31,3 +31,9 @@ body {
   background-size: cover;
   background-position: top;
 }
+
+[data-state="checked"]::before,
+[data-radix-ui="radio-item"]::before {
+  display: none !important;
+  content: none !important;
+}

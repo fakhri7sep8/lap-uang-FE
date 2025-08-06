@@ -42,14 +42,14 @@ export function generateMenuDashboard({
       icon: <GraduationCap className="mr-2" size={18} />,
       open: openStudents,
       children: [
-        { 
+        {
           name: "Tambah Siswa",
-          icon: <UserPlus className="mr-2" size={16} /> 
+          icon: <UserPlus className="mr-2" size={16} />,
         },
         {
           name: "Lihat Semua Siswa",
           icon: <Users2 className="mr-2" size={16} />,
-          link : 'dashboard/lihat_semua_siswa'
+          link: "/dashboard/siswa",
         },
       ],
     },
@@ -66,6 +66,7 @@ export function generateMenuDashboard({
         {
           name: "Riwayat Pembayaran",
           icon: <History className="mr-2" size={16} />,
+          link: "/dashboard/riwayat-pembayaran",
         },
         {
           name: "Kwitansi Pembayaran",
