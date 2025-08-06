@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import FinanceCard from '@/components/fragments/financeCard'
 import { Wallet } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export const MainDashboard = () => {
   return (
