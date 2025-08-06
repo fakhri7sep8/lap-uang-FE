@@ -1,108 +1,162 @@
-"use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useRef, useEffect } from 'react';
+import ReactECharts from 'echarts-for-react';
 
-import React from "react";
-import ReactECharts from "echarts-for-react";
-import { useSidebar } from "../ui/sidebar";
+type DonutPieChartDataItem = {
+  value: number;
+  name: string;
+};
 
-interface DonutFinanceChartProps {
-  width?: string | number;
-  height?: string | number;
-  data?: { name: string; value: number }[];
-  total?: number;
-  title?: string;
+interface DonutPieChartProps {
+  data: DonutPieChartDataItem[];
+  height?: number;
 }
 
-const DonutFinanceChart: React.FC<DonutFinanceChartProps> = ({
-  total = 537.55,
-  title = "Pengeluaran Tahunan",
-  data = [
-    { value: 150, name: "Penerimaan" },
-    { value: 200, name: "Pengeluaran" },
-    { value: 120, name: "Saldo Awal" },
-    { value: 67.55, name: "Saldo Akhir" },
-  ],
-  width = 500,
-  height = 340,
-}) => {
-  const colorMap: Record<string, string> = {
-    Penerimaan: "#6C63FF",
-    Pengeluaran: "#FF6B6B",
-    "Saldo Awal": "#00D1FF",
-    "Saldo Akhir": "#FFD644",
-  };
-  const { state } = useSidebar();
+const DonutPieChart: React.FC<DonutPieChartProps> = ({ data, height = 400 }) => {
+  const chartRef = useRef<any>(null);
+  const totalValue = data.reduce((acc, item) => acc + item.value, 0);
 
+  // Option tanpa centerValue
   const option = {
     tooltip: {
-      trigger: "item",
-      formatter: "{b}: Rp.{c} ({d}%)",
+      trigger: 'item',
+      backgroundColor: '#fff',
+      borderColor: '#ccc',
+      borderWidth: 1,
+      textStyle: {
+        color: '#333',
+        fontSize: 14
+      },
+      formatter: (params: any) => {
+        return `
+          <div style="padding: 6px 8px;">
+            <strong>${params.name}</strong><br/>
+            Nilai: ${params.value.toLocaleString()}<br/>
+            Persentase: ${params.percent}%
+          </div>
+        `;
+      }
     },
     legend: {
-      show: false, // Sembunyikan legend bawaan
+      top: '5%',
+      left: 'center'
     },
+    graphic: [
+      {
+        id: 'centerText',
+        type: 'group',
+        left: 'center',
+        top: 'center',
+        children: [
+          {
+            type: 'text',
+            id: 'dynamicText',
+            style: {
+              text: totalValue.toLocaleString(),
+              fontSize: 30,
+              fontWeight: 'bold',
+              fill: '#333'
+            }
+          }
+        ]
+      }
+    ],
     series: [
       {
-        name: "Keuangan",
-        type: "pie",
-        radius: ["50%", "70%"],
-        center: ["50%", "50%"],
+        name: 'Access From',
+        type: 'pie',
+        radius: ['50%', '60%'],
         avoidLabelOverlap: false,
         label: {
-          show: true,
-          position: "center",
-          formatter: `Rp.${total}`,
-          fontSize: 24,
-          fontWeight: "bold",
-          color: "#333",
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          scale: true,
+          scaleSize: 10,
+          label: {
+            show: false
+          },
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
         },
         labelLine: {
-          show: false,
+          show: false
         },
-        data: data.map((item) => ({
-          ...item,
-          itemStyle: { color: colorMap[item.name] },
-        })),
-      },
-    ],
+        data
+      }
+    ]
   };
 
+  // Event hanya update graphic text, tidak trigger re-render React
+  const onEvents = {
+    mouseover: (params: any) => {
+      const chart = chartRef.current?.getEchartsInstance();
+      if (chart) {
+        chart.setOption({
+          graphic: {
+            id: 'dynamicText',
+            style: {
+              text: params.value.toLocaleString()
+            }
+          }
+        });
+      }
+    },
+    mouseout: () => {
+      const chart = chartRef.current?.getEchartsInstance();
+      if (chart) {
+        chart.setOption({
+          graphic: {
+            id: 'dynamicText',
+            style: {
+              text: totalValue.toLocaleString()
+            }
+          }
+        });
+      }
+    },
+    click: (params: any) => {
+      const chart = chartRef.current?.getEchartsInstance();
+      if (chart) {
+        chart.setOption({
+          graphic: {
+            id: 'dynamicText',
+            style: {
+              text: params.value.toLocaleString()
+            }
+          }
+        });
+      }
+    }
+  };
+
+  // Pastikan text di tengah reset ke total saat mount
+  useEffect(() => {
+    const chart = chartRef.current?.getEchartsInstance();
+    if (chart) {
+      chart.setOption({
+        graphic: {
+          id: 'dynamicText',
+          style: {
+            text: totalValue.toLocaleString()
+          }
+        }
+      });
+    }
+  }, [totalValue]);
+
   return (
-    <div
-      key={state}
-      className={`${
-        state == "collapsed"
-          ? "rounded-2xl shadow-md bg-white p-4 w-[704px] flex flex-col items-center ml-6 justify-center"
-          : "rounded-2xl shadow-md bg-white p-4 flex flex-col items-center justify-center "
-      }`}
-    >
-      <div className="text-center mb-2">
-        <h2 className="text-lg font-semibold">{title}</h2>
-      </div>
-      <ReactECharts
-        option={option}
-        style={{
-          width: typeof width === "number" ? `500px` : width,
-          height: typeof height === "number" ? `${height}px` : height,
-        }}
-      />
-      {/* Custom legend 2 kolom, 2 baris di bawah chart */}
-      <div className="grid grid-cols-2 gap-x-6 gap-y-2 mt-4 w-full max-w-xs">
-        {data.map((item) => (
-          <div key={item.name} className="flex items-center gap-2">
-            <span
-              className="inline-block rounded-full"
-              style={{
-                width: 12,
-                height: 12,
-                background: colorMap[item.name],
-              }}
-            />
-            <span className="text-xs">{item.name}</span>
-          </div>
-        ))}
-      </div>
-    </div>
+    <ReactECharts
+      ref={chartRef}
+      option={option}
+      style={{ height }}
+      onEvents={onEvents}
+    />
   );
 };
 
-export default DonutFinanceChart;
+export default DonutPieChart;

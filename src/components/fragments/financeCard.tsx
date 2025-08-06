@@ -5,6 +5,7 @@ import { CircleProgress } from './progres_circle' // pastikan ini adalah kompone
 const colorMap: Record<string, string> = {
   green: '#25BF65',
   red: '#FF453A',
+  indigo: '#9F9FF8'
 }
 
 interface CardWithCircleProps {
@@ -13,7 +14,7 @@ interface CardWithCircleProps {
   month: string
   percentage: number
   icon: any
-  type: "income"| "expense"
+  type: "income"| "expense" | "Surplus"
 }
 
 const CardWithCircle: FC<CardWithCircleProps> = ({
@@ -30,6 +31,8 @@ const CardWithCircle: FC<CardWithCircleProps> = ({
     setCircleColor('red')
   } else if(percentage < 0 && type =="expense") {
     setCircleColor('green')
+  } else if( type == 'Surplus'){
+    setCircleColor(colorMap.indigo)
   }
 }, [percentage,type])
 
