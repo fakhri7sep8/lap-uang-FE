@@ -96,7 +96,7 @@ export default function DataSiswaPage() {
     <div className={`min-h-screen px-6 py-8 bg-white ${poppins.variable} font-poppins`}>
       {/* Header */}
       <div className="mb-10 p-6 bg-gray-100 rounded-xl shadow-sm">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">Cari Data</h1>
+        <h1 className="text-3xl font-bold text-gray-800 mb-6">Data Siswa</h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="flex flex-col gap-2">
             <label className="font-medium text-sm text-gray-600">No Induk</label>
