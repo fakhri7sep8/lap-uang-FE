@@ -15,19 +15,8 @@ import {
 import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
 import { siswa } from '@/data/siswa'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import Link from 'next/link'
+import CardInformation from '@/components/fragments/dashboard/card-information'
 
 const LihatSemuaSiswa = () => {
   const [showFilter, setShowFilter] = useState(false)
@@ -60,33 +49,19 @@ const LihatSemuaSiswa = () => {
   }
 
   const handleDelete = () => {
-    alert("delete berjalan")
+    alert('delete berjalan')
   }
-    
 
   return (
     <section className='flex flex-col gap-10 w-full '>
       <section className='grid grid-cols-2 gap-4 '>
-        <div className='rounded-xl p-9 bg-blue-400  text-white h-40 flex justify-between items-center shadow-md'>
-          <div className='flex flex-col gap-2'>
-            <h2 className='font-medium text-2xl'>Jumlah Siswa</h2>
-            <p className='text-6xl font-medium'>{siswa.length}</p>
-          </div>
-          <div className='bg-blue-100 rounded-full w-20 h-20 flex justify-center items-center'>
-            <GraduationCap size={32} className='text-blue-700' />
-          </div>
-        </div>
-        <div className='rounded-xl bg-green-400 p-9 text-white h-40 flex justify-between items-center shadow-md'>
-          <div className='flex flex-col gap-2'>
-            <h2 className='font-medium text-2xl'>Total Data</h2>
-            <p className='text-6xl font-medium'>
-              {filteredData.slice(0, showCount).length}
-            </p>
-          </div>
-          <div className='bg-green-100 rounded-full w-20 h-20 flex justify-center items-center'>
-            <Users size={32} className='text-green-700' />
-          </div>
-        </div>
+        <CardInformation
+          color={'blue'}
+          title={'Total Siswa'}
+          value={siswa.length}
+          icon={<GraduationCap size={32} className='text-blue-500' />}
+        />
+       <CardInformation color={'green'} title={'Total Data'} value={filteredData.slice(0, showCount).length} icon={<Users size={32} className='text-green-500' />} />
       </section>
 
       <section className='w-full flex flex-col gap-6 h-full pb-6'>
@@ -105,7 +80,7 @@ const LihatSemuaSiswa = () => {
                 <TableHead className='text-center py-4'>Id</TableHead>
                 <TableHead className='text-center py-4'>Nama</TableHead>
                 <TableHead className='text-center py-4'>
-                  No. Registrasi
+                  No. Induk
                 </TableHead>
                 <TableHead className='text-center py-4'>Asrama</TableHead>
                 <TableHead className='text-center py-4'>Angkatan</TableHead>
@@ -147,7 +122,10 @@ const LihatSemuaSiswa = () => {
                         <SquarePen />
                       </Button>
                     </Link>
-                    <Button className='bg-red-500 text-white cursor-pointer px-4' onClick={handleDelete}>
+                    <Button
+                      className='bg-red-500 text-white cursor-pointer px-4'
+                      onClick={handleDelete}
+                    >
                       <Trash2 />
                     </Button>
                   </TableCell>
