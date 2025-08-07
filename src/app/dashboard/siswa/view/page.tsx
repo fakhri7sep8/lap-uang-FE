@@ -29,7 +29,7 @@ const LihatSemuaSiswa = () => {
     .filter(
       s =>
         s.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.noRegistrasi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.noInduk.toLowerCase().includes(searchTerm.toLowerCase()) ||
         s.asrama.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter(s => (filterStatus ? s.status === filterStatus : true))
@@ -99,7 +99,7 @@ const LihatSemuaSiswa = () => {
                   <TableCell className=' py-4 font-medium'>
                     {siswa.nama}
                   </TableCell>
-                  <TableCell className=' py-4'>{siswa.noRegistrasi}</TableCell>
+                  <TableCell className=' py-4'>{siswa.noInduk}</TableCell>
                   <TableCell className=' py-4'>{siswa.asrama}</TableCell>
                   <TableCell className=' py-4'>{siswa.angkatan}</TableCell>
                   <TableCell className=' py-4'>

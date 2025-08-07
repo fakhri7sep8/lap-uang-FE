@@ -44,6 +44,7 @@ export function generateMenuDashboard({
         {
           name: "Tambah Siswa",
           icon: <UserPlus className="mr-2" size={16} />,
+          link: "/dashboard/siswa/create",
         },
         {
           name: "Lihat Semua Siswa",
