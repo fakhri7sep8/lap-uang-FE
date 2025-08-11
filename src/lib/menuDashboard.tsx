@@ -145,7 +145,7 @@ export function generateMenuDashboard({
         {
           name: "Tutorial",
           icon: <BookText className="mr-2" size={16} />,
-          link: "/dashboard/tutorial",
+          link: "/dashboard/bantuan/tutorial",
         },
         {
           name: "Tentang Aplikasi",
