@@ -37,3 +37,16 @@ body {
   display: none !important;
   content: none !important;
 }
+
+
+/* Untuk Chrome, Safari, Edge, Opera */
+input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+}
+
+/* Untuk Firefox */
+input[type='date']::-moz-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+}

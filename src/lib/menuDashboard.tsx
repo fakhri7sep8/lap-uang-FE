@@ -42,8 +42,9 @@ export function generateMenuDashboard ({
       open: openStudents,
       children: [
         {
-          name: 'Tambah Siswa',
-          icon: <UserPlus className='mr-2' size={16} />
+          name: "Tambah Siswa",
+          icon: <UserPlus className="mr-2" size={16} />,
+          link: "/dashboard/siswa/create",
         },
         {
           name: 'Lihat Semua Siswa',
