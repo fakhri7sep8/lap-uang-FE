@@ -66,6 +66,7 @@ const LihatSemuaSiswa = () => {
 
       <section className='w-full flex flex-col gap-6 h-full pb-6'>
         <SearchDataTable
+          type='normal'
           title={'Managemet Siswa'}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}

@@ -6,7 +6,7 @@ const CardInformation = ({
   icon,
   color
 }: {
-  color: 'blue' | 'yellow' | 'green' | 'red'
+  color: 'blue' | 'yellow' | 'green' | 'red' | "purple"
   title: string
   value: number | string
   icon: React.ReactNode
@@ -61,6 +61,20 @@ const CardInformation = ({
           <p className='text-6xl font-medium'>{value}</p>
         </div>
         <div className='bg-yellow-100 rounded-full w-20 h-20 flex justify-center items-center'>
+          {icon}
+        </div>
+      </div>
+    )
+  }
+
+  if (color === "purple") {
+    return (
+      <div className='rounded-xl p-9 bg-purple-400  text-white h-40 flex justify-between items-center shadow-md'>
+        <div className='flex flex-col gap-2'>
+          <h2 className='font-medium text-2xl'>{title}</h2>
+          <p className='text-6xl font-medium'>{value}</p>
+        </div>
+        <div className='bg-purple-100 rounded-full w-20 h-20 flex justify-center items-center'>
           {icon}
         </div>
       </div>
