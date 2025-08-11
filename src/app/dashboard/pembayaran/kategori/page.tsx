@@ -1,7 +1,9 @@
 'use client'
 
+import CardInformation from '@/components/fragments/dashboard/card-information'
 import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
 import SelectLimitData from '@/components/fragments/dashboard/select-dataLimit'
+import { Button } from '@/components/ui/button'
 import {
   Pagination,
   PaginationContent,
@@ -19,8 +21,10 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
+import { kategoriPembayaran } from '@/data/kategori-pembayaran'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Search, SlidersHorizontal } from 'lucide-react'
+import { Edit, Trash2 } from 'lucide-react'
+import Link from 'next/link'
 import React, { useState } from 'react'
 
 const KategoriPembayaran = () => {
@@ -29,17 +33,33 @@ const KategoriPembayaran = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   return (
-    <div className='w-full rounded-xl flex flex-col gap-4 px-2 '>
+    <div className='w-full rounded-xl flex flex-col gap-6 px-2 '>
+      <div className='grid grid-cols-2 gap-4 mb-4'>
+        <CardInformation
+          color={'purple'}
+          title={''}
+          value={''}
+          icon={undefined}
+        />
+        <CardInformation
+          color={'green'}
+          title={''}
+          value={''}
+          icon={undefined}
+        />
+      </div>
       <SearchDataTable
+        type=' add create'
+        link='/dashboard/pembayaran/kategori/create'
         title={'Management Kategori Pembayaran'}
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}
         setShowFilter={setShowFilter}
         setShowCount={setShowCount}
       />
-      <div className='w-full h-[82vh] bg-white  dark:text-[#ABB2BF] rounded-xl p-4 flex flex-col  justify-between'>
+      <div className='w-full bg-white  dark:text-[#ABB2BF] rounded-xl p-4 flex flex-col  justify-between'>
         <Table className='w-full table-auto bg-white text-gray-700'>
-          <TableHeader className='text-sm font-semibold text-center'>
+          <TableHeader className='text-sm font-semibold'>
             <TableRow className='text-center'>
               <TableHead className='text-center py-4'>Id</TableHead>
               <TableHead className='text-center py-4'>Nama Kategori</TableHead>
@@ -49,14 +69,28 @@ const KategoriPembayaran = () => {
             </TableRow>
           </TableHeader>
 
-          <TableBody className='text-sm divide-y text-center'>
-            <TableRow>
-              <TableCell className=' py-4'></TableCell>
-              <TableCell className=' py-4'></TableCell>
-              <TableCell className=' py-4'></TableCell>
-              <TableCell className=' py-4'></TableCell>
-              <TableCell className=' py-4'></TableCell>
-            </TableRow>
+          <TableBody className='text-sm divide-y divide-slate-300 text-center'>
+            {kategoriPembayaran &&
+              kategoriPembayaran.map((d, i) => (
+                <TableRow key={i}>
+                  <TableCell className=' py-4'>{d.id}</TableCell>
+                  <TableCell className=' py-4'>{d.nama}</TableCell>
+                  <TableCell className=' py-4'>{d.semester}</TableCell>
+                  <TableCell className=' py-4'>{d.TA}</TableCell>
+                  <TableCell className=' py-4'>
+                    <div className='flex gap-4 items-center justify-center'>
+                      <Link href={`/dashboard/pembayaran/kategori/update/${d.id}`}>
+                        <Button className='bg-blue-500 text-white'>
+                          <Edit />
+                        </Button>
+                      </Link>
+                      <Button className='bg-red-500 text-white px-4'>
+                        <Trash2 />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
 

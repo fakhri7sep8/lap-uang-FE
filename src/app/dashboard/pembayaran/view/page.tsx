@@ -1,9 +1,10 @@
 import React from 'react'
 
-const Page = () => {
+const ViewPembayaran = () => {
   return (
     <div>Page</div>
   )
 }
 
-export default Page
+export default ViewPembayaran
+

@@ -17,6 +17,7 @@ import { siswa } from '@/data/siswa'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import CardInformation from '@/components/fragments/dashboard/card-information'
+import { useStudentModule } from '@/hooks/useStudentModule'
 
 const LihatSemuaSiswa = () => {
   const [showFilter, setShowFilter] = useState(false)
@@ -25,6 +26,11 @@ const LihatSemuaSiswa = () => {
   const [filterJurusan, setFilterJurusan] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
 
+
+  const { useGetStudent } = useStudentModule()
+  const { data, isLoading } = useGetStudent()
+  
+  console.log(data);
   const filteredData = siswa
     .filter(
       s =>
@@ -66,6 +72,7 @@ const LihatSemuaSiswa = () => {
 
       <section className='w-full flex flex-col gap-6 h-full pb-6'>
         <SearchDataTable
+          type='normal'
           title={'Managemet Siswa'}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}

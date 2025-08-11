@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { axiosClient } from "@/lib/axiosClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
 export const useStudentModule = () => {
   const getStudentData = async () => {
-    return await axiosClient.get("/student/data");
+    return await axiosClient.get("/student/getAllStudent");
   };
 
   const createStudent = async (data: any) => {
