@@ -2,15 +2,15 @@
 
 import Image from 'next/image'
 import React from 'react'
-import { useSidebar } from "@/components/ui/sidebar"
-import { IoIosPaper } from "react-icons/io";
-import { Poppins } from "next/font/google"
+import { SidebarTrigger, useSidebar } from '@/components/ui/sidebar'
+import { IoIosPaper } from 'react-icons/io'
+import { Poppins } from 'next/font/google'
 import { Button } from './button'
 
 const poppins = Poppins({
-    variable: "--font-poppins",
-    subsets: ["latin"],
-    weight: ["400", "500", "600", "700"],
+  variable: '--font-poppins',
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700']
 })
 
 export default function Navbar() {

@@ -161,9 +161,9 @@ export function AppSidebar () {
                           <SidebarMenuSub>
                             <SidebarMenuSubItem>
                               {menu?.children?.map(
-                                (d: { name: string; icon: any }, i: number) => (
+                                (d: { name: string; icon: any, link:string }, i: number) => (
                                   <SidebarMenuButton asChild key={i}>
-                                    <a href={'#siswa'}>
+                                    <a href={d.link || '#'}>
                                       {d.icon}
                                       <span>{d.name}</span>
                                     </a>

@@ -1,0 +1,19 @@
+import { NextRequest, NextResponse } from "next/server";
+
+export default function middleware(req: NextRequest) {
+  const token = req.cookies.get("x-auth")?.value || "";
+
+  if (!token && !req.nextUrl.pathname.startsWith("/auth/login")) {
+    return NextResponse.redirect(new URL("/auth/login", req.url));
+  }
+
+  if (token && req.nextUrl.pathname.startsWith("/auth/login")) {
+    return NextResponse.redirect(new URL("/admin", req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: [ "/auth/login"],
+};

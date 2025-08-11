@@ -9,9 +9,9 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     <SidebarProvider>
       <div className='flex w-full h-full'>
         <AppSidebar />
-        <div className='flex flex-col w-full gap-6'>
+        <div className='flex flex-col w-full'>
           <Navbar />
-          <div className='w-full px-6'>{children}</div>
+          <div className='w-full px-6 bg-slate-100 pt-4'>{children}</div>
         </div>
       </div>
     </SidebarProvider>

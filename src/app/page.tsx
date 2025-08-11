@@ -1,100 +1,21 @@
-"use client";
+import Link from 'next/link';
 
-import React from "react";
-import Image from "next/image";
-import PieChart from "@/components/fragments/circle-chart";
-import TrafficChart from "@/components/fragments/trafic";
-
-const HomePage = () => {
+export default function Home() {
   return (
-    <div>
-      <section className='bg-[url("/img/BG-Home.png")] bg-no-repeat bg-cover min-h-screen flex flex-col items-center justify-center p-4 gap-20'>
-        <div className="flex items-center gap-2 mb-48">
-          <Image src="/img/logo.png" alt="Lap Uang" width={200} height={200} />
-          <span className="text-black text-lg">x</span>
-          <Image src="/img/SMK.png" alt="Mitra" width={80} height={80} />
+    <main className="min-h-screen bg-gradient-to-br from-sky-100 to-blue-200 flex items-center justify-center px-4">
+      <div className="max-w-2xl w-full text-center space-y-8 bg-white rounded-3xl shadow-xl p-10 animate-fade-in">
+        <h1 className="text-4xl font-bold text-blue-800">Selamat Datang 👋</h1>
+        <p className="text-gray-600 text-lg">
+          Project ini adalah contoh aplikasi Next.js yang menggunakan Tailwind CSS untuk styling dan Formik untuk pengelolaan form. Anda dapat melakukan login, register, dan verifikasi email.
+        </p>
+        <div className="flex justify-center gap-6 mt-6">
+          <Link href="/auth/login">
+            <button className="hover:bg-white border bg-blue-600 text-white border-blue-600 hover:text-blue-600 w-32 h-10  rounded-full  transition">
+              Login
+            </button>
+          </Link>
         </div>
-        <section className="flex flex-wrap justify-center gap-14">
-          <div
-            className="relative w-72 h-80 rounded-xl shadow-lg p-4 overflow-hidden text-white font-semibold transition-transform duration-300 hover:scale-105"
-            style={{
-              background:
-                "linear-gradient(to bottom left, #FF5F48 0%, #FEB676 100%)",
-            }}
-          >
-            <span className="text-3xl font-bold">Dashboard</span>
-            <Image
-              src="/img/Koran.png"
-              alt="Dashboard"
-              width={250}
-              height={250}
-              className="absolute bottom-[-60px] right-[-50px]"
-            />
-          </div>
-
-          <div
-            className="relative w-72 h-80 rounded-xl shadow-lg p-4 overflow-hidden text-white font-semibold transition-transform duration-300 hover:scale-105"
-            style={{
-              background:
-                "linear-gradient(to bottom left, #006971 0%, #94E9B8 100%)",
-            }}
-          >
-            <span className="text-3xl font-bold">Pengaturan</span>
-            <Image
-              src="/img/Pengaturan.png"
-              alt="Pengaturan"
-              width={240}
-              height={240}
-              className="absolute bottom-[-70px] right-[-60px]"
-            />
-          </div>
-
-          <div
-            className="relative w-72 h-80 rounded-xl shadow-lg p-4 overflow-hidden text-white font-semibold transition-transform duration-300 hover:scale-105"
-            style={{
-              background:
-                "linear-gradient(to bottom left, #D1A2FE 0%, #94E9B8 100%)",
-            }}
-          >
-            <span className="text-3xl font-bold">Pengaturan</span>
-            <Image
-              src="/img/Pengaturan.png"
-              alt="Pengaturan"
-              width={240}
-              height={240}
-              className="absolute bottom-[-70px] right-[-60px]"
-            />
-          </div>
-
-          <div
-            className="relative w-72 h-72 rounded-xl shadow-lg p-4 overflow-hidden text-white font-semibold transition-transform duration-300 hover:scale-105"
-            style={{
-              background:
-                "linear-gradient(to bottom left, #FE5B88 0%, #FFB3B4 100%)",
-            }}
-          >
-            <span className="text-3xl font-bold">Log Out</span>
-            <Image
-              src="/img/logout.png"
-              alt="Log Out"
-              width={200}
-              height={200}
-              className="absolute right-[-10px]"
-            />
-          </div>
-        </section>
-        <section className="w-full min-h-screen flex justify-center items-center">
-          <div className="flex flex-col justify-center items-center gap-5 w-[90%]">
-            <h2 className="text-2xl font-bold self-start">Laporan Keuangan</h2>
-            <div className="flex flex-row gap-20">
-              <PieChart />
-              <TrafficChart />
-            </div>
-          </div>
-        </section>
-      </section>
-    </div>
+      </div>
+    </main>
   );
-};
-
-export default HomePage;
+}
