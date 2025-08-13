@@ -132,7 +132,7 @@ export function generateMenuDashboard({
         {
           name: "Ganti Password",
           icon: <KeyRound className="mr-2" size={16} />,
-          link: "dashboard/ganti-password",
+          link: "/dashboard/pengaturan_sistem/ganti_password",
         },
       ],
     },
