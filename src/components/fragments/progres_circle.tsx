@@ -59,7 +59,7 @@ export const CircleProgress: FC<CircleProgressProps> = ({
         />
       </svg>
       <div
-        className="absolute font-semibold text-gray-800 dark:text-white"
+        className="absolute font-semibold text-gray dark:text-BLACK"
         style={{ fontSize: pixelSize / 4 }}
       >
         {label ?? `${value}%`}

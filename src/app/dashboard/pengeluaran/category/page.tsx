@@ -1,114 +1,181 @@
-// app/jenis-pengeluaran/page.tsx
-"use client";
+'use client'
 
-import { useState } from "react";
+import { Wallet, SquarePen, Trash2 } from 'lucide-react'
+import React, { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 
-interface Entry {
-  jenis: string;
-  anggaran: number;
-}
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table'
+import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
+import { viewPengeluaran } from '@/data/view-pengeluaran'
+import { Button } from '@/components/ui/button'
+import CardInformation from '@/components/fragments/dashboard/card-information'
+import Link from 'next/link'
 
-export default function JenisPengeluaranPage() {
-  const [entries, setEntries] = useState<Entry[]>([
-    { jenis: "Listrik", anggaran: 3231000000 },
-    { jenis: "Muhharom", anggaran: 3231000000 },
-    { jenis: "HSN", anggaran: 3231000000 },
-    { jenis: "Akhirusannah", anggaran: 3231000000 },
-    { jenis: "Ulangan", anggaran: 3231000000 },
-  ]);
+const LihatSemuaPengeluaran = () => {
+  const [showFilter, setShowFilter] = useState(false)
+  const [showCount, setShowCount] = useState(10)
+  const [filterJenis, setFilterJenis] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
-  const total = entries.reduce((sum, e) => sum + e.anggaran, 0);
+  // Filter data sesuai search dan jenis pengeluaran
+  const filteredData = viewPengeluaran
+    .filter(
+      p =>
+        p.deskripsi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.jenisPengeluaran.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(p => (filterJenis ? p.jenisPengeluaran === filterJenis : true))
 
-  const handleAdd = () => {
-    setEntries([...entries, { jenis: "", anggaran: 0 }]);
-  };
-
-  const handleChange = (index: number, field: keyof Entry, value: string) => {
-    const newEntries = [...entries];
-    if (field === "anggaran") {
-      newEntries[index][field] = Number(value.replace(/\D/g, ""));
-    } else {
-      newEntries[index][field] = value;
-    }
-    setEntries(newEntries);
-  };
+  const handleDelete = () => {
+    alert('delete pengeluaran berjalan')
+  }
 
   const formatRupiah = (num: number) =>
-    num.toLocaleString("id-ID");
+    'Rp ' + num.toLocaleString('id-ID')
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-gray-50 min-h-screen">
-      {/* Card */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b">
-          <div className="flex items-center gap-3">
-            <div className="bg-green-100 p-2 rounded-lg">
-              💰
-            </div>
-            <h1 className="text-2xl font-bold">Jenis Pengeluaran</h1>
-          </div>
-          <button className="px-5 py-2 rounded-lg border border-green-600 text-green-700 hover:bg-green-50 transition">
-            Simpan
-          </button>
-        </div>
+    <section className='flex flex-col gap-10 w-full'>
+      {/* Card Info */}
+      <section className='grid grid-cols-2 gap-4'>
+        <CardInformation
+          color={'blue'}
+          title={'Total Pengeluaran'}
+          value={viewPengeluaran.length}
+          icon={<Wallet size={32} className='text-blue-500' />}
+        />
+        <CardInformation
+          color={'green'}
+          title={'Total Ditampilkan'}
+          value={filteredData.slice(0, showCount).length}
+          icon={<Wallet size={32} className='text-green-500' />}
+        />
+      </section>
 
-        {/* Info */}
-        <div className="px-6 py-4 text-sm text-gray-600 bg-gray-50 border-b">
-          Ubah atau tambahkan entri ke daftar ini. Cukup ketik entri yang ada atau tambahkan entri baru di bawah. Jangan lupa klik <b>Simpan</b>!
-        </div>
+      {/* Search dan Filter */}
+      <section className='w-full flex flex-col gap-6 h-full pb-6'>
+        <SearchDataTable
+          type='normal'
+          title={'Manajemen Pengeluaran'}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          setShowFilter={setShowFilter}
+          setShowCount={setShowCount}
+        />
 
         {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full border-separate border-spacing-0">
-            <thead>
-              <tr className="bg-green-50">
-                <th className="p-3 text-left text-gray-700 border-b">Jenis Pengeluaran</th>
-                <th className="p-3 text-right text-gray-700 border-b">Anggaran Setahun</th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry, index) => (
-                <tr
-                  key={index}
-                  className="hover:bg-gray-50 transition"
-                >
-                  <td className="p-3 border-b">
-                    <input
-                      type="text"
-                      value={entry.jenis}
-                      onChange={(e) => handleChange(index, "jenis", e.target.value)}
-                      className="w-full border-b border-transparent focus:border-green-500 outline-none bg-transparent"
-                    />
-                  </td>
-                  <td className="p-3 border-b text-right">
-                    <input
-                      type="text"
-                      value={formatRupiah(entry.anggaran)}
-                      onChange={(e) => handleChange(index, "anggaran", e.target.value)}
-                      className="w-full border-b border-transparent focus:border-green-500 outline-none bg-transparent text-right"
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <div className='w-full h-full rounded-xl overflow-hidden bg-white p-1'>
+          <Table className='w-full h-full table-auto bg-white text-gray-700'>
+            <TableHeader className='text-sm font-semibold text-center'>
+              <TableRow>
+                <TableHead className='text-center py-4'>Tanggal</TableHead>
+                <TableHead className='text-center py-4'>Jenis</TableHead>
+                <TableHead className='text-center py-4'>Deskripsi</TableHead>
+                <TableHead className='text-center py-4'>Jumlah</TableHead>
+                <TableHead className='text-center py-4'>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
 
-        {/* Footer */}
-        <div className="p-6 border-t space-y-3">
-          <button
-            onClick={handleAdd}
-            className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
-          >
-            Tambah Entri
-          </button>
-          <div className="flex justify-between font-bold text-lg border-t pt-3">
-            <span>Jumlah</span>
-            <span>{formatRupiah(total)}</span>
-          </div>
+            <TableBody className='text-sm divide-y divide-gray-200 text-center'>
+              {filteredData.slice(0, showCount).map(p => (
+                <TableRow key={p.id}>
+                  <TableCell className='py-4'>{p.tanggal}</TableCell>
+                  <TableCell className='py-4'>{p.jenisPengeluaran}</TableCell>
+                  <TableCell className='py-4'>{p.deskripsi}</TableCell>
+                  <TableCell className='py-4 font-semibold'>
+                    {formatRupiah(p.amount)}
+                  </TableCell>
+                  <TableCell className='flex gap-2 justify-center'>
+                    <Link href={`/dashboard/pengeluaran/update/${p.id}`}>
+                      <Button className='bg-blue-400 text-white'>
+                        <SquarePen />
+                      </Button>
+                    </Link>
+                    <Button
+                      className='bg-red-500 text-white'
+                      onClick={handleDelete}
+                    >
+                      <Trash2 />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
-      </div>
-    </div>
-  );
+      </section>
+
+      {/* Filter Drawer */}
+      <AnimatePresence>
+        {showFilter && (
+          <>
+            <motion.div
+              className='fixed inset-0 bg-black/40 z-40'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setShowFilter(false)}
+            />
+            <motion.div
+              className='fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 shadow-lg p-6 flex flex-col gap-6'
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
+            >
+              <div className='flex items-center justify-between'>
+                <h3 className='text-xl font-semibold'>Filter Pengeluaran</h3>
+                <button
+                  onClick={() => setShowFilter(false)}
+                  className='text-gray-500 hover:text-gray-700 text-sm'
+                >
+                  ✕
+                </button>
+              </div>
+              <div className='flex flex-col gap-4'>
+                <label className='flex flex-col text-sm'>
+                  Jenis Pengeluaran
+                  <select
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                    value={filterJenis}
+                    onChange={e => setFilterJenis(e.target.value)}
+                  >
+                    <option value=''>Semua</option>
+                    {[...new Set(viewPengeluaran.map(p => p.jenisPengeluaran))].map(jenis => (
+                      <option key={jenis} value={jenis}>
+                        {jenis}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+              <div className='mt-auto flex flex-col gap-2'>
+                <button
+                  onClick={() => setFilterJenis('')}
+                  className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
+                >
+                  Reset Filter
+                </button>
+                <button
+                  onClick={() => setShowFilter(false)}
+                  className='w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600'
+                >
+                  Terapkan Filter
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </section>
+  )
 }
+
+export default LihatSemuaPengeluaran
