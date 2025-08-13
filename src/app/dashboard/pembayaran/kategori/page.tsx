@@ -2,7 +2,6 @@
 
 import CardInformation from '@/components/fragments/dashboard/card-information'
 import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
-import SelectLimitData from '@/components/fragments/dashboard/select-dataLimit'
 import { Button } from '@/components/ui/button'
 import {
   Pagination,
@@ -22,6 +21,7 @@ import {
   TableRow
 } from '@/components/ui/table'
 import { kategoriPembayaran } from '@/data/kategori-pembayaran'
+import { useCategoryPaymentModule } from '@/hooks/use-categoryPayment'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
@@ -32,6 +32,10 @@ const KategoriPembayaran = () => {
   const [showCount, setShowCount] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
 
+  const { useGetCategory } = useCategoryPaymentModule()
+  const { data } = useGetCategory()
+  
+  console.log(data);
   return (
     <div className='w-full rounded-xl flex flex-col gap-6 px-2 '>
       <div className='grid grid-cols-2 gap-4 mb-4'>
