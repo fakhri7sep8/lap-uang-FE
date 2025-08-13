@@ -3,7 +3,6 @@
 import { GraduationCap, SquarePen, Trash2, Users } from "lucide-react";
 import React, { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-
 import {
   Table,
   TableBody,
@@ -25,6 +24,8 @@ const LihatSemuaSiswa = () => {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterJurusan, setFilterJurusan] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterAsrama, setFilterAsrama] = useState("");
+  const [filterAngkatan, setFilterAngkatan] = useState("");
 
   // Ambil data siswa dari API
   const { useGetStudent, useDeleteStudent } = useStudentModule();
@@ -34,12 +35,18 @@ const LihatSemuaSiswa = () => {
   const filteredData = siswa
     ?.filter(
       (s: any) =>
-        s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.noInduk.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.asrama.toLowerCase().includes(searchTerm.toLowerCase())
+        s?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s?.InductNumber?.toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        s?.dorm?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
-    .filter((s: any) => (filterJurusan ? s.jurusan === filterJurusan : true));
+    .filter((s: any) => (filterJurusan ? s.major === filterJurusan : true))
+    .filter((s: any) => (filterAsrama ? s.dorm === filterAsrama : true))
+    .filter((s: any) =>
+      filterAngkatan ? String(s.generation) === filterAngkatan : true
+    );
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -68,8 +75,6 @@ const LihatSemuaSiswa = () => {
       });
 
       if (result.isConfirmed) {
-        // Jalankan proses delete di sini, misal panggil API atau hapus data lokal
-        // Contoh simulasi:
         await deleteStudent(id);
         await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
       }
@@ -78,6 +83,7 @@ const LihatSemuaSiswa = () => {
       Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
     }
   };
+
   if (isLoading) {
     return <div className="p-6">Loading data siswa...</div>;
   }
@@ -87,8 +93,9 @@ const LihatSemuaSiswa = () => {
   }
 
   return (
-    <section className="flex flex-col gap-10 w-full ">
-      <section className="grid grid-cols-2 gap-4 ">
+    <section className="flex flex-col gap-10 w-full">
+      {/* Kartu informasi */}
+      <section className="grid grid-cols-2 gap-4">
         <CardInformation
           color={"blue"}
           title={"Total Siswa"}
@@ -103,6 +110,7 @@ const LihatSemuaSiswa = () => {
         />
       </section>
 
+      {/* Table */}
       <section className="w-full flex flex-col gap-6 h-full pb-6">
         <SearchDataTable
           title={"Managemet Siswa"}
@@ -114,31 +122,29 @@ const LihatSemuaSiswa = () => {
 
         <div className="w-full h-full rounded-xl overflow-hidden bg-white p-1">
           <Table className="w-full h-full table-auto bg-white text-gray-700">
-            <TableHeader className=" text-sm font-semibold text-center">
-              <TableRow className="text-center">
-                <TableHead className="text-center py-4">No</TableHead>
-                <TableHead className="text-center py-4">Nama</TableHead>
-                <TableHead className="text-center py-4">No. Induk</TableHead>
-                <TableHead className="text-center py-4">Asrama</TableHead>
-                <TableHead className="text-center py-4">Angkatan</TableHead>
-                <TableHead className="text-center py-4">Status</TableHead>
-                <TableHead className="text-center py-4">Jurusan</TableHead>
-                <TableHead className="text-center py-4">Dibuat</TableHead>
-                <TableHead className="text-center py-4">Aksi</TableHead>
+            <TableHeader className="text-sm font-semibold text-center">
+              <TableRow>
+                <TableHead>No</TableHead>
+                <TableHead>Nama</TableHead>
+                <TableHead>No. Induk</TableHead>
+                <TableHead>Asrama</TableHead>
+                <TableHead>Angkatan</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Jurusan</TableHead>
+                <TableHead>Dibuat</TableHead>
+                <TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody className="text-sm divide-y divide-gray-200 text-center">
-              {filteredData.slice(0, showCount).map((s: any) => (
+              {filteredData.slice(0, showCount).map((s: any, idx: number) => (
                 <TableRow key={s.id}>
-                  <TableCell className=" py-4">
-                    {siswa.indexOf(s) + 1}
-                  </TableCell>
-                  <TableCell className=" py-4 font-medium">{s.name}</TableCell>
-                  <TableCell className=" py-4">{s.InductNumber}</TableCell>
-                  <TableCell className=" py-4">{s.dorm}</TableCell>
-                  <TableCell className=" py-4">{s.generation}</TableCell>
-                  <TableCell className=" py-4">
+                  <TableCell>{idx + 1}</TableCell>
+                  <TableCell className="font-medium">{s.name}</TableCell>
+                  <TableCell>{s.InductNumber}</TableCell>
+                  <TableCell>{s.dorm}</TableCell>
+                  <TableCell>{s.generation}</TableCell>
+                  <TableCell>
                     <span
                       className={`inline-block w-20 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
                         s.status
@@ -147,16 +153,16 @@ const LihatSemuaSiswa = () => {
                       {s.status}
                     </span>
                   </TableCell>
-                  <TableCell className=" py-4">{s.major}</TableCell>
-                  <TableCell className=" py-4">{s.createdAt}</TableCell>
-                  <TableCell className="flex w-full gap-2 items-center">
+                  <TableCell>{s.major}</TableCell>
+                  <TableCell>{s.createdAt}</TableCell>
+                  <TableCell className="flex gap-2 justify-center">
                     <Link href={`/dashboard/siswa/update/${s.id}`}>
-                      <Button className="bg-blue-400 text-white cursor-pointer">
+                      <Button className="bg-blue-400 text-white">
                         <SquarePen />
                       </Button>
                     </Link>
                     <Button
-                      className="bg-red-500 text-white cursor-pointer px-4"
+                      className="bg-red-500 text-white px-4"
                       onClick={() => handleDelete(s.id as string)}
                     >
                       <Trash2 />
@@ -169,6 +175,7 @@ const LihatSemuaSiswa = () => {
         </div>
       </section>
 
+      {/* Filter Drawer */}
       <AnimatePresence>
         {showFilter && (
           <>
@@ -222,12 +229,39 @@ const LihatSemuaSiswa = () => {
                     <option value="RPL">RPL</option>
                   </select>
                 </label>
+                <label className="flex flex-col text-sm">
+                  Asrama
+                  <select
+                    className="mt-1 border border-gray-300 rounded-md px-3 py-2"
+                    value={filterAsrama}
+                    onChange={(e) => setFilterAsrama(e.target.value)}
+                  >
+                    <option value="">Semua</option>
+                    <option value="Asrama 1">Asrama 1</option>
+                    <option value="Asrama 2">Asrama 2</option>
+                    <option value="Asrama 3">Asrama 3</option>
+                    <option value="Asrama 4">Asrama 4</option>
+                    <option value="Asrama 5">Asrama 5</option>
+                  </select>
+                </label>
+                <label className="flex flex-col text-sm">
+                  Angkatan
+                  <input
+                    type="number"
+                    placeholder="Misal: 1, 2, 3"
+                    className="mt-1 border border-gray-300 rounded-md px-3 py-2"
+                    value={filterAngkatan}
+                    onChange={(e) => setFilterAngkatan(e.target.value)}
+                  />
+                </label>
               </div>
               <div className="mt-auto flex flex-col gap-2">
                 <button
                   onClick={() => {
                     setFilterStatus("");
                     setFilterJurusan("");
+                    setFilterAsrama("");
+                    setFilterAngkatan("");
                   }}
                   className="w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
                 >

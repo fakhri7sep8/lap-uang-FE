@@ -11,7 +11,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 const updateSiswaSchema = Yup.object().shape({
   name: Yup.string().required("wajib di isi"),
-  regisNumber: Yup.string().required("wajib di isi"),
+  InductNumber: Yup.string().required("wajib di isi"),
   generation : Yup.number().required("wajib di isi"),
   status : Yup.string().required("wajib di isi"),
   major : Yup.string().required("wajib di isi"),
@@ -27,7 +27,7 @@ const UpdateSiswa = () => {
   const formik = useFormik({
     initialValues: {
       name: dataSiswa?.name || "",
-      regisNumber: dataSiswa?.regisNumber || "",
+      InductNumber: dataSiswa?.InductNumber || "",
       generation: dataSiswa?.generation || 0,
       status: dataSiswa?.status || "",
       major: dataSiswa?.major || "",
@@ -71,9 +71,9 @@ const UpdateSiswa = () => {
               <label className="text-sm font-medium">No Induk</label>
               <Input
                 type="text"
-                defaultValue={dataSiswa?.regisNumber}
+                defaultValue={dataSiswa?.InductNumber}
                 className="w-full border-slate-300"
-                 onChange={(e) => formik.setFieldValue("regisNumber", e.target.value)}
+                 onChange={(e) => formik.setFieldValue("InductNumber", e.target.value)}
               />
             </div>
             <div className="w-1/2">

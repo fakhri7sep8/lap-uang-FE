@@ -1,6 +1,7 @@
 import { axiosClient } from "@/lib/axiosClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useRouter } from "next/navigation";
 
 export const useStudentModule = () => {
   const getStudentData = async () => {
@@ -15,28 +16,31 @@ export const useStudentModule = () => {
     return await axiosClient.put(`/student/update/${id}`, data);
   };
 
-  const deleteStudent = async ( id: string) => {
+  const deleteStudent = async (id: string) => {
     return await axiosClient.delete(`/student/delete/${id}`);
   };
 
   const useCreateStudent = () => {
-  const mutation = useMutation({
-    mutationFn: (data: any) => createStudent(data),
-    onSuccess: (data) => {
-      console.log("Student data created successfully:", data);
-    },
-    onError: (error) => {
-      console.error("Failed to create student data:", error);
-    },
-  });
-  return mutation; // return object lengkap mutation
-};
-
-  const useUpdateStudent = (id:string) => {
-    const mutate = useMutation({
-      mutationFn: (data:any) => updateStudent(data, id),
+    const router = useRouter();
+    const mutation = useMutation({
+      mutationFn: (data: any) => createStudent(data),
       onSuccess: (data) => {
-        alert("berhasil")
+        router.push("/dashboard/siswa/view");
+        console.log("Student data created successfully:", data);
+      },
+      onError: (error) => {
+        console.error("Failed to create student data:", error);
+      },
+    });
+    return mutation; // return object lengkap mutation
+  };
+
+  const useUpdateStudent = (id: string) => {
+    const router = useRouter();
+    const mutate = useMutation({
+      mutationFn: (data: any) => updateStudent(data, id),
+      onSuccess: (data) => {
+        router.push("/dashboard/siswa/view");
       },
       onError: (error) => {
         console.error("Gagal memperbarui data siswa:", error);
@@ -47,7 +51,7 @@ export const useStudentModule = () => {
 
   const useDeleteStudent = () => {
     const mutate = useMutation({
-      mutationFn: (id:string) => deleteStudent(id),
+      mutationFn: (id: string) => deleteStudent(id),
       onSuccess: (data) => {
         console.log("Delete berhasil", data);
       },
@@ -55,7 +59,8 @@ export const useStudentModule = () => {
         console.error("Gagal menghapus data siswa:", error);
       },
     });
-  return { mutate, mutateAsync: mutate.mutateAsync };   };
+    return { mutate, mutateAsync: mutate.mutateAsync };
+  };
 
   const useGetStudent = () => {
     const { isLoading, isError, data } = useQuery({
