@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { link } from "fs";
 import {
   GraduationCap,
   UserPlus,
@@ -72,6 +73,7 @@ export function generateMenuDashboard({
         {
           name: "Data Pembayaran",
           icon: <FileText className="mr-2" size={16} />,
+          link : "/dashboard/pembayaran/view"
         },
       ],
     },
