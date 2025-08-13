@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { GraduationCap, SquarePen, Trash2, Users } from "lucide-react";
@@ -16,9 +17,9 @@ import SearchDataTable from "@/components/fragments/dashboard/search-data-table"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import CardInformation from "@/components/fragments/dashboard/card-information";
-import { useStudentModule } from "@/hook/useStudentModule";
 import Swal from "sweetalert2";
 import { DataPembayaranSiswa } from "@/data/pembayaran";
+import { useStudentModule } from "@/hooks/useStudentModule";
 
 const DataPembayaran = () => {
   const [showFilter, setShowFilter] = useState(false);
@@ -130,8 +131,7 @@ const DataPembayaran = () => {
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           setShowFilter={setShowFilter}
-          setShowCount={setShowCount}
-        />
+          setShowCount={setShowCount} type={"normal"}        />
 
         <div className="w-full h-full rounded-xl overflow-hidden bg-white p-1">
           <Table className="w-full h-full table-auto bg-white text-gray-700">
