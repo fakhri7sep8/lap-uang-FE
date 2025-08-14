@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { GraduationCap, SquarePen, Trash2, Users } from "lucide-react";
@@ -20,6 +19,7 @@ import CardInformation from "@/components/fragments/dashboard/card-information";
 import Swal from "sweetalert2";
 import { DataPembayaranSiswa } from "@/data/pembayaran";
 import { useStudentModule } from "@/hooks/useStudentModule";
+import Loader from "@/components/ui/loader";
 
 const DataPembayaran = () => {
   const [showFilter, setShowFilter] = useState(false);
@@ -93,15 +93,13 @@ const DataPembayaran = () => {
         // Jalankan proses delete di sini, misal panggil API atau hapus data lokal
         // Contoh simulasi:
         await deleteStudent(id);
-        await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
       }
     } catch (error) {
       console.error(error);
-      Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
     }
   };
   if (isLoading) {
-    return <div className="p-6">Loading data siswa...</div>;
+    return <div className="p-6 w-full h-full m-auto"><Loader/></div>;
   }
 
   if (isError) {

@@ -70,7 +70,7 @@ export function AppSidebar () {
   })
 
   return (
-    <Sidebar className={` bg-white transition-all duration-300 ease-in-out `}>
+    <Sidebar className={` bg-white transition-all duration-300 ease-in-out border-r border-slate-200 `}>
       <>
         <SidebarContent>
           <SidebarGroup>
