@@ -2,6 +2,7 @@ import { axiosClient } from "@/lib/axiosClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 export const useStudentModule = () => {
   const getStudentData = async () => {
@@ -25,11 +26,25 @@ export const useStudentModule = () => {
     const mutation = useMutation({
       mutationFn: (data: any) => createStudent(data),
       onSuccess: (data) => {
-        router.push("/dashboard/siswa/view");
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Data siswa berhasil ditambahkan",
+          confirmButtonColor: "#3085d6",
+        }).then(() => {
+          router.push("/dashboard/siswa/view");
+        });
+
         console.log("Student data created successfully:", data);
       },
       onError: (error) => {
-        console.error("Failed to create student data:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: "Terjadi kesalahan saat menambahkan data siswa",
+          confirmButtonColor: "#d33",
+        });
+        console.log("Error creating student data:", error);
       },
     });
     return mutation; // return object lengkap mutation
@@ -40,10 +55,21 @@ export const useStudentModule = () => {
     const mutate = useMutation({
       mutationFn: (data: any) => updateStudent(data, id),
       onSuccess: (data) => {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+          text: "Data siswa berhasil diperbarui",
+          timer: 2000,
+          showConfirmButton: false,
+        });
         router.push("/dashboard/siswa/view");
       },
       onError: (error) => {
-        console.error("Gagal memperbarui data siswa:", error);
+        Swal.fire({
+          icon: "error",
+          title: "Gagal",
+          text: "Gagal memperbarui data siswa",
+        });
       },
     });
     return { mutate };

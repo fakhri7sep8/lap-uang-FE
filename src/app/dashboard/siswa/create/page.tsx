@@ -6,11 +6,21 @@ import { useStudentModule } from "@/hook/useStudentModule";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // pastikan path sesuai
+
 const tambahSiswaSchema = Yup.object().shape({
   name: Yup.string().required("Nama wajib diisi"),
   InductNumber: Yup.string().required("No Induk wajib diisi"),
   dorm: Yup.string().required("Asrama wajib diisi"),
-  generation: Yup.number().required("Angkatan wajib diisi"),
+  generation: Yup.number()
+    .typeError("Angkatan harus berupa angka")
+    .required("Angkatan wajib diisi"),
   major: Yup.string().required("Jurusan wajib diisi"),
   status: Yup.string().required("Status wajib diisi"),
 });
@@ -59,6 +69,37 @@ const TambahSiswa = () => {
     </div>
   );
 
+  const renderSelect = (
+    label: string,
+    name: string,
+    options: string[]
+  ) => (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select
+        value={(formik.values as any)[name]}
+        onValueChange={(value) => formik.setFieldValue(name, value)}
+      >
+        <SelectTrigger className="w-full border-slate-300">
+          <SelectValue placeholder={`Pilih ${label}`} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {formik.touched[name as keyof typeof formik.touched] &&
+        formik.errors[name as keyof typeof formik.errors] && (
+          <p className="text-red-600 text-sm">
+            {formik.errors[name as keyof typeof formik.errors] as string}
+          </p>
+        )}
+    </div>
+  );
+
   return (
     <section className="w-full bg-white rounded-xl p-8 flex flex-col gap-8">
       <h1 className="font-semibold text-2xl">Tambah Siswa</h1>
@@ -69,8 +110,15 @@ const TambahSiswa = () => {
           {renderField("No Induk", "InductNumber")}
           {renderField("Angkatan", "generation")}
           {renderField("Asrama", "dorm")}
-          {renderField("Jurusan", "major")}
-          {renderField("Status", "status")}
+          {renderSelect("Jurusan", "major", [
+            "RPL",
+            "TKJ",
+          ])}
+          {renderSelect("Status", "status", [
+            "ACTIVE",
+            "GRADUATION",
+            "OUT",
+          ])}
         </div>
 
         <div className="flex flex-row gap-4 justify-end mt-4">
