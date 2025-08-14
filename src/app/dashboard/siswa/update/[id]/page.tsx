@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useStudentModule } from "@/hook/useStudentModule";
+import { useStudentModule } from "@/hooks/useStudentModule";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import {
