@@ -1,68 +1,77 @@
-'use client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
 
-import React from 'react';
-import ReactECharts from 'echarts-for-react';
+import React from 'react'
+import ReactECharts from 'echarts-for-react'
 
-const BillingPieChart = () => {
-  // Dummy data (nanti tinggal kamu ganti pake realtime/database)
-  const totalTagihan = 120_750_000;
-  const tercapai = 23_200_000;
+// Dummy data, bisa diganti dari API/database
 
+interface typedata {
+  name: string;
+  value: number;
+}
+
+const DynamicPieChart = ({ data }: { data: typedata[]}) => {
   const option = {
     tooltip: {
       trigger: 'item',
-      formatter: '{b}<br/>Rp.{c}',
+      formatter: (params: typedata) => {
+        const valueFormatted = `Rp.${params.value.toLocaleString('id-ID')}`
+        return `<strong>${params.name}</strong><br/>${valueFormatted}`
+      }
     },
     legend: {
-      show: true,
-      bottom: 10,
+      bottom: 0,
       left: 'center',
-      data: ['Tagihan total', 'Tercapai'],
       textStyle: {
-        color: '#333',
-        fontSize: 12,
-      },
+        color: '#888'
+      }
     },
     series: [
       {
+        name: 'Data',
         type: 'pie',
-        radius: '65%',
+        radius: '60%',
         center: ['50%', '45%'],
+        data: data,
         label: {
-          show: true,
-          formatter: '{b}\nRp.{c}',
-          fontSize: 12,
-          color: '#666',
-          lineHeight: 20,
+          formatter: (params: typedata) => {
+            const valueFormatted = `Rp.${params.value.toLocaleString('id-ID')}`
+            return `{b|${params.name}}\n{v|${valueFormatted}}`
+          },
+          rich: {
+            b: {
+              fontSize: 12,
+              color: '#666'
+            },
+            v: {
+              fontSize: 13,
+              color: '#68C3A3',
+              fontWeight: 'bold'
+            }
+          }
         },
         labelLine: {
           length: 15,
-          length2: 10,
-          smooth: true,
+          length2: 20,
+          smooth: true
         },
-        data: [
-          {
-            value: totalTagihan,
-            name: 'Tagihan total',
-            itemStyle: { color: '#6BD6A9' },
-          },
-          {
-            value: tercapai,
-            name: 'Tercapai',
-            itemStyle: { color: '#8B7DF7' },
-          },
-        ],
-      },
-    ],
-  };
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 20,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.2)'
+          }
+        }
+      }
+    ]
+  }
 
   return (
-    <div className="bg-white rounded-xl shadow p-4 w-full">
-      <div className="w-full h-[320px] md:h-[388px]">
-        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />
-      </div>
+    <div style={{ width: '100%', height: 400 }}>
+      <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />
     </div>
-  );
-};
+  )
+}
 
-export default BillingPieChart;
+export default DynamicPieChart

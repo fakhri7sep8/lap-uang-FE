@@ -6,7 +6,7 @@ import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { useAuthModule } from "@/hook/useAuthModule";
+import { useAuthModule } from "@/hooks/useAuthModule";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Email tidak valid").required("Email wajib diisi"),

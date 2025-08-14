@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { link } from "fs";
 import {
   GraduationCap,
   UserPlus,
@@ -62,16 +63,17 @@ export function generateMenuDashboard({
         {
           name: "Kategori Pembayaran",
           icon: <Banknote className="mr-2" size={16} />,
-          link: "/dashboard/pembayaran/kategori"
+          link: "/dashboard/pembayaran/kategori",
         },
         {
           name: "Input Pembayaran",
           icon: <History className="mr-2" size={16} />,
-          link: "/dashboard/pembayaran/riwayat-pembayaran",
+          link: "/dashboard/pembayaran/input",
         },
         {
           name: "Data Pembayaran",
           icon: <FileText className="mr-2" size={16} />,
+          link: "/dashboard/pembayaran/view",
         },
       ],
     },
@@ -84,14 +86,18 @@ export function generateMenuDashboard({
         {
           name: "Input Pengeluaran",
           icon: <Banknote className="mr-2" size={16} />,
+          link: "/dashboard/pengeluaran/create",
         },
         {
           name: "Riwayat Pengeluaran",
           icon: <History className="mr-2" size={16} />,
+          link: "/dashboard/pengeluaran/view",
         },
         {
           name: "Kategori Pengeluaran",
           icon: <Tags className="mr-2" size={16} />,
+                    link: "/dashboard/pengeluaran/category",
+
         },
       ],
     },
@@ -145,7 +151,7 @@ export function generateMenuDashboard({
         {
           name: "Tutorial",
           icon: <BookText className="mr-2" size={16} />,
-          link: "/dashboard/bantuan/tutorial",
+          link: "/dashboard/tutorial",
         },
         {
           name: "Tentang Aplikasi",

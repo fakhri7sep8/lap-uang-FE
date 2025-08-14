@@ -1,125 +1,99 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-'use client';
+"use client";
 
-import React from 'react';
-import ReactECharts from 'echarts-for-react';
-import * as echarts from 'echarts/core';
-import {
-  TooltipComponent,
-  GridComponent,
-  DatasetComponent,
-  LegendComponent,
-  DataZoomComponent
-} from 'echarts/components';
-import { BarChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
-import type { EChartsOption } from 'echarts/types/dist/shared'; 
+import React from "react";
+import ReactECharts from "echarts-for-react";
 
-// Registrasi komponen ECharts
-echarts.use([
-  TooltipComponent,
-  GridComponent,
-  DatasetComponent,
-  LegendComponent,
-  DataZoomComponent,
-  BarChart,
-  CanvasRenderer
-]);
+const formatRupiah = (value: number) =>
+  new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value);
 
-const MonthlyFinanceChart = () => {
-  const monthCount = 12;
-  const categoryNames = ['Pemasukan', 'Pengeluaran', 'Saldo Awal', 'Saldo Akhir'];
-  const categoryCount = categoryNames.length;
+const MonthlyGroupedBarChart = ({
+  categories,
+  monthlyData,
+}: {
+  categories: string[];
+  monthlyData: { [month: string]: number[] };
+}) => {
+  const months = Object.keys(monthlyData);
 
-  const xAxisData: string[] = [];
-  const legendData: string[] = [];
-  const dataList: number[][] = [];
+  const source = categories.map((cat, i) => {
+    const row: Record<string, string | number> = { category: cat };
+    months.forEach((month) => {
+      row[month] = monthlyData[month][i];
+    });
+    return row;
+  });
 
-  const monthNames = [
-    'Januari',
-    'Februari',
-    'Maret',
-    'April',
-    'Mei',
-    'Juni',
-    'Juli',
-    'Agustus',
-    'September',
-    'Oktober',
-    'November',
-    'Desember'
-  ];
-
-  for (let i = 0; i < monthCount; i++) {
-    legendData.push(monthNames[i]);
-    dataList.push([]);
-  }
-
-  xAxisData.push(...categoryNames);
-
-  let currentOverallBalance = 5000000;
-
-  for (let monthIdx = 0; monthIdx < monthCount; monthIdx++) {
-    const initialBalanceThisMonth = currentOverallBalance;
-    const monthlyIncome = Number((Math.random() * 8000000 + 2000000).toFixed(2));
-    const monthlyExpenses = Number((Math.random() * 5000000 + 1000000).toFixed(2));
-    const finalBalanceThisMonth = initialBalanceThisMonth + monthlyIncome - monthlyExpenses;
-    currentOverallBalance = finalBalanceThisMonth;
-
-    dataList[monthIdx].push(
-      monthlyIncome,
-      monthlyExpenses,
-      initialBalanceThisMonth,
-      finalBalanceThisMonth
-    );
-  }
-
-  const option: EChartsOption = {
-    tooltip: {
-      trigger: 'axis',
-      axisPointer: { type: 'shadow' },
-      formatter: function (params) {
-        // params can be an array or object depending on the trigger
-        const paramArr = Array.isArray(params) ? params : [params];
-        let tooltipContent = `Bulan: ${paramArr[0].seriesName}<br/>`;
-        paramArr.forEach((param) => {
-          tooltipContent += `
-            ${param.marker} ${param.name}: <span style="font-weight: bold;">Rp${echarts.format.addCommas(param.value as any) }</span><br/>
-          `;
-        });
-        return tooltipContent;
-      }
-    },
+  const option = {
     legend: {
-      data: legendData
+      orient: "horizontal", // atau 'vertical'
+      top: "top",
+      itemWidth: 14, // lebar kotak
+      itemHeight: 14, // tinggi kotak
+      icon: "rect", // bentuk kotak
+      textStyle: {
+        fontSize: 12,
+        color: "#333", // warna teks
+      },
+      itemGap: 20,
     },
-    dataZoom: [
-      { type: 'slider', start: 0, end: 100 },
-      { type: 'inside', start: 0, end: 100 }
-    ],
+
+    tooltip: {
+      trigger: "axis",
+      axisPointer: { type: "shadow" },
+      valueFormatter: formatRupiah,
+      backgroundColor: "#ffffff",
+      borderColor: "#ccc",
+      borderWidth: 1,
+      textStyle: {
+        color: "#000",
+        fontSize: 12,
+        fontWeight: "normal",
+      },
+      padding: 10,
+      extraCssText:
+        "box-shadow: 0 0 8px rgba(0, 0, 0, 0.1); border-radius: 6px;",
+    },
+    dataset: {
+      dimensions: ["category", ...months],
+      source,
+    },
     xAxis: {
-      type: 'category',
-      data: xAxisData,
-      axisLabel: {
-        interval: 0
-      }
+      type: "category",
+      axisLabel: { fontWeight: "bold" },
+      splitLine: {
+        show: true,
+        lineStyle: {
+          color: "#e0e0e0",
+          type: "dashed",
+        },
+      },
     },
     yAxis: {
-      type: 'value',
       axisLabel: {
-        formatter: 'Rp{value}'
-      }
+        formatter: (value: number) => formatRupiah(value),
+      },
+      splitLine: {
+        show: true,
+        lineStyle: {
+          color: "#e0e0e0",
+          type: "dashed",
+        },
+      },
     },
-    series: dataList.map((dataForMonth, monthIndex) => ({
-      type: 'bar',
-      animation: false,
-      name: monthNames[monthIndex],
-      itemStyle: { opacity: 0.7 },
-      data: dataForMonth
-    }))
+    series: months.map(() => ({ type: "bar" })),
+    grid: {
+      top: 50,
+      bottom: 40,
+      left: 120,
+      right: 40,
+    },
   };
 
-  return <ReactECharts option={option} style={{ height: 500 }} />;
+  return <ReactECharts option={option} style={{ height: 400 }} />;
 };
 
-export default MonthlyFinanceChart;
+export default MonthlyGroupedBarChart;

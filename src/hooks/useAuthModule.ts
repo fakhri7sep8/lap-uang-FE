@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { axiosClient } from "@/lib/axiosClient";
 import { useMutation } from "@tanstack/react-query";
 import Swal from "sweetalert2";

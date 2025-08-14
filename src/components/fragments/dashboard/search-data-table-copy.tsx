@@ -31,7 +31,7 @@ const SearchDataTable = ({
             <Search className='' />
             <Input
               type='text'
-              placeholder='Cari nama / no. Induk / asrama...'
+              placeholder='Cari deskripsi / tanggal / kode pembayaran...'
               className='w-full h-full outline-none focus-visible:outline-none ring-0 focus:ring-0 border-none shadow-none'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -70,7 +70,7 @@ const SearchDataTable = ({
             <Search className='' />
             <Input
               type='text'
-              placeholder='Cari nama / no. Induk / asrama...'
+              placeholder='Cari deskripsi / tanggal / kode pembayaran...'
               className='w-full h-full outline-none focus-visible:outline-none ring-0 focus:ring-0 border-none shadow-none'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
