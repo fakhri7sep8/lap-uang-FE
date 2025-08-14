@@ -35,7 +35,7 @@ const KategoriPembayaran = () => {
   const { useGetCategory } = useCategoryPaymentModule()
   const { data } = useGetCategory()
   
-  console.log(data);
+  console.log(data)
   return (
     <div className='w-full rounded-xl flex flex-col gap-6 px-2 '>
       <div className='grid grid-cols-2 gap-4 mb-4'>

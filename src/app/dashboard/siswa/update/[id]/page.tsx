@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useParams } from "next/navigation";
@@ -6,9 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { CalendarDays } from "lucide-react";
-import { useStudentModule } from "@/hook/useStudentModule";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useStudentModule } from "@/hooks/useStudentModule";
 const updateSiswaSchema = Yup.object().shape({
   name: Yup.string().required("wajib di isi"),
   InductNumber: Yup.string().required("wajib di isi"),

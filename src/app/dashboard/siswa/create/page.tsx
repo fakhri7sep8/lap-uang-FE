@@ -2,9 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useStudentModule } from "@/hook/useStudentModule";
+
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { useStudentModule } from "@/hooks/useStudentModule";
 
 const tambahSiswaSchema = Yup.object().shape({
   name: Yup.string().required("Nama wajib diisi"),

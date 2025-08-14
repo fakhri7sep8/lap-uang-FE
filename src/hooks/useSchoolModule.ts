@@ -1,6 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { axiosClient } from "@/lib/axiosClient";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 export const useSchoolModule = () => {
   const getSchoolData = async () => {
