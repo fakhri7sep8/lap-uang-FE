@@ -36,26 +36,24 @@ const DataPembayaran = () => {
   const { useGetStudent, useDeleteStudent } = useStudentModule()
   const { useGetCategory, useDeleteCategory } = useCategoryPaymentModule()
   const { data: kategori, isLoading, isError } = useGetCategory()
-  const {mutate:deleteCategory } = useDeleteCategory()
+  const { mutate: deleteCategory } = useDeleteCategory()
 
   const filteredData = kategori?.filter((s: any) =>
-      searchTerm
-        ? s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          s.TA
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-        : true
-    )
-    // Filter kategori pembayaran
-    // .filter((s: any) =>
-    //   filterKategori ? s.kategoriPembayaran === filterKategori : true
-    // )
-    // // Filter angkatan (tahun)
-    // .filter((s: any) => (filterAngkatan ? s.angkatan === filterAngkatan : true))
-    // // Filter status "Lunas" atau "Belum Lunas"
-    // .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
-    // // Filter jurusan "RPL" atau "TKJ"
-    // .filter((s: any) => (filterJurusan ? s.jurusan === filterJurusan : true))
+    searchTerm
+      ? s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.TA.toLowerCase().includes(searchTerm.toLowerCase())
+      : true
+  )
+  // Filter kategori pembayaran
+  // .filter((s: any) =>
+  //   filterKategori ? s.kategoriPembayaran === filterKategori : true
+  // )
+  // // Filter angkatan (tahun)
+  // .filter((s: any) => (filterAngkatan ? s.angkatan === filterAngkatan : true))
+  // // Filter status "Lunas" atau "Belum Lunas"
+  // .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
+  // // Filter jurusan "RPL" atau "TKJ"
+  // .filter((s: any) => (filterJurusan ? s.jurusan === filterJurusan : true))
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -92,21 +90,19 @@ const DataPembayaran = () => {
       console.error(error)
     }
   }
- if (isLoading) {
-  return (
-   <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
-  <Loader />
-</div>
-
-  )
-}
-
+  if (isLoading) {
+    return (
+      <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
+        <Loader />
+      </div>
+    )
+  }
 
   if (isError) {
     return <div className='p-6 text-red-500'>Gagal memuat data siswa.</div>
   }
 
-  console.log(kategori);
+  console.log(kategori)
 
   return (
     <section className='flex flex-col gap-10 w-full '>
@@ -141,12 +137,14 @@ const DataPembayaran = () => {
             <TableHeader className=' text-sm font-semibold text-center'>
               <TableRow className='text-center'>
                 <TableHead className='text-center py-4'>No</TableHead>
-                <TableHead className='text-center py-4'>Nama Kategori</TableHead>
                 <TableHead className='text-center py-4'>
-                  semester
+                  Nama Kategori
                 </TableHead>
+                <TableHead className='text-center py-4'>semester</TableHead>
                 <TableHead className='text-center py-4'>Tahun Ajaran</TableHead>
-                <TableHead className='text-center py-4'>Tipe Kategori</TableHead>
+                <TableHead className='text-center py-4'>
+                  Tipe Kategori
+                </TableHead>
                 <TableHead className='text-center py-4 w-24'>Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -156,11 +154,19 @@ const DataPembayaran = () => {
                 <TableRow key={s.id}>
                   <TableCell className=' py-4 font-medium'>{i + 1}</TableCell>
                   <TableCell className=' py-4 font-medium'>{s.name}</TableCell>
-                  <TableCell className=' py-4 font-medium'>{s.semester}</TableCell>
+                  <TableCell className=' py-4 font-medium'>
+                    {s.semester}
+                  </TableCell>
                   <TableCell className=' py-4 font-medium'>{s.TA}</TableCell>
-                  <TableCell className=' py-4 font-medium'><Badge className='bg-purple-200 py-1 rounded-full px-4 text-purple-500'>{s.type}</Badge></TableCell>
+                  <TableCell className=' py-4 font-medium'>
+                    <Badge className='bg-purple-200 py-1 rounded-full px-4 text-purple-500'>
+                      {s.type}
+                    </Badge>
+                  </TableCell>
                   <TableCell className='flex gap-2 items-center '>
-                    <Link href={`/dashboard/pembayaran/kategori/update/${s.id}`}>
+                    <Link
+                      href={`/dashboard/pembayaran/kategori/update/${s.id}`}
+                    >
                       <Button className='bg-blue-400 text-white cursor-pointer'>
                         <SquarePen />
                       </Button>
@@ -282,8 +288,6 @@ const DataPembayaran = () => {
         )}
       </AnimatePresence>
     </section>
-   
-
   )
 }
 
