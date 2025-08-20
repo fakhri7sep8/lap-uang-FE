@@ -1,171 +1,143 @@
 "use client";
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CalendarDays } from "lucide-react";
+
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { useStudentModule } from "@/hooks/useStudentModule";
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"; // pastikan path sesuai
+
+const tambahSiswaSchema = Yup.object().shape({
+  name: Yup.string().required("Nama wajib diisi"),
+  InductNumber: Yup.string().required("No Induk wajib diisi"),
+  dorm: Yup.string().required("Asrama wajib diisi"),
+  generation: Yup.number()
+    .typeError("Angkatan harus berupa angka")
+    .required("Angkatan wajib diisi"),
+  major: Yup.string().required("Jurusan wajib diisi"),
+  status: Yup.string().required("Status wajib diisi"),
+});
 
 const TambahSiswa = () => {
-  const [formData, setFormData] = useState({
-    nama: "",
-    alamat: "",
-    noInduk: "",
-    jenisKelamin: "",
-    tanggalLahir: "",
-    angkatan: "",
-    jurusan: "",
-    noTelp: "",
-    asrama: "",
-    status: "",
-    spp: "",
+  const { useCreateStudent } = useStudentModule();
+  const { mutate } = useCreateStudent();
+
+  const formik = useFormik({
+    initialValues: {
+      name: "",
+      InductNumber: "",
+      dorm: "",
+      generation: "",
+      major: "",
+      status: "",
+    },
+    validationSchema: tambahSiswaSchema,
+    onSubmit: (values, { resetForm }) => {
+      const payload = {
+        ...values,
+        generation: Number(values.generation),
+      };
+      mutate(payload);
+      resetForm();
+    },
   });
 
-  const handleChange = (field: string, value: string) => {
-    setFormData({ ...formData, [field]: value });
-  };
+  const renderField = (label: string, name: string, type = "text") => (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Input
+        type={type}
+        name={name}
+        value={(formik.values as any)[name]}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        className="w-full border-slate-300"
+      />
+      {formik.touched[name as keyof typeof formik.touched] &&
+        formik.errors[name as keyof typeof formik.errors] && (
+          <p className="text-red-600 text-sm">
+            {formik.errors[name as keyof typeof formik.errors] as string}
+          </p>
+        )}
+    </div>
+  );
 
-  const handleSubmit = () => {
-    console.log("Data siswa disubmit:", formData);
-    // Tambahkan logic simpan ke backend/API di sini
-  };
+  const renderSelect = (
+    label: string,
+    name: string,
+    options: string[]
+  ) => (
+    <div className="flex flex-col gap-1">
+      <label className="text-sm font-medium">{label}</label>
+      <Select
+        value={(formik.values as any)[name]}
+        onValueChange={(value) => formik.setFieldValue(name, value)}
+      >
+        <SelectTrigger className="w-full border-slate-300">
+          <SelectValue placeholder={`Pilih ${label}`} />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {formik.touched[name as keyof typeof formik.touched] &&
+        formik.errors[name as keyof typeof formik.errors] && (
+          <p className="text-red-600 text-sm">
+            {formik.errors[name as keyof typeof formik.errors] as string}
+          </p>
+        )}
+    </div>
+  );
 
   return (
-    <section className="w-full bg-white rounded-xl h-full p-8 text-2xl flex flex-col gap-9">
+    <section className="w-full bg-white rounded-xl p-8 flex flex-col gap-8">
       <h1 className="font-semibold text-2xl">Tambah Siswa</h1>
-      <div className="w-full flex flex-col gap-4">
-        <div className="flex flex-col gap-4">
-          <div>
-            <label className="text-sm font-medium">Nama Siswa</label>
-            <Input
-              type="text"
-              value={formData.nama}
-              onChange={(e) => handleChange("nama", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium">Alamat</label>
-            <Input
-              type="text"
-              value={formData.alamat}
-              onChange={(e) => handleChange("alamat", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
+
+      <form onSubmit={formik.handleSubmit} className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {renderField("Nama Siswa", "name")}
+          {renderField("No Induk", "InductNumber")}
+          {renderField("Angkatan", "generation")}
+          {renderField("Asrama", "dorm")}
+          {renderSelect("Jurusan", "major", [
+            "RPL",
+            "TKJ",
+          ])}
+          {renderSelect("Status", "status", [
+            "ACTIVE",
+            "GRADUATION",
+            "OUT",
+          ])}
         </div>
 
-        <div className="flex flex-row gap-6 w-full">
-          <div className="w-1/2">
-            <label className="text-sm font-medium">No Induk</label>
-            <Input
-              type="text"
-              value={formData.noInduk}
-              onChange={(e) => handleChange("noInduk", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
-          <div className="w-1/2">
-            <label className="text-sm font-medium">Jenis Kelamin</label>
-            <Input
-              type="text"
-              value={formData.jenisKelamin}
-              onChange={(e) => handleChange("jenisKelamin", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
+        <div className="flex flex-row gap-4 justify-end mt-4">
+          <Button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-600 text-white shadow-md"
+          >
+            Tambah
+          </Button>
+          <Button
+            type="button"
+            onClick={() => formik.resetForm()}
+            className="bg-red-500 hover:bg-red-600 text-white shadow-md"
+          >
+            Batal
+          </Button>
         </div>
-
-        <div className="flex flex-row gap-6 w-full">
-          <div className="w-1/2">
-            <label className="text-sm font-medium">Tanggal Lahir</label>
-            <div className="relative mt-1">
-              <Input
-                type="date"
-                value={formData.tanggalLahir}
-                onChange={(e) => handleChange("tanggalLahir", e.target.value)}
-                className="w-full pr-10 border-slate-300"
-              />
-              <CalendarDays
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"
-                size={18}
-              />
-            </div>
-          </div>
-          <div className="w-1/2">
-            <label className="text-sm font-medium">Angkatan</label>
-            <Input
-              type="text"
-              value={formData.angkatan}
-              onChange={(e) => handleChange("angkatan", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-row gap-6 w-full">
-          <div className="w-1/2">
-            <label className="text-sm font-medium">Jurusan</label>
-            <Input
-              type="text"
-              value={formData.jurusan}
-              onChange={(e) => handleChange("jurusan", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
-          <div className="w-1/2">
-            <label className="text-sm font-medium">No Telp</label>
-            <Input
-              type="text"
-              value={formData.noTelp}
-              onChange={(e) => handleChange("noTelp", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-row gap-6 w-full">
-          <div className="w-1/2">
-            <label className="text-sm font-medium">Asrama</label>
-            <Input
-              type="text"
-              value={formData.asrama}
-              onChange={(e) => handleChange("asrama", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
-          <div className="w-1/2">
-            <label className="text-sm font-medium">Status</label>
-            <Input
-              type="text"
-              value={formData.status}
-              onChange={(e) => handleChange("status", e.target.value)}
-              className="w-full border-slate-300"
-            />
-          </div>
-        </div>
-
-        <div className="w-full">
-          <label className="text-sm font-medium">SPP</label>
-          <Input
-            type="number"
-            value={formData.spp}
-            onChange={(e) => handleChange("spp", e.target.value)}
-            className="w-full border-slate-300"
-          />
-        </div>
-      </div>
-
-      <div className="flex flex-row gap-5 justify-end">
-        <Button
-          onClick={handleSubmit}
-          className="bg-blue-500 hover:bg-blue-600 text-white shadow-md transition-colors duration-200"
-        >
-          Tambah
-        </Button>
-        <Button className="bg-red-500 hover:bg-red-600 text-white shadow-md transition-colors duration-200">
-          Batal
-        </Button>
-      </div>
+      </form>
     </section>
   );
 };

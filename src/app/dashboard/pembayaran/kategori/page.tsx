@@ -1,18 +1,9 @@
 'use client'
 
-import CardInformation from '@/components/fragments/dashboard/card-information'
-import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
-import SelectLimitData from '@/components/fragments/dashboard/select-dataLimit'
-import { Button } from '@/components/ui/button'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious
-} from '@/components/ui/pagination'
+import { GraduationCap, SquarePen, Trash2, Users } from 'lucide-react'
+import React, { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+
 import {
   Table,
   TableBody,
@@ -21,98 +12,179 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import { kategoriPembayaran } from '@/data/kategori-pembayaran'
-import { AnimatePresence, motion } from 'framer-motion'
-import { Edit, Trash2 } from 'lucide-react'
+import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
+import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import CardInformation from '@/components/fragments/dashboard/card-information'
+import Swal from 'sweetalert2'
+import { DataPembayaranSiswa } from '@/data/pembayaran'
+import { useStudentModule } from '@/hooks/useStudentModule'
+import { useCategoryPaymentModule } from '@/hooks/use-categoryPayment'
+import { Badge } from '@/components/ui/badge'
+import Loader from '@/components/ui/loader'
 
-const KategoriPembayaran = () => {
+const DataPembayaran = () => {
   const [showFilter, setShowFilter] = useState(false)
   const [showCount, setShowCount] = useState(10)
+  const [filterStatus, setFilterStatus] = useState('')
+  const [filterJurusan, setFilterJurusan] = useState('')
+  const [filterKategori, setFilterKategori] = useState('')
+  const [filterAngkatan, setFilterAngkatan] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
 
+  // Ambil data siswa dari API
+  const { useGetStudent, useDeleteStudent } = useStudentModule()
+  const { useGetCategory, useDeleteCategory } = useCategoryPaymentModule()
+  const { data: kategori, isLoading, isError } = useGetCategory()
+  const { mutate: deleteCategory } = useDeleteCategory()
+
+  const filteredData = kategori?.filter((s: any) =>
+    searchTerm
+      ? s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s.TA.toLowerCase().includes(searchTerm.toLowerCase())
+      : true
+  )
+  // Filter kategori pembayaran
+  // .filter((s: any) =>
+  //   filterKategori ? s.kategoriPembayaran === filterKategori : true
+  // )
+  // // Filter angkatan (tahun)
+  // .filter((s: any) => (filterAngkatan ? s.angkatan === filterAngkatan : true))
+  // // Filter status "Lunas" atau "Belum Lunas"
+  // .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
+  // // Filter jurusan "RPL" atau "TKJ"
+  // .filter((s: any) => (filterJurusan ? s.jurusan === filterJurusan : true))
+
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case 'ACTIVE':
+        return 'bg-green-100 text-green-700'
+      case 'Lulus':
+        return 'bg-yellow-100 text-yellow-700'
+      case 'Keluar':
+        return 'bg-red-100 text-red-700'
+      default:
+        return 'bg-gray-100 text-gray-700'
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Apakah kamu yakin?',
+        text: 'Data yang dihapus tidak bisa dikembalikan!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      })
+
+      if (result.isConfirmed) {
+        // Jalankan proses delete di sini, misal panggil API atau hapus data lokal
+        // Contoh simulasi:
+        await deleteCategory.mutate(id)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  if (isLoading) {
+    return (
+      <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
+        <Loader />
+      </div>
+    )
+  }
+
+  if (isError) {
+    return <div className='p-6 text-red-500'>Gagal memuat data siswa.</div>
+  }
+
+  console.log(kategori)
+
   return (
-    <div className='w-full rounded-xl flex flex-col gap-6 px-2 '>
-      <div className='grid grid-cols-2 gap-4 mb-4'>
+    <section className='flex flex-col gap-10 w-full '>
+      <section className='grid grid-cols-2 gap-4 '>
         <CardInformation
-          color={'purple'}
-          title={''}
-          value={''}
-          icon={undefined}
+          color={'blue'}
+          title={'Total Data'}
+          value={kategori.length}
+          icon={<GraduationCap size={32} className='text-blue-500' />}
         />
         <CardInformation
           color={'green'}
-          title={''}
-          value={''}
-          icon={undefined}
+          title={'Lunas'}
+          value={filteredData.slice(0, showCount).length}
+          icon={<Users size={32} className='text-green-500' />}
         />
-      </div>
-      <SearchDataTable
-        type=' add create'
-        link='/dashboard/pembayaran/kategori/create'
-        title={'Management Kategori Pembayaran'}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        setShowFilter={setShowFilter}
-        setShowCount={setShowCount}
-      />
-      <div className='w-full bg-white  dark:text-[#ABB2BF] rounded-xl p-4 flex flex-col  justify-between'>
-        <Table className='w-full table-auto bg-white text-gray-700'>
-          <TableHeader className='text-sm font-semibold'>
-            <TableRow className='text-center'>
-              <TableHead className='text-center py-4'>Id</TableHead>
-              <TableHead className='text-center py-4'>Nama Kategori</TableHead>
-              <TableHead className='text-center py-4'>Semester</TableHead>
-              <TableHead className='text-center py-4'>Tahun Ajaran</TableHead>
-              <TableHead className='text-center py-4'>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+      </section>
 
-          <TableBody className='text-sm divide-y divide-slate-300 text-center'>
-            {kategoriPembayaran &&
-              kategoriPembayaran.map((d, i) => (
-                <TableRow key={i}>
-                  <TableCell className=' py-4'>{d.id}</TableCell>
-                  <TableCell className=' py-4'>{d.nama}</TableCell>
-                  <TableCell className=' py-4'>{d.semester}</TableCell>
-                  <TableCell className=' py-4'>{d.TA}</TableCell>
-                  <TableCell className=' py-4'>
-                    <div className='flex gap-4 items-center justify-center'>
-                      <Link href={`/dashboard/pembayaran/kategori/update/${d.id}`}>
-                        <Button className='bg-blue-500 text-white'>
-                          <Edit />
-                        </Button>
-                      </Link>
-                      <Button className='bg-red-500 text-white px-4'>
-                        <Trash2 />
+      <section className='w-full flex flex-col gap-6 h-full pb-6'>
+        <SearchDataTable
+          title={'Manajement Kategori Pembayaran'}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          setShowFilter={setShowFilter}
+          setShowCount={setShowCount}
+          type={' add create'}
+          link='/dashboard/pembayaran/kategori/create'
+        />
+
+        <div className='w-full h-full rounded-xl overflow-hidden bg-white p-1 pr-2'>
+          <Table className='w-full h-full table-auto bg-white text-gray-700'>
+            <TableHeader className=' text-sm font-semibold text-center'>
+              <TableRow className='text-center'>
+                <TableHead className='text-center py-4'>No</TableHead>
+                <TableHead className='text-center py-4'>
+                  Nama Kategori
+                </TableHead>
+                <TableHead className='text-center py-4'>semester</TableHead>
+                <TableHead className='text-center py-4'>Tahun Ajaran</TableHead>
+                <TableHead className='text-center py-4'>
+                  Tipe Kategori
+                </TableHead>
+                <TableHead className='text-center py-4 w-24'>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody className='text-sm divide-y divide-gray-200 text-center'>
+              {filteredData.slice(0, showCount).map((s: any, i: number) => (
+                <TableRow key={s.id}>
+                  <TableCell className=' py-4 font-medium'>{i + 1}</TableCell>
+                  <TableCell className=' py-4 font-medium'>{s.name}</TableCell>
+                  <TableCell className=' py-4 font-medium'>
+                    {s.semester}
+                  </TableCell>
+                  <TableCell className=' py-4 font-medium'>{s.TA}</TableCell>
+                  <TableCell className=' py-4 font-medium'>
+                    <Badge className='bg-purple-200 py-1 rounded-full px-4 text-purple-500'>
+                      {s.type}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className='flex gap-2 items-center '>
+                    <Link
+                      href={`/dashboard/pembayaran/kategori/update/${s.id}`}
+                    >
+                      <Button className='bg-blue-400 text-white cursor-pointer'>
+                        <SquarePen />
                       </Button>
-                    </div>
+                    </Link>
+                    <Button
+                      className='bg-red-500 text-white cursor-pointer px-4'
+                      onClick={() => handleDelete(s.id as string)}
+                    >
+                      <Trash2 />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
-          </TableBody>
-        </Table>
-
-        <div className='w-full flex'>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious href='#' />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href='#'>1</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext href='#' />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+            </TableBody>
+          </Table>
         </div>
-      </div>
+      </section>
+
       <AnimatePresence>
         {showFilter && (
           <>
@@ -143,24 +215,65 @@ const KategoriPembayaran = () => {
               <div className='flex flex-col gap-4'>
                 <label className='flex flex-col text-sm'>
                   Status
-                  <select className='mt-1 border border-gray-300 rounded-md px-3 py-2'>
+                  <select
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                    value={filterStatus}
+                    onChange={e => setFilterStatus(e.target.value)}
+                  >
                     <option value=''>Semua</option>
-                    <option value='Aktif'>Aktif</option>
-                    <option value='Lulus'>Lulus</option>
-                    <option value='Keluar'>Keluar</option>
+                    <option value='Lunas'>Lunas</option>
+                    <option value='Belum Lunas'>Belum Lunas</option>
                   </select>
                 </label>
                 <label className='flex flex-col text-sm'>
                   Jurusan
-                  <select className='mt-1 border border-gray-300 rounded-md px-3 py-2'>
+                  <select
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                    value={filterJurusan}
+                    onChange={e => setFilterJurusan(e.target.value)}
+                  >
                     <option value=''>Semua</option>
                     <option value='TKJ'>TKJ</option>
                     <option value='RPL'>RPL</option>
                   </select>
                 </label>
+                <label className='flex flex-col text-sm'>
+                  Kategori Pembayaran
+                  <select
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                    value={filterKategori}
+                    onChange={e => setFilterKategori(e.target.value)}
+                  >
+                    <option value=''>Semua</option>
+                    <option value='SPP'>SPP</option>
+                    <option value='Praktikum'>Praktikum</option>
+                    <option value='Kegiatan'>Kegiatan</option>
+                  </select>
+                </label>
+                <label className='flex flex-col text-sm'>
+                  Angkatan
+                  <select
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                    value={filterAngkatan}
+                    onChange={e => setFilterAngkatan(e.target.value)}
+                  >
+                    <option value=''>Semua</option>
+                    <option value='2021'>2021</option>
+                    <option value='2022'>2022</option>
+                    <option value='2023'>2023</option>
+                  </select>
+                </label>
               </div>
               <div className='mt-auto flex flex-col gap-2'>
-                <button className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'>
+                <button
+                  onClick={() => {
+                    setFilterKategori('')
+                    setFilterStatus('')
+                    setFilterJurusan('')
+                    setFilterAngkatan('')
+                  }}
+                  className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
+                >
                   Reset Filter
                 </button>
                 <button
@@ -174,8 +287,8 @@ const KategoriPembayaran = () => {
           </>
         )}
       </AnimatePresence>
-    </div>
+    </section>
   )
 }
 
-export default KategoriPembayaran
+export default DataPembayaran

@@ -16,7 +16,7 @@ const poppins = Poppins({
 export default function Navbar() {
 
     return (
-        <div className="w-full h-14 flex items-center px-4 bg-white justify-between">
+        <div className="w-full h-14 flex items-center px-4 bg-white justify-between border-b border-slate-200">
                 <Image
                     src="/img/Logo.png"
                     alt="Logo"

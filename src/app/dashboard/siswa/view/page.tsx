@@ -1,9 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { GraduationCap, SquarePen, Trash2, Users } from 'lucide-react'
 import React, { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-
 import {
   Table,
   TableBody,
@@ -13,10 +13,10 @@ import {
   TableRow
 } from '@/components/ui/table'
 import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
-import { siswa } from '@/data/siswa'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import CardInformation from '@/components/fragments/dashboard/card-information'
+import Swal from 'sweetalert2'
 import { useStudentModule } from '@/hooks/useStudentModule'
 
 const LihatSemuaSiswa = () => {
@@ -25,25 +25,33 @@ const LihatSemuaSiswa = () => {
   const [filterStatus, setFilterStatus] = useState('')
   const [filterJurusan, setFilterJurusan] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [filterAsrama, setFilterAsrama] = useState('')
+  const [filterAngkatan, setFilterAngkatan] = useState('')
 
+  // Ambil data siswa dari API
+  const { useGetStudent, useDeleteStudent } = useStudentModule()
+  const { data: siswa = [], isLoading, isError } = useGetStudent()
+  const { mutateAsync: deleteStudent } = useDeleteStudent()
 
-  const { useGetStudent } = useStudentModule()
-  const { data, isLoading } = useGetStudent()
-  
-  console.log(data);
   const filteredData = siswa
-    .filter(
-      s =>
-        s.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.noInduk.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.asrama.toLowerCase().includes(searchTerm.toLowerCase())
+    ?.filter(
+      (s: any) =>
+        s?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        s?.InductNumber?.toString()
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase()) ||
+        s?.dorm?.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    .filter(s => (filterStatus ? s.status === filterStatus : true))
-    .filter(s => (filterJurusan ? s.jurusan === filterJurusan : true))
+    .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
+    .filter((s: any) => (filterJurusan ? s.major === filterJurusan : true))
+    .filter((s: any) => (filterAsrama ? s.dorm === filterAsrama : true))
+    .filter((s: any) =>
+      filterAngkatan ? String(s.generation) === filterAngkatan : true
+    )
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
-      case 'Aktif':
+      case 'ACTIVE':
         return 'bg-green-100 text-green-700'
       case 'Lulus':
         return 'bg-yellow-100 text-yellow-700'
@@ -54,84 +62,110 @@ const LihatSemuaSiswa = () => {
     }
   }
 
-  const handleDelete = () => {
-    alert('delete berjalan')
+  const handleDelete = async (id: string) => {
+    try {
+      const result = await Swal.fire({
+        title: 'Apakah kamu yakin?',
+        text: 'Data yang dihapus tidak bisa dikembalikan!',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, hapus!',
+        cancelButtonText: 'Batal'
+      })
+
+      if (result.isConfirmed) {
+        await deleteStudent(id)
+        await Swal.fire('Terhapus!', 'Data berhasil dihapus.', 'success')
+      }
+    } catch (error) {
+      console.error(error)
+      Swal.fire('Error', 'Terjadi kesalahan saat menghapus data.', 'error')
+    }
+  }
+
+  if (isLoading) {
+    return <div className='p-6'>Loading data siswa...</div>
+  }
+
+  if (isError) {
+    return <div className='p-6 text-red-500'>Gagal memuat data siswa.</div>
   }
 
   return (
-    <section className='flex flex-col gap-10 w-full '>
-      <section className='grid grid-cols-2 gap-4 '>
+    <section className='flex flex-col gap-10 w-full'>
+      {/* Kartu informasi */}
+      <section className='grid grid-cols-2 gap-4'>
         <CardInformation
           color={'blue'}
           title={'Total Siswa'}
           value={siswa.length}
           icon={<GraduationCap size={32} className='text-blue-500' />}
         />
-       <CardInformation color={'green'} title={'Total Data'} value={filteredData.slice(0, showCount).length} icon={<Users size={32} className='text-green-500' />} />
+        <CardInformation
+          color={'green'}
+          title={'Total Data'}
+          value={filteredData.slice(0, showCount).length}
+          icon={<Users size={32} className='text-green-500' />}
+        />
       </section>
 
+      {/* Table */}
       <section className='w-full flex flex-col gap-6 h-full pb-6'>
         <SearchDataTable
-          type='normal'
           title={'Managemet Siswa'}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           setShowFilter={setShowFilter}
           setShowCount={setShowCount}
+          type={'normal'}
         />
 
         <div className='w-full h-full rounded-xl overflow-hidden bg-white p-1'>
           <Table className='w-full h-full table-auto bg-white text-gray-700'>
-            <TableHeader className=' text-sm font-semibold text-center'>
-              <TableRow className='text-center'>
-                <TableHead className='text-center py-4'>Id</TableHead>
-                <TableHead className='text-center py-4'>Nama</TableHead>
-                <TableHead className='text-center py-4'>
-                  No. Induk
-                </TableHead>
-                <TableHead className='text-center py-4'>Asrama</TableHead>
-                <TableHead className='text-center py-4'>Angkatan</TableHead>
-                <TableHead className='text-center py-4'>Status</TableHead>
-                <TableHead className='text-center py-4'>Jurusan</TableHead>
-                <TableHead className='text-center py-4'>Tarif SPP</TableHead>
-                <TableHead className='text-center py-4'>Dibuat</TableHead>
-                <TableHead className='text-center py-4'>Aksi</TableHead>
+            <TableHeader className='text-sm font-semibold text-center'>
+              <TableRow>
+                <TableHead>No</TableHead>
+                <TableHead>Nama</TableHead>
+                <TableHead>No. Induk</TableHead>
+                <TableHead>Asrama</TableHead>
+                <TableHead>Angkatan</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Jurusan</TableHead>
+                <TableHead>Dibuat</TableHead>
+                <TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody className='text-sm divide-y divide-gray-200 text-center'>
-              {filteredData.slice(0, showCount).map(siswa => (
-                <TableRow key={siswa.id}>
-                  <TableCell className=' py-4'>{siswa.id}</TableCell>
-                  <TableCell className=' py-4 font-medium'>
-                    {siswa.nama}
-                  </TableCell>
-                  <TableCell className=' py-4'>{siswa.noInduk}</TableCell>
-                  <TableCell className=' py-4'>{siswa.asrama}</TableCell>
-                  <TableCell className=' py-4'>{siswa.angkatan}</TableCell>
-                  <TableCell className=' py-4'>
+              {filteredData.slice(0, showCount).map((s: any, idx: number) => (
+                <TableRow key={s.id}>
+                  <TableCell>{idx + 1}</TableCell>
+                  <TableCell className='font-medium'>{s.name}</TableCell>
+                  <TableCell>{s.InductNumber}</TableCell>
+                  <TableCell>{s.dorm}</TableCell>
+                  <TableCell>{s.generation}</TableCell>
+                  <TableCell>
                     <span
                       className={`inline-block w-20 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                        siswa.status
+                        s.status
                       )}`}
                     >
-                      {siswa.status}
+                      {s.status}
                     </span>
                   </TableCell>
-                  <TableCell className=' py-4'>{siswa.jurusan}</TableCell>
-                  <TableCell className=' py-4'>
-                    Rp {siswa.spp.toLocaleString('id-ID')}
-                  </TableCell>
-                  <TableCell className=' py-4'>{siswa.dibuat}</TableCell>
-                  <TableCell className='flex w-full gap-2 items-center'>
-                    <Link href={`/dashboard/siswa/update/${siswa.id}`}>
-                      <Button className='bg-blue-400 text-white cursor-pointer'>
+                  <TableCell>{s.major}</TableCell>
+                  <TableCell>{s.createdAt}</TableCell>
+                  <TableCell className='flex gap-2 justify-center'>
+                    <Link href={`/dashboard/siswa/update/${s.id}`}>
+                      <Button className='bg-blue-400 text-white'>
                         <SquarePen />
                       </Button>
                     </Link>
                     <Button
-                      className='bg-red-500 text-white cursor-pointer px-4'
-                      onClick={handleDelete}
+                      className='bg-red-500 text-white px-4'
+                      onClick={() => handleDelete(s.id as string)}
                     >
                       <Trash2 />
                     </Button>
@@ -143,6 +177,7 @@ const LihatSemuaSiswa = () => {
         </div>
       </section>
 
+      {/* Filter Drawer */}
       <AnimatePresence>
         {showFilter && (
           <>
@@ -179,7 +214,7 @@ const LihatSemuaSiswa = () => {
                     onChange={e => setFilterStatus(e.target.value)}
                   >
                     <option value=''>Semua</option>
-                    <option value='Aktif'>Aktif</option>
+                    <option value='ACTIVE'>Aktif</option>
                     <option value='Lulus'>Lulus</option>
                     <option value='Keluar'>Keluar</option>
                   </select>
@@ -196,12 +231,39 @@ const LihatSemuaSiswa = () => {
                     <option value='RPL'>RPL</option>
                   </select>
                 </label>
+                <label className='flex flex-col text-sm'>
+                  Asrama
+                  <select
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                    value={filterAsrama}
+                    onChange={e => setFilterAsrama(e.target.value)}
+                  >
+                    <option value=''>Semua</option>
+                    <option value='Asrama 1'>Asrama 1</option>
+                    <option value='Asrama 2'>Asrama 2</option>
+                    <option value='Asrama 3'>Asrama 3</option>
+                    <option value='Asrama 4'>Asrama 4</option>
+                    <option value='Asrama 5'>Asrama 5</option>
+                  </select>
+                </label>
+                <label className='flex flex-col text-sm'>
+                  Angkatan
+                  <input
+                    type='number'
+                    placeholder='Misal: 1, 2, 3'
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                    value={filterAngkatan}
+                    onChange={e => setFilterAngkatan(e.target.value)}
+                  />
+                </label>
               </div>
               <div className='mt-auto flex flex-col gap-2'>
                 <button
                   onClick={() => {
                     setFilterStatus('')
                     setFilterJurusan('')
+                    setFilterAsrama('')
+                    setFilterAngkatan('')
                   }}
                   className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
                 >
