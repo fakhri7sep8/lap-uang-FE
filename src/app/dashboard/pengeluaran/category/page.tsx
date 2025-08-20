@@ -17,6 +17,7 @@ import { viewPengeluaran } from '@/data/view-pengeluaran'
 import { Button } from '@/components/ui/button'
 import CardInformation from '@/components/fragments/dashboard/card-information'
 import Link from 'next/link'
+import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
 
 const LihatSemuaPengeluaran = () => {
   const [showFilter, setShowFilter] = useState(false)
@@ -67,8 +68,7 @@ const LihatSemuaPengeluaran = () => {
     alert('delete pengeluaran berjalan')
   }
 
-  const formatRupiah = (num: number) =>
-    'Rp ' + num.toLocaleString('id-ID')
+  const formatRupiah = (num: number) => 'Rp ' + num.toLocaleString('id-ID')
 
   return (
     <section className='flex flex-col gap-10 w-full'>
@@ -146,36 +146,12 @@ const LihatSemuaPengeluaran = () => {
               )}
             </TableBody>
           </Table>
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
-
-        {/* Pagination */}
-        {filteredData.length > showCount && (
-          <div className="flex gap-2 justify-center mt-4">
-            <Button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => prev - 1)}
-            >
-              Prev
-            </Button>
-
-            {[...Array(totalPages)].map((_, i) => (
-              <Button
-                key={i}
-                variant={currentPage === i + 1 ? "default" : "outline"}
-                onClick={() => setCurrentPage(i + 1)}
-              >
-                {i + 1}
-              </Button>
-            ))}
-
-            <Button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(prev => prev + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        )}
       </section>
 
       {/* Filter Drawer */}
@@ -212,10 +188,15 @@ const LihatSemuaPengeluaran = () => {
                   <select
                     className='mt-1 border border-gray-300 rounded-md px-3 py-2'
                     value={filterJenis}
-                    onChange={e => { setFilterJenis(e.target.value); setCurrentPage(1) }}
+                    onChange={e => {
+                      setFilterJenis(e.target.value)
+                      setCurrentPage(1)
+                    }}
                   >
                     <option value=''>Semua</option>
-                    {[...new Set(viewPengeluaran.map(p => p.jenisPengeluaran))].map(jenis => (
+                    {[
+                      ...new Set(viewPengeluaran.map(p => p.jenisPengeluaran))
+                    ].map(jenis => (
                       <option key={jenis} value={jenis}>
                         {jenis}
                       </option>
@@ -227,7 +208,10 @@ const LihatSemuaPengeluaran = () => {
                   <select
                     className='mt-1 border border-gray-300 rounded-md px-3 py-2'
                     value={filterBulan}
-                    onChange={e => { setFilterBulan(e.target.value); setCurrentPage(1) }}
+                    onChange={e => {
+                      setFilterBulan(e.target.value)
+                      setCurrentPage(1)
+                    }}
                   >
                     <option value=''>Semua</option>
                     {bulanIndo.map(bulan => (
@@ -240,7 +224,11 @@ const LihatSemuaPengeluaran = () => {
               </div>
               <div className='mt-auto flex flex-col gap-2'>
                 <button
-                  onClick={() => { setFilterJenis(''); setFilterBulan(''); setCurrentPage(1) }}
+                  onClick={() => {
+                    setFilterJenis('')
+                    setFilterBulan('')
+                    setCurrentPage(1)
+                  }}
                   className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
                 >
                   Reset Filter

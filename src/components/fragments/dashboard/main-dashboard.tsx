@@ -134,6 +134,8 @@ const sampleData = [
   [3529.1, 3510.99, 3488.77, 3530.33],
   [3510.99, 3522.11, 3495.44, 3539.11],
 ];
+
+
 export const MainDashboard = () => {
   return (
     <div className={"flex items-center flex-col gap-6 w-full pb-4"}>

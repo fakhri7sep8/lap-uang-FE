@@ -18,6 +18,8 @@ import Link from 'next/link'
 import CardInformation from '@/components/fragments/dashboard/card-information'
 import Swal from 'sweetalert2'
 import { useStudentModule } from '@/hooks/useStudentModule'
+import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
+import Loader from '@/components/ui/loader'
 
 const LihatSemuaSiswa = () => {
   const [showFilter, setShowFilter] = useState(false)
@@ -27,6 +29,7 @@ const LihatSemuaSiswa = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterAsrama, setFilterAsrama] = useState('')
   const [filterAngkatan, setFilterAngkatan] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
   // Ambil data siswa dari API
   const { useGetStudent, useDeleteStudent } = useStudentModule()
@@ -48,6 +51,12 @@ const LihatSemuaSiswa = () => {
     .filter((s: any) =>
       filterAngkatan ? String(s.generation) === filterAngkatan : true
     )
+
+  const totalPages = Math.ceil(filteredData.length / showCount)
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * showCount,
+    currentPage * showCount
+  )
 
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
@@ -86,7 +95,11 @@ const LihatSemuaSiswa = () => {
   }
 
   if (isLoading) {
-    return <div className='p-6'>Loading data siswa...</div>
+    return (
+      <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
+        <Loader />
+      </div>
+    )
   }
 
   if (isError) {
@@ -94,7 +107,7 @@ const LihatSemuaSiswa = () => {
   }
 
   return (
-    <section className='flex flex-col gap-10 w-full'>
+    <section className='w-full min-h-[90vh] flex flex-col gap-10'>
       {/* Kartu informasi */}
       <section className='grid grid-cols-2 gap-4'>
         <CardInformation
@@ -122,7 +135,7 @@ const LihatSemuaSiswa = () => {
           type={'normal'}
         />
 
-        <div className='w-full h-full rounded-xl overflow-hidden bg-white p-1'>
+        <div className='w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4'>
           <Table className='w-full h-full table-auto bg-white text-gray-700'>
             <TableHeader className='text-sm font-semibold text-center'>
               <TableRow>
@@ -139,41 +152,54 @@ const LihatSemuaSiswa = () => {
             </TableHeader>
 
             <TableBody className='text-sm divide-y divide-gray-200 text-center'>
-              {filteredData.slice(0, showCount).map((s: any, idx: number) => (
-                <TableRow key={s.id}>
-                  <TableCell>{idx + 1}</TableCell>
-                  <TableCell className='font-medium'>{s.name}</TableCell>
-                  <TableCell>{s.InductNumber}</TableCell>
-                  <TableCell>{s.dorm}</TableCell>
-                  <TableCell>{s.generation}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-block w-20 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                        s.status
-                      )}`}
-                    >
-                      {s.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>{s.major}</TableCell>
-                  <TableCell>{s.createdAt}</TableCell>
-                  <TableCell className='flex gap-2 justify-center'>
-                    <Link href={`/dashboard/siswa/update/${s.id}`}>
-                      <Button className='bg-blue-400 text-white'>
-                        <SquarePen />
-                      </Button>
-                    </Link>
-                    <Button
-                      className='bg-red-500 text-white px-4'
-                      onClick={() => handleDelete(s.id as string)}
-                    >
-                      <Trash2 />
-                    </Button>
+              {paginatedData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className='py-8 text-gray-400'>
+                    Data not found
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                paginatedData.map((s: any, idx: number) => (
+                  <TableRow key={s.id}>
+                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell className='font-medium'>{s.name}</TableCell>
+                    <TableCell>{s.InductNumber}</TableCell>
+                    <TableCell>{s.dorm}</TableCell>
+                    <TableCell>{s.generation}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`inline-block w-20 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
+                          s.status
+                        )}`}
+                      >
+                        {s.status}
+                      </span>
+                    </TableCell>
+                    <TableCell>{s.major}</TableCell>
+                    <TableCell>{s.createdAt}</TableCell>
+                    <TableCell className='flex gap-2 justify-center'>
+                      <Link href={`/dashboard/siswa/update/${s.id}`}>
+                        <Button className='bg-blue-400 text-white'>
+                          <SquarePen />
+                        </Button>
+                      </Link>
+                      <Button
+                        className='bg-red-500 text-white px-4'
+                        onClick={() => handleDelete(s.id as string)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </section>
 
