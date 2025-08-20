@@ -39,6 +39,7 @@ import {
 import { Poppins } from 'next/font/google'
 import { generateMenuDashboard } from '@/lib/menuDashboard'
 import Image from 'next/image'
+import Link from 'next/link'
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -107,22 +108,22 @@ export function AppSidebar () {
                 <SidebarMenuItem>
                   <SidebarMenuButton>
                     <LayoutDashboard className='mr-2' size={18} />
-                    <a href="http://localhost:3050/dashboard">
+                    <Link href="http://localhost:3050/dashboard">
                     <span className={`font-semibold ${poppins.className}`}>
                       Dashboard Utama
                     </span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {/* 📌 TUNGGAKAN */}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <a href='#tunggakan'>
+                    <Link href='#tunggakan'>
                       <AlertTriangle className='mr-2' size={18} />
                       <span className={`font-semibold ${poppins.className}`}>
                         Tunggakan
                       </span>
-                    </a>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {menuDashboard.map(
@@ -165,10 +166,10 @@ export function AppSidebar () {
                               {menu?.children?.map(
                                 (d: { name: string; icon: any, link:string }, i: number) => (
                                   <SidebarMenuButton asChild key={i}>
-                                    <a href={d.link || '#'}>
+                                    <Link href={d.link || '#'}>
                                       {d.icon}
                                       <span>{d.name}</span>
-                                    </a>
+                                    </Link>
                                   </SidebarMenuButton>
                                 )
                               )}
