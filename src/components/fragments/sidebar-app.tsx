@@ -107,9 +107,11 @@ export function AppSidebar () {
                 <SidebarMenuItem>
                   <SidebarMenuButton>
                     <LayoutDashboard className='mr-2' size={18} />
+                    <a href="http://localhost:3050/dashboard">
                     <span className={`font-semibold ${poppins.className}`}>
                       Dashboard Utama
                     </span>
+                    </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {/* 📌 TUNGGAKAN */}

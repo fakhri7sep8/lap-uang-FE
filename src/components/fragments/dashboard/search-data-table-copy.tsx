@@ -70,7 +70,7 @@ const SearchDataTable = ({
             <Search className='' />
             <Input
               type='text'
-              placeholder='Cari deskripsi / tanggal / kode pembayaran...'
+              placeholder='Cari deskripsi / jenis / jumlah.......'
               className='w-full h-full outline-none focus-visible:outline-none ring-0 focus:ring-0 border-none shadow-none'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}

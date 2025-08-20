@@ -12,9 +12,10 @@ type ChartData = {
 
 interface HorizontalProgressChartProps {
   fullData: ChartData[];
+  modalTitle?: string; // Tambah prop untuk judul modal
 }
 
-const HorizontalProgressChart: React.FC<HorizontalProgressChartProps> = ({ fullData }) => {
+const HorizontalProgressChart: React.FC<HorizontalProgressChartProps> = ({ fullData, modalTitle }) => {
   const [showModal, setShowModal] = useState(false);
 
   const dataToShow = fullData.slice(0, 4);
@@ -128,7 +129,9 @@ const HorizontalProgressChart: React.FC<HorizontalProgressChartProps> = ({ fullD
             >
               &times;
             </button>
-            <h3 className="text-lg font-semibold text-center mb-4">Rincian Penerimaan Semua Bulan</h3>
+            <h3 className="text-lg font-semibold text-center mb-4">
+              {modalTitle ? modalTitle : "Rincian Penerimaan Semua Bulan"}
+            </h3>
             <ReactECharts option={getOption(fullData)} style={{ height: modalHeight }} />
           </div>
         </div>

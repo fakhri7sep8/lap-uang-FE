@@ -17,30 +17,15 @@ const MonthlyGroupedBarChart = ({
   categories: string[];
   monthlyData: { [month: string]: number[] };
 }) => {
-  const months = Object.keys(monthlyData);
-
-  const source = categories.map((cat, i) => {
-    const row: Record<string, string | number> = { category: cat };
-    months.forEach((month) => {
-      row[month] = monthlyData[month][i];
-    });
-    return row;
-  });
+  const months = Object.keys(monthlyData); // x-axis
+  const series = categories.map((category, i) => ({
+    name: category,
+    type: "bar",
+    data: months.map((month) => monthlyData[month][i]),
+    emphasis: { focus: "series" },
+  }));
 
   const option = {
-    legend: {
-      orient: "horizontal", // atau 'vertical'
-      top: "top",
-      itemWidth: 14, // lebar kotak
-      itemHeight: 14, // tinggi kotak
-      icon: "rect", // bentuk kotak
-      textStyle: {
-        fontSize: 12,
-        color: "#333", // warna teks
-      },
-      itemGap: 20,
-    },
-
     tooltip: {
       trigger: "axis",
       axisPointer: { type: "shadow" },
@@ -57,22 +42,24 @@ const MonthlyGroupedBarChart = ({
       extraCssText:
         "box-shadow: 0 0 8px rgba(0, 0, 0, 0.1); border-radius: 6px;",
     },
-    dataset: {
-      dimensions: ["category", ...months],
-      source,
+    legend: {
+      top: "top",
+      itemWidth: 14,
+      itemHeight: 14,
+      icon: "rect",
+      textStyle: {
+        fontSize: 12,
+        color: "#333",
+      },
+      itemGap: 20,
     },
     xAxis: {
       type: "category",
+      data: months,
       axisLabel: { fontWeight: "bold" },
-      splitLine: {
-        show: true,
-        lineStyle: {
-          color: "#e0e0e0",
-          type: "dashed",
-        },
-      },
     },
     yAxis: {
+      type: "value",
       axisLabel: {
         formatter: (value: number) => formatRupiah(value),
       },
@@ -84,13 +71,13 @@ const MonthlyGroupedBarChart = ({
         },
       },
     },
-    series: months.map(() => ({ type: "bar" })),
     grid: {
-      top: 50,
-      bottom: 40,
-      left: 120,
+      top: 60,
+      bottom: 50,
+      left: 100,
       right: 40,
     },
+    series,
   };
 
   return <ReactECharts option={option} style={{ height: 400 }} />;
