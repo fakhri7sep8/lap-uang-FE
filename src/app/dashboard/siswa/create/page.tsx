@@ -84,7 +84,7 @@ const TambahSiswa = () => {
         <SelectTrigger className="w-full border-slate-300">
           <SelectValue placeholder={`Pilih ${label}`} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white border-slate-200">
           {options.map((option) => (
             <SelectItem key={option} value={option}>
               {option}

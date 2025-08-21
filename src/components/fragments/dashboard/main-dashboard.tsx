@@ -134,6 +134,8 @@ const sampleData = [
   [3529.1, 3510.99, 3488.77, 3530.33],
   [3510.99, 3522.11, 3495.44, 3539.11],
 ];
+
+
 export const MainDashboard = () => {
   return (
     <div className={"flex items-center flex-col gap-6 w-full pb-4"}>
@@ -229,7 +231,7 @@ export const MainDashboard = () => {
               </div>
             </div>
           </div>
-          <div className="w-full flex gap-4 h-full flex-row-reverse">
+          <div className="w-full flex gap-4 h-full flex-row">
             <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
               <h2 className=" text-center font-semibold text-2xl">
                 Pengeluaran tahunan
@@ -243,7 +245,7 @@ export const MainDashboard = () => {
                 ]}
               />
             </div>
-            <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
+            <div className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
               <h2 className=" text-center font-semibold text-2xl">
                 Pengeluaran tahunan
               </h2>
@@ -294,6 +296,7 @@ export const MainDashboard = () => {
             </div>
             <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
               <HorizontalProgressChart
+              modalTitle="Detail Pemasukan"
                 fullData={[
                   { name: "Akhi...", total: 20000000, tercapai: 13000000 },
                   { name: "Rajab", total: 18000000, tercapai: 17000000 },
@@ -323,7 +326,7 @@ export const MainDashboard = () => {
               />
             </div>
             <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
-              <HorizontalProgressChart
+              <HorizontalProgressChart modalTitle="Detail Pengeluaran"
                 fullData={[
                   { name: "Akhi...", total: 20000000, tercapai: 13000000 },
                   { name: "Rajab", total: 18000000, tercapai: 17000000 },

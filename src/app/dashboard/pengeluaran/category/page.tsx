@@ -12,19 +12,42 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
+import SearchDataTable from '@/components/fragments/dashboard/search-data-table-copy'
 import { viewPengeluaran } from '@/data/view-pengeluaran'
 import { Button } from '@/components/ui/button'
 import CardInformation from '@/components/fragments/dashboard/card-information'
 import Link from 'next/link'
+import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
 
 const LihatSemuaPengeluaran = () => {
   const [showFilter, setShowFilter] = useState(false)
-  const [showCount, setShowCount] = useState(10)
+  const [showCount, setShowCount] = useState(10) // Limit per page
   const [filterJenis, setFilterJenis] = useState('')
+  const [filterBulan, setFilterBulan] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
-  // Filter data sesuai search dan jenis pengeluaran
+  const bulanIndo = [
+    'Januari',
+    'Februari',
+    'Maret',
+    'April',
+    'Mei',
+    'Juni',
+    'Juli',
+    'Agustus',
+    'September',
+    'Oktober',
+    'November',
+    'Desember'
+  ]
+
+  const getBulan = (tanggal: string) => {
+    const dateObj = new Date(tanggal)
+    return bulanIndo[dateObj.getMonth()]
+  }
+
+  // Filter data sesuai search, jenis pengeluaran, dan bulan
   const filteredData = viewPengeluaran
     .filter(
       p =>
@@ -32,13 +55,20 @@ const LihatSemuaPengeluaran = () => {
         p.jenisPengeluaran.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter(p => (filterJenis ? p.jenisPengeluaran === filterJenis : true))
+    .filter(p => (filterBulan ? getBulan(p.tanggal) === filterBulan : true))
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredData.length / showCount)
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * showCount,
+    currentPage * showCount
+  )
 
   const handleDelete = () => {
     alert('delete pengeluaran berjalan')
   }
 
-  const formatRupiah = (num: number) =>
-    'Rp ' + num.toLocaleString('id-ID')
+  const formatRupiah = (num: number) => 'Rp ' + num.toLocaleString('id-ID')
 
   return (
     <section className='flex flex-col gap-10 w-full'>
@@ -53,7 +83,7 @@ const LihatSemuaPengeluaran = () => {
         <CardInformation
           color={'green'}
           title={'Total Ditampilkan'}
-          value={filteredData.slice(0, showCount).length}
+          value={paginatedData.length}
           icon={<Wallet size={32} className='text-green-500' />}
         />
       </section>
@@ -83,31 +113,44 @@ const LihatSemuaPengeluaran = () => {
             </TableHeader>
 
             <TableBody className='text-sm divide-y divide-gray-200 text-center'>
-              {filteredData.slice(0, showCount).map(p => (
-                <TableRow key={p.id}>
-                  <TableCell className='py-4'>{p.tanggal}</TableCell>
-                  <TableCell className='py-4'>{p.jenisPengeluaran}</TableCell>
-                  <TableCell className='py-4'>{p.deskripsi}</TableCell>
-                  <TableCell className='py-4 font-semibold'>
-                    {formatRupiah(p.amount)}
-                  </TableCell>
-                  <TableCell className='flex gap-2 justify-center'>
-                    <Link href={`/dashboard/pengeluaran/update/${p.id}`}>
-                      <Button className='bg-blue-400 text-white'>
-                        <SquarePen />
-                      </Button>
-                    </Link>
-                    <Button
-                      className='bg-red-500 text-white'
-                      onClick={handleDelete}
-                    >
-                      <Trash2 />
-                    </Button>
+              {paginatedData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className='py-8 text-gray-400'>
+                    Data not found
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                paginatedData.map(p => (
+                  <TableRow key={p.id}>
+                    <TableCell className='py-4'>{p.tanggal}</TableCell>
+                    <TableCell className='py-4'>{p.jenisPengeluaran}</TableCell>
+                    <TableCell className='py-4'>{p.deskripsi}</TableCell>
+                    <TableCell className='py-4 font-semibold'>
+                      {formatRupiah(p.amount)}
+                    </TableCell>
+                    <TableCell className='flex gap-2 justify-center'>
+                      <Link href={`/dashboard/pengeluaran/update/${p.id}`}>
+                        <Button className='bg-blue-400 text-white'>
+                          <SquarePen />
+                        </Button>
+                      </Link>
+                      <Button
+                        className='bg-red-500 text-white'
+                        onClick={handleDelete}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </section>
 
@@ -145,12 +188,35 @@ const LihatSemuaPengeluaran = () => {
                   <select
                     className='mt-1 border border-gray-300 rounded-md px-3 py-2'
                     value={filterJenis}
-                    onChange={e => setFilterJenis(e.target.value)}
+                    onChange={e => {
+                      setFilterJenis(e.target.value)
+                      setCurrentPage(1)
+                    }}
                   >
                     <option value=''>Semua</option>
-                    {[...new Set(viewPengeluaran.map(p => p.jenisPengeluaran))].map(jenis => (
+                    {[
+                      ...new Set(viewPengeluaran.map(p => p.jenisPengeluaran))
+                    ].map(jenis => (
                       <option key={jenis} value={jenis}>
                         {jenis}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className='flex flex-col text-sm'>
+                  Bulan
+                  <select
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                    value={filterBulan}
+                    onChange={e => {
+                      setFilterBulan(e.target.value)
+                      setCurrentPage(1)
+                    }}
+                  >
+                    <option value=''>Semua</option>
+                    {bulanIndo.map(bulan => (
+                      <option key={bulan} value={bulan}>
+                        {bulan}
                       </option>
                     ))}
                   </select>
@@ -158,7 +224,11 @@ const LihatSemuaPengeluaran = () => {
               </div>
               <div className='mt-auto flex flex-col gap-2'>
                 <button
-                  onClick={() => setFilterJenis('')}
+                  onClick={() => {
+                    setFilterJenis('')
+                    setFilterBulan('')
+                    setCurrentPage(1)
+                  }}
                   className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
                 >
                   Reset Filter
