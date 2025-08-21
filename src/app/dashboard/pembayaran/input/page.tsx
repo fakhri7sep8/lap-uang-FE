@@ -1,6 +1,7 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
+import Swal from "sweetalert2"
 import {
   Select,
   SelectContent,
@@ -9,12 +10,44 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select" 
+} from "@/components/ui/select"
 
 const InputPembayaranpage = () => {
+  const [isDownloaded, setIsDownloaded] = useState(false)
+
+  const handleDownload = () => {
+    // contoh: bisa jalankan logika download di sini
+    setIsDownloaded(true)
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil",
+      text: "File berhasil di-download",
+      confirmButtonColor: "#3085d6",
+    })
+  }
+
+  const handleTambah = () => {
+    if (!isDownloaded) {
+      Swal.fire({
+        icon: "warning",
+        title: "Oops...",
+        text: "Silakan download dulu sebelum menambah data!",
+        confirmButtonColor: "#3085d6",
+      })
+      return
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: "Data Ditambahkan",
+      text: "Data berhasil ditambahkan!",
+      confirmButtonColor: "#3085d6",
+    })
+  }
+
   return (
     <div className="w-full flex justify-center items-center p-6">
-      <section className="w-full  bg-white rounded-md shadow-md p-6 border border-blue-400">
+      <section className="w-full bg-white rounded-md shadow-md p-6 ">
         <div className="flex flex-col gap-6">
           <h1 className="font-semibold text-2xl">Input Pembayaran</h1>
 
@@ -61,13 +94,24 @@ const InputPembayaranpage = () => {
             </div>
           </div>
 
-          <div className="flex justify-end gap-4 mt-4">
-            <button className="bg-green-600 text-white px-4 py-2 rounded-md">
-              Remove
+          <div className="flex justify-between items-center mt-4">
+            <button
+              onClick={handleDownload}
+              className="bg-blue-600 text-white px-4 py-2 rounded-md"
+            >
+              Download
             </button>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-md">
-              Tambah
-            </button>
+            <div className="flex gap-4">
+              <button className="bg-red-600 text-white px-4 py-2 rounded-md">
+                Cancel
+              </button>
+              <button
+                onClick={handleTambah}
+                className="bg-green-600 text-white px-4 py-2 rounded-md"
+              >
+                Tambah
+              </button>
+            </div>
           </div>
         </div>
       </section>
