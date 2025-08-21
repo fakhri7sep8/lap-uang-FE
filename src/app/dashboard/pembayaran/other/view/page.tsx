@@ -78,28 +78,28 @@ const DataPembayaran = () => {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    try {
-      const result = await Swal.fire({
-        title: 'Apakah kamu yakin?',
-        text: 'Data yang dihapus tidak bisa dikembalikan!',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-      })
+  // const handleDelete = async (id: string) => {
+  //   try {
+  //     const result = await Swal.fire({
+  //       title: 'Apakah kamu yakin?',
+  //       text: 'Data yang dihapus tidak bisa dikembalikan!',
+  //       icon: 'warning',
+  //       showCancelButton: true,
+  //       confirmButtonColor: '#d33',
+  //       cancelButtonColor: '#3085d6',
+  //       confirmButtonText: 'Ya, hapus!',
+  //       cancelButtonText: 'Batal'
+  //     })
 
-      if (result.isConfirmed) {
-        // Jalankan proses delete di sini, misal panggil API atau hapus data lokal
-        // Contoh simulasi:
-        await deleteStudent(id)
-      }
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  //     if (result.isConfirmed) {
+  //       // Jalankan proses delete di sini, misal panggil API atau hapus data lokal
+  //       // Contoh simulasi:
+  //       await deleteStudent(id)
+  //     }
+  //   } catch (error) {
+  //     console.error(error)
+  //   }
+  // }
 
  if (isLoading) {
     return (
