@@ -1,9 +1,339 @@
-import React from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
+import { GraduationCap, SquarePen, Trash2, Users } from "lucide-react";
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import CardInformation from "@/components/fragments/dashboard/card-information";
+import Swal from "sweetalert2";
+import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
+import Loader from "@/components/ui/loader";
+import SearchDataTableSPP from "@/components/fragments/dashboard/search-data-table-spp";
+
+// daftar bulan global biar konsisten
+const months = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+
+const dummyStudents = [
+  {
+    id: "1",
+    name: "Budi Santoso",
+    Januari: "Lunas",
+    Februari: "Belum Lunas",
+    Maret: "Lunas",
+    April: "Lunas",
+    Mei: "Belum Lunas",
+    Juni: "Lunas",
+    Juli: "Belum Lunas",
+    Agustus: "Lunas",
+    September: "Belum Lunas",
+    Oktober: "Lunas",
+    November: "Lunas",
+    Desember: "Belum Lunas",
+  },
+  {
+    id: "2",
+    name: "Siti Aminah",
+    Januari: "Belum Lunas",
+    Februari: "Lunas",
+    Maret: "Lunas",
+    April: "Belum Lunas",
+    Mei: "Lunas",
+    Juni: "Belum Lunas",
+    Juli: "Lunas",
+    Agustus: "Belum Lunas",
+    September: "Lunas",
+    Oktober: "Lunas",
+    November: "Lunas",
+    Desember: "Lunas",
+  },
+  {
+    id: "3",
+    name: "Andi Wijaya",
+    Januari: "Lunas",
+    Februari: "Lunas",
+    Maret: "Belum Lunas",
+    April: "Belum Lunas",
+    Mei: "Lunas",
+    Juni: "Lunas",
+    Juli: "Lunas",
+    Agustus: "Belum Lunas",
+    September: "Belum Lunas",
+    Oktober: "Lunas",
+    November: "Belum Lunas",
+    Desember: "Lunas",
+  },
+];
 
 const SPP = () => {
-  return (
-    <div>SPP</div>
-  )
-}
+  const [showFilter, setShowFilter] = useState(false);
+  const [showCount, setShowCount] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBulan, setFilterBulan] = useState("");
+  const [filterTahun, setFilterTahun] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [siswa, setSiswa] = useState(dummyStudents);
 
-export default SPP
+  const [isLoading] = useState(false);
+  const [isError] = useState(false);
+
+  const filteredData = siswa?.filter((s: any) =>
+    s?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredData.length / showCount);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * showCount,
+    currentPage * showCount
+  );
+
+  const getPaymentBadge = (status: string) => {
+    const baseClass =
+      "inline-block min-w-[90px] px-2 py-1 rounded-full text-xs font-medium text-center";
+    if (status === "Lunas") {
+      return (
+        <span className={`${baseClass} bg-green-100 text-green-500`}>
+          {status}
+        </span>
+      );
+    }
+    return (
+      <span className={`${baseClass} bg-yellow-100 text-yellow-500`}>
+        {status}
+      </span>
+    );
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "Apakah kamu yakin?",
+        text: "Data yang dihapus tidak bisa dikembalikan!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Ya, hapus!",
+        cancelButtonText: "Batal",
+      });
+
+      if (result.isConfirmed) {
+        setSiswa((prev) => prev.filter((s) => s.id !== id));
+        await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
+  }
+
+  return (
+    <section className="w-full min-h-[90vh] flex flex-col gap-10">
+      {/* Kartu informasi */}
+      <section className="grid grid-cols-2 gap-4">
+        <CardInformation
+          color={"blue"}
+          title={"Total Data"}
+          value={filteredData.length}
+          icon={<GraduationCap size={32} className="text-blue-500" />}
+        />
+        <CardInformation
+          color={"green"}
+          title={"Lunas"}
+          value={"3"}
+          icon={<Users size={32} className="text-green-500" />}
+        />
+      </section>
+
+      {/* Table */}
+      <section className="w-full flex flex-col gap-6 h-full pb-6">
+        <SearchDataTableSPP
+          title={"Data Pembayaran Spp"}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          setShowFilter={setShowFilter}
+          setShowCount={setShowCount}
+          type={"normal"}
+        />
+
+        <div className="w-full h-full rounded-xl overflow-x-auto bg-white px-1 pt-2 pb-4">
+          <Table className="w-full h-full table-auto bg-white text-gray-700">
+            <TableHeader className="text-sm font-semibold text-center">
+              <TableRow>
+                <TableHead>No</TableHead>
+                <TableHead>Nama</TableHead>
+                {months.map((m) => (
+                  <TableHead key={m}>{m}</TableHead>
+                ))}
+                <TableHead>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody className="text-sm divide-y divide-gray-200 text-center">
+              {paginatedData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={months.length + 3} className="py-8 text-gray-400">
+                    Data not found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedData.map((s: any, idx: number) => (
+                  <TableRow key={s.id} className="hover:bg-gray-50 transition">
+                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell className="font-medium">{s.name}</TableCell>
+                    {months.map((m) => (
+                      <TableCell key={m}>{getPaymentBadge(s[m])}</TableCell>
+                    ))}
+                    <TableCell className="flex gap-2 justify-center">
+                      <Link href={`/dashboard/siswa/update/${s.id}`}>
+                        <Button className="bg-blue-500 hover:bg-blue-600 text-white">
+                          <SquarePen />
+                        </Button>
+                      </Link>
+                      <Button
+                        className="bg-red-500 hover:bg-red-600 text-white px-4"
+                        onClick={() => handleDelete(s.id as string)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      </section>
+       <AnimatePresence>
+              {showFilter && (
+                <>
+                  <motion.div
+                    className='fixed inset-0 bg-black/40 z-40'
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    onClick={() => setShowFilter(false)}
+                  />
+                  <motion.div
+                    className='fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 shadow-lg p-6 flex flex-col gap-6'
+                    initial={{ x: '100%' }}
+                    animate={{ x: 0 }}
+                    exit={{ x: '100%' }}
+                    transition={{ type: 'tween', duration: 0.3 }}
+                  >
+                    <div className='flex items-center justify-between'>
+                      <h3 className='text-xl font-semibold'>Filter</h3>
+                      <button
+                        onClick={() => setShowFilter(false)}
+                        className='text-gray-500 hover:text-gray-700 text-sm'
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    <div className='flex flex-col gap-4'>
+                      <label className='flex flex-col text-sm'>
+                        Bulan
+                        <select
+                          className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                          value={filterBulan}
+                          onChange={e => setFilterBulan(e.target.value)}
+                        >
+                          <option value=''>Semua</option>
+                          <option value='Januari'>Januari</option>
+                          <option value='Februari'>Februari</option>
+                          <option value='Maret'>Maret</option>
+                          <option value='April'>April</option>
+                          <option value='Mei'>Mei</option>
+                          <option value='Juni'>Juni</option>
+                          <option value='Juli'>Juli</option>
+                          <option value='Agustus'>Agustus</option>
+                          <option value='September'>September</option>
+                          <option value='Oktober'>Oktober</option>
+                          <option value='November'>November</option>
+                          <option value='Desember'>Desember</option>
+                        </select>
+                      </label>
+                      
+                      <label className='flex flex-col text-sm'>
+                        Tahun
+                        <select
+                          className='mt-1 border border-gray-300 rounded-md px-3 py-2'
+                          value={filterTahun}
+                          onChange={e => setFilterTahun(e.target.value)}
+                        >
+                          <option value=''>Semua</option>
+                          <option value='2021'>2021</option>
+                          <option value='2022'>2022</option>
+                          <option value='2023'>2023</option>
+                          <option value='2024'>2024</option>
+                          <option value='2025'>2025</option>
+                        </select>
+                      </label>
+                    </div>
+                    <div className='mt-auto flex flex-col gap-2'>
+                      <button
+                        onClick={() => {
+                          setFilterBulan('')
+                          setFilterTahun('')
+                        }}
+                        className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
+                      >
+                        Reset Filter
+                      </button>
+                      <button
+                        onClick={() => setShowFilter(false)}
+                        className='w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600'
+                      >
+                        Terapkan Filter
+                      </button>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+    </section>
+  );
+};
+
+export default SPP;

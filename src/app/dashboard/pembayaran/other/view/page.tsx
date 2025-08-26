@@ -1,6 +1,12 @@
 'use client'
 
-import { GraduationCap, SquarePen, Trash2, Users } from 'lucide-react'
+import {
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  SquarePen,
+  Users,
+} from 'lucide-react'
 import React, { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
@@ -10,7 +16,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
+  TableRow,
 } from '@/components/ui/table'
 import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
 import { Button } from '@/components/ui/button'
@@ -19,50 +25,50 @@ import CardInformation from '@/components/fragments/dashboard/card-information'
 import Swal from 'sweetalert2'
 import { DataPembayaranSiswa } from '@/data/pembayaran'
 import { useStudentModule } from '@/hooks/useStudentModule'
+import { useCategoryPaymentModule } from '@/hooks/use-categoryPayment'
 import Loader from '@/components/ui/loader'
 import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
 
-const DataPembayaran = () => {
+const DataSelainSpp = () => {
   const [showFilter, setShowFilter] = useState(false)
   const [showCount, setShowCount] = useState(10)
   const [filterStatus, setFilterStatus] = useState('')
-  const [filterJurusan, setFilterJurusan] = useState('')
-  const [filterKategori, setFilterKategori] = useState('')
   const [filterAngkatan, setFilterAngkatan] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
-  // Ambil data siswa dari API
-  const { useGetStudent, useDeleteStudent } = useStudentModule()
+  // carousel setup dengan API
+  const { useGetCategory } = useCategoryPaymentModule()
+  const { data: categories = [], isLoading: isLoadingCategory } = useGetCategory()
+  const [startIndex, setStartIndex] = useState(0)
+  const maxVisible = 4
+
+  const handlePrev = () => {
+    if (startIndex > 0) setStartIndex(startIndex - 1)
+  }
+  const handleNext = () => {
+    if (startIndex < categories.length - maxVisible) setStartIndex(startIndex + 1)
+  }
+
+  // ambil data siswa dari API
+  const { useGetStudent } = useStudentModule()
   const { data: siswa = [], isLoading, isError } = useGetStudent()
-  const { mutateAsync: deleteStudent } = useDeleteStudent()
 
   const filteredData = DataPembayaranSiswa
-    // Search bebas (nama, kategori, tanggal)
     .filter((s: any) =>
       searchTerm
         ? s.namaSiswa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          s.kategoriPembayaran
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
+          s.kategoriPembayaran.toLowerCase().includes(searchTerm.toLowerCase()) ||
           s.tanggalPembayaran.includes(searchTerm)
-        : true
+        : true,
     )
-    // Filter kategori pembayaran
-    .filter((s: any) =>
-      filterKategori ? s.kategoriPembayaran === filterKategori : true
-    )
-    // Filter angkatan (tahun)
-    .filter((s: any) => (filterAngkatan ? s.angkatan === filterAngkatan : true))
-    // Filter status "Lunas" atau "Belum Lunas"
-    .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
-    // Filter jurusan "RPL" atau "TKJ"
-    .filter((s: any) => (filterJurusan ? s.jurusan === filterJurusan : true))
 
+    .filter((s: any) => (filterAngkatan ? s.angkatan === filterAngkatan : true))
+    .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
   const totalPages = Math.ceil(filteredData.length / showCount)
   const paginatedData = filteredData.slice(
     (currentPage - 1) * showCount,
-    currentPage * showCount
+    currentPage * showCount,
   )
 
   const getStatusBadgeClass = (status: string) => {
@@ -78,59 +84,36 @@ const DataPembayaran = () => {
     }
   }
 
-  // const handleDelete = async (id: string) => {
-  //   try {
-  //     const result = await Swal.fire({
-  //       title: 'Apakah kamu yakin?',
-  //       text: 'Data yang dihapus tidak bisa dikembalikan!',
-  //       icon: 'warning',
-  //       showCancelButton: true,
-  //       confirmButtonColor: '#d33',
-  //       cancelButtonColor: '#3085d6',
-  //       confirmButtonText: 'Ya, hapus!',
-  //       cancelButtonText: 'Batal'
-  //     })
-
-  //     if (result.isConfirmed) {
-  //       // Jalankan proses delete di sini, misal panggil API atau hapus data lokal
-  //       // Contoh simulasi:
-  //       await deleteStudent(id)
-  //     }
-  //   } catch (error) {
-  //     console.error(error)
-  //   }
-  // }
-
- if (isLoading) {
+  if (isLoading || isLoadingCategory) {
     return (
-      <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
+      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
         <Loader />
       </div>
     )
   }
 
   if (isError) {
-    return <div className='p-6 text-red-500'>Gagal memuat data siswa.</div>
+    return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>
   }
 
   return (
-    <section className='flex flex-col gap-10 w-full '>
-      <section className='grid grid-cols-2 gap-4 '>
+    <section className="flex flex-col gap-10 w-full">
+      <section className="grid grid-cols-2 gap-4">
         <CardInformation
           color={'blue'}
           title={'Total Data'}
           value={siswa.length}
-          icon={<GraduationCap size={32} className='text-blue-500' />}
+          icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
           color={'green'}
           title={'Lunas'}
           value={filteredData.slice(0, showCount).length}
-          icon={<Users size={32} className='text-green-500' />}
+          icon={<Users size={32} className="text-green-500" />}
         />
       </section>
 
-      <section className='w-full flex flex-col gap-6 h-full pb-6'>
+      <section className="w-full flex flex-col gap-6 h-full pb-6">
         <SearchDataTable
           title={'Data Pembayaran'}
           searchTerm={searchTerm}
@@ -140,72 +123,96 @@ const DataPembayaran = () => {
           type={'normal'}
         />
 
-        <div className='w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4'>
-          <Table className='w-full h-full table-auto bg-white text-gray-700'>
-            <TableHeader className=' text-sm font-semibold text-center'>
-              <TableRow className='text-center'>
-                <TableHead className='text-center py-4'>No</TableHead>
-                <TableHead className='text-center py-4'>Nama Siswa</TableHead>
-                <TableHead className='text-center py-4'>
-                  Kategori Pembayaran
-                </TableHead>
-                <TableHead className='text-center py-4'>Angkatan</TableHead>
-                <TableHead className='text-center py-4'>
-                  Total Pembayaran
-                </TableHead>
-                <TableHead className='text-center py-4'>Status</TableHead>
-                <TableHead className='text-center py-4'>
-                  Tanggal Pembayaran
-                </TableHead>
-                <TableHead className='text-center py-4'>Jurusan</TableHead>
-                <TableHead className='text-center py-4'>Aksi</TableHead>
+        {/* carousel kategori dari API */}
+        <div className="w-full flex items-center">
+          <button
+            onClick={handlePrev}
+            disabled={startIndex === 0}
+            className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+
+          <div className="overflow-hidden flex-1 mx-2">
+            <div
+              className="flex gap-4 transition-transform duration-500"
+              style={{
+                transform: `translateX(-${startIndex * (100 / maxVisible)}%)`,
+              }}
+            >
+              {categories.length === 0 ? (
+                <p className="text-gray-400">Belum ada kategori</p>
+              ) : (
+                categories.map((kat: any, i: number) => (
+                  <div
+                    key={i}
+                    className="flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-16 rounded-xl bg-blue-500"
+                  >
+                    <p className="text-white font-semibold text-xl">{kat.name}</p>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={handleNext}
+            disabled={startIndex >= categories.length - maxVisible}
+            className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* tabel data siswa */}
+        <div className="w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
+          <Table className="w-full h-full table-auto bg-white text-gray-700">
+            <TableHeader className="text-sm font-semibold text-center">
+              <TableRow className="text-center">
+                <TableHead className="py-4">No</TableHead>
+                <TableHead className="py-4">Nama Siswa</TableHead>
+                <TableHead className="py-4">Kategori Pembayaran</TableHead>
+                <TableHead className="py-4">Angkatan</TableHead>
+                <TableHead className="py-4">Total Pembayaran</TableHead>
+                <TableHead className="py-4">Status</TableHead>
+                <TableHead className="py-4">Tanggal Pembayaran</TableHead>
+                <TableHead className="py-4">Jurusan</TableHead>
+                <TableHead className="py-4">Aksi</TableHead>
               </TableRow>
             </TableHeader>
 
-            <TableBody className='text-sm divide-y divide-gray-200 text-center'>
+            <TableBody className="text-sm divide-y divide-gray-200 text-center">
               {paginatedData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className='py-8 text-gray-400'>
+                  <TableCell colSpan={9} className="py-8 text-gray-400">
                     Data not found
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedData.slice(0, showCount).map((s: any) => (
+                paginatedData.map((s: any, idx) => (
                   <TableRow key={s.id}>
-                    <TableCell className=' py-4 font-medium'>{s.no}</TableCell>
-                    <TableCell className=' py-4 font-medium'>
-                      {s.namaSiswa}
-                    </TableCell>
-                    <TableCell className=' py-4'>
-                      {s.kategoriPembayaran}
-                    </TableCell>
-                    <TableCell className=' py-4'>{s.angkatan}</TableCell>
-                    <TableCell className=' py-4'>{s.totalPembayaran}</TableCell>
-                    <TableCell className=' py-4'>
+                    <TableCell className="py-4 font-medium">{idx + 1}</TableCell>
+                    <TableCell className="py-4 font-medium">{s.namaSiswa}</TableCell>
+                    <TableCell className="py-4">{s.kategoriPembayaran}</TableCell>
+                    <TableCell className="py-4">{s.angkatan}</TableCell>
+                    <TableCell className="py-4">{s.totalPembayaran}</TableCell>
+                    <TableCell className="py-4">
                       <span
                         className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                          s.status
-                        )}`}  
+                          s.status,
+                        )}`}
                       >
                         {s.status}
                       </span>
                     </TableCell>
-                    <TableCell className=' py-4'>
-                      {s.tanggalPembayaran}
-                    </TableCell>
-                    <TableCell className=' py-4'>{s.jurusan}</TableCell>
-                    <TableCell className='flex w-full gap-2 items-center'>
+                    <TableCell className="py-4">{s.tanggalPembayaran}</TableCell>
+                    <TableCell className="py-4">{s.jurusan}</TableCell>
+                    <TableCell className="flex w-full gap-2 items-center">
                       <Link href={`/dashboard/siswa/update/${s.id}`}>
-                        <Button className='bg-blue-400 text-white cursor-pointer'>
+                        <Button className="bg-blue-400 text-white cursor-pointer">
                           <SquarePen />
                         </Button>
                       </Link>
-                      {/* <Button
-                        className='bg-red-500 text-white cursor-pointer px-4'
-                        onClick={() => handleDelete(s.id as string)}
-                      >
-                        <Trash2 />
-                      </Button> */}
                     </TableCell>
                   </TableRow>
                 ))
@@ -261,31 +268,6 @@ const DataPembayaran = () => {
                   </select>
                 </label>
                 <label className='flex flex-col text-sm'>
-                  Jurusan
-                  <select
-                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
-                    value={filterJurusan}
-                    onChange={e => setFilterJurusan(e.target.value)}
-                  >
-                    <option value=''>Semua</option>
-                    <option value='TKJ'>TKJ</option>
-                    <option value='RPL'>RPL</option>
-                  </select>
-                </label>
-                <label className='flex flex-col text-sm'>
-                  Kategori Pembayaran
-                  <select
-                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
-                    value={filterKategori}
-                    onChange={e => setFilterKategori(e.target.value)}
-                  >
-                    <option value=''>Semua</option>
-                    <option value='SPP'>SPP</option>
-                    <option value='Praktikum'>Praktikum</option>
-                    <option value='Kegiatan'>Kegiatan</option>
-                  </select>
-                </label>
-                <label className='flex flex-col text-sm'>
                   Angkatan
                   <select
                     className='mt-1 border border-gray-300 rounded-md px-3 py-2'
@@ -302,12 +284,11 @@ const DataPembayaran = () => {
               <div className='mt-auto flex flex-col gap-2'>
                 <button
                   onClick={() => {
-                    setFilterKategori('')
+                                    
                     setFilterStatus('')
-                    setFilterJurusan('')
                     setFilterAngkatan('')
                   }}
-                  className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
+                  className='w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-gray-300'
                 >
                   Reset Filter
                 </button>
@@ -326,4 +307,4 @@ const DataPembayaran = () => {
   )
 }
 
-export default DataPembayaran
+export default DataSelainSpp
