@@ -100,8 +100,8 @@ const LihatSemuaPengeluaran = () => {
         />
 
         {/* Table */}
-        <div className='w-full h-full rounded-xl overflow-hidden bg-white p-1'>
-          <Table className='w-full h-full table-auto bg-white text-gray-700'>
+        <div className="w-full rounded-xl overflow-hidden bg-white p-4">
+          <Table className="w-full table-auto text-gray-700">
             <TableHeader className='text-sm font-semibold text-center'>
               <TableRow>
                 <TableHead className='text-center py-4'>Tanggal</TableHead>
@@ -147,35 +147,46 @@ const LihatSemuaPengeluaran = () => {
             </TableBody>
           </Table>
         </div>
-
-        {/* Pagination */}
-        {filteredData.length > showCount && (
-          <div className="flex gap-2 justify-center mt-4">
-            <Button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage(prev => prev - 1)}
-            >
-              Prev
+        <div className="flex items-center justify-between mt-4 px-2">
+          {/* Tombol tambah kategori pembayaran di kiri */}
+          <Link href="/dashboard/pengeluaran/category/create">
+            <Button className="bg-green-500 hover:bg-green-600 text-white shadow-md transition-colors duration-200">
+              + Tambah Kategori Pembayaran
             </Button>
-
-            {[...Array(totalPages)].map((_, i) => (
+          </Link>
+          {/* Pagination di kanan */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
               <Button
-                key={i}
-                variant={currentPage === i + 1 ? "default" : "outline"}
-                onClick={() => setCurrentPage(i + 1)}
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                className="rounded-full px-3 py-2 bg-white border border-green-400 text-green-600 hover:bg-green-50"
               >
-                {i + 1}
+                &lt;
               </Button>
-            ))}
-
-            <Button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(prev => prev + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        )}
+              {[...Array(totalPages)].map((_, idx) => (
+                <Button
+                  key={idx + 1}
+                  onClick={() => setCurrentPage(idx + 1)}
+                  className={`rounded-full px-3 py-2 mx-1 ${
+                    currentPage === idx + 1
+                      ? "bg-green-400 text-white"
+                      : "bg-white border border-green-400 text-green-600 hover:bg-green-50"
+                  }`}
+                >
+                  {idx + 1}
+                </Button>
+              ))}
+              <Button
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                className="rounded-full px-3 py-2 bg-white border border-green-400 text-green-600 hover:bg-green-50"
+              >
+                &gt;
+              </Button>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Filter Drawer */}
