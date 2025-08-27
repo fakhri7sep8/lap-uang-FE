@@ -26,6 +26,17 @@ const createCategorySchema = Yup.object().shape({
   type: Yup.string().oneOf(['NORMAL', 'INSTALLMENT'], 'Tipe tidak valid')
 })
 
+const getAcademicYears = (count = 5) => {
+  const currentYear = new Date().getFullYear()
+  return Array.from({ length: count }, (_, i) => {
+    const start = currentYear + i
+    const end = start + 1
+    return `${start}/${end}`
+  })
+}
+
+const academicYears = getAcademicYears()
+
 const CreateKategori = () => {
   const { useCreateCategory } = useCategoryPaymentModule()
   const { mutate } = useCreateCategory()
@@ -45,9 +56,9 @@ const CreateKategori = () => {
   })
 
   return (
-    <section className='h-[91vh] pt-36'>
-      <div className='bg-white rounded-xl p-8 w-1/2 mx-auto shadow-md flex flex-col items-center'>
-        <h1 className='w-full h-24 text-2xl font-semibold'>
+    <section className='min-h-screen pt-10'>
+      <div className='bg-white rounded-xl p-8 max-w-full w-full mx-auto shadow-md flex flex-col items-center'>
+        <h1 className='w-full text-2xl font-semibold mb-6'>
           Tambah Kategori Pembayaran
         </h1>
 
@@ -90,13 +101,24 @@ const CreateKategori = () => {
             {/* Tahun Ajaran */}
             <div className='w-full flex flex-col gap-4'>
               <Label>Tahun Ajaran</Label>
-              <Input
-                name='TA'
+              <Select
                 value={formik.values.TA}
-                onChange={formik.handleChange}
-                placeholder='masukan tahun ajaran'
-                className='border-slate-300 rounded-md px-3 py-6'
-              />
+                onValueChange={val => formik.setFieldValue('TA', val)}
+              >
+                <SelectTrigger className='w-full py-6 px-3 border-slate-300 rounded-md text-slate-500'>
+                  <SelectValue placeholder='Pilih Tahun Ajaran' />
+                </SelectTrigger>
+                <SelectContent className='border-none bg-white'>
+                  <SelectGroup className='flex flex-col gap-1'>
+                    <SelectLabel>Tahun Ajaran</SelectLabel>
+                    {academicYears.map(year => (
+                      <SelectItem key={year} value={year} className='hover:bg-gray-50'>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
               {formik.touched.TA && formik.errors.TA && (
                 <p className='text-red-500 text-sm'>{formik.errors.TA}</p>
               )}
@@ -116,7 +138,7 @@ const CreateKategori = () => {
                   <SelectGroup className='flex flex-col gap-1'>
                     <SelectLabel>Tipe Kategori</SelectLabel>
                     <SelectItem value='NORMAL' className='hover:bg-gray-50'>
-                      Normal
+                      SPP
                     </SelectItem>
                     <SelectItem
                       value='INSTALLMENT'
