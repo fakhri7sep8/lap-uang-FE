@@ -29,6 +29,16 @@ const updateCategorySchema = Yup.object().shape({
   type: Yup.string().oneOf(['NORMAL', 'INSTALLMENT'], 'Tipe tidak valid')
 })
 
+const getAcademicYears = (count = 5) => {
+  const currentYear = new Date().getFullYear();
+  return Array.from({ length: count }, (_, i) => {
+    const start = currentYear + i;
+    const end = start + 1;
+    return `${start}/${end}`;
+  });
+};
+
+const academicYears = getAcademicYears();
 const UpdateKategori = () => {
   const { id } = useParams()
 
@@ -61,8 +71,8 @@ const UpdateKategori = () => {
   }
 
   return (
-    <section className='h-[91vh] pt-36'>
-      <div className='bg-white rounded-xl p-8 w-1/2 mx-auto shadow-md h-[50vh] flex flex-col items-center'>
+    <section className='h-[91vh] pt-16'>
+      <div className='bg-white rounded-xl p-8 w-full mx-auto shadow-md h-[50vh] flex flex-col items-center'>
         <h1 className='w-full h-24 text-2xl font-semibold'>
           Update Kategori Pembayaran
         </h1>
@@ -107,42 +117,64 @@ const UpdateKategori = () => {
               )}
             </div>
 
-            <div className='w-full flex flex-col gap-4'>
+            <div className="w-full flex flex-col gap-4">
               <Label>Tahun Ajaran</Label>
-              <Input
-                name='TA'
-                defaultValue={formik.values.TA}
-                onChange={e => formik.setFieldValue('TA', e.target.value)}
-                placeholder='masukan tahun ajaran'
-                className='border-slate-300 rounded-md px-3 py-6'
-              />
-              {formik.touched?.TA && formik.errors?.TA && (
-                <p className='text-red-500 text-sm'>
-                  {formik.errors.TA as string}
-                </p>
+              <Select
+                value={formik.values.TA}
+                onValueChange={(val) => formik.setFieldValue("TA", val)}
+              >
+                <SelectTrigger className="w-full py-6 px-3 border-slate-300 rounded-md text-slate-500">
+                  <SelectValue placeholder="Pilih Tahun Ajaran" />
+                </SelectTrigger>
+                <SelectContent className="border-none bg-white">
+                  <SelectGroup className="flex flex-col gap-1">
+                    <SelectLabel>Tahun Ajaran</SelectLabel>
+                    {academicYears.map((year) => (
+                      <SelectItem
+                        key={year}
+                        value={year}
+                        className="hover:bg-gray-50"
+                      >
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+              {formik.touched.TA && formik.errors.TA && typeof formik.errors.TA === 'string' && (
+                <p className="text-red-500 text-sm">{formik.errors.TA}</p>
+              )}
+              {formik.touched.TA && Array.isArray(formik.errors.TA) && (
+                <p className="text-red-500 text-sm">{formik.errors.TA.join(', ')}</p>
               )}
             </div>
 
             <div className='w-full flex flex-col gap-4'>
               <Label>Tipe Kategori</Label>
               <Select
-                defaultValue={formik.values.type}
-                onValueChange={val => formik.setFieldValue('type', val)}
+                value={formik.values.type}
+                onValueChange={(val) => formik.setFieldValue("type", val)}
               >
-                <SelectTrigger className='w-full py-6 px-3 border-slate-300 rounded-md text-slate-500'>
-                  <SelectValue placeholder='Pilih Tipe Kategori' />
+                <SelectTrigger className="w-full py-6 px-3 border-slate-300 rounded-md text-slate-500">
+                  <SelectValue placeholder="Pilih Tipe Kategori" />
                 </SelectTrigger>
-                <SelectContent className='border-none bg-white'>
-                  <SelectGroup className='flex flex-col gap-1'>
+                <SelectContent className="border-none bg-white">
+                  <SelectGroup className="flex flex-col gap-1">
                     <SelectLabel>Tipe Kategori</SelectLabel>
-                    <SelectItem value='NORMAL' className='hover:bg-gray-50'>
-                      Normal
+                    <SelectItem value="NORMAL" className="hover:bg-gray-50">
+                      SPP
                     </SelectItem>
                     <SelectItem
-                      value='INSTALLMENT'
-                      className='hover:bg-gray-50'
+                      value="UANG MASUK"
+                      className="hover:bg-gray-50"
                     >
-                      Installment
+                      Uang Masuk
+                    </SelectItem>
+                    <SelectItem
+                      value="DAFTAR ULANG"
+                      className="hover:bg-gray-50"
+                    >
+                      Daftar Ulang
                     </SelectItem>
                   </SelectGroup>
                 </SelectContent>
