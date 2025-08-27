@@ -156,6 +156,7 @@ const DataSelainSpp = () => {
           </div>
 
           <button
+            title='button'
             onClick={handleNext}
             disabled={startIndex >= categories.length - maxVisible}
             className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
@@ -171,8 +172,6 @@ const DataSelainSpp = () => {
               <TableRow className="text-center">
                 <TableHead className="py-4">No</TableHead>
                 <TableHead className="py-4">Nama Siswa</TableHead>
-                <TableHead className="py-4">Kategori Pembayaran</TableHead>
-                <TableHead className="py-4">Angkatan</TableHead>
                 <TableHead className="py-4">Total Pembayaran</TableHead>
                 <TableHead className="py-4">Status</TableHead>
                 <TableHead className="py-4">Tanggal Pembayaran</TableHead>

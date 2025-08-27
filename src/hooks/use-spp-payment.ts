@@ -19,6 +19,10 @@ export const useSppPaymentModule = () => {
     return await axiosClient.get("/spp-payment").then((res) => res.data);
   };
 
+  const getRecapSPPPayment = async () => {
+    return await axiosClient.get(`/spp-payment/rekap/2025`).then((res) => res.data);
+  }
+
   const createPayment = async (payload: CreateSppPayment) => {
     return await axiosClient
       .post("/spp-payment", payload)
@@ -46,6 +50,17 @@ export const useSppPaymentModule = () => {
     const { data, isLoading, isError } = useQuery({
       queryKey: ["sppPayments"],
       queryFn: getPayments,
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      select: (data) => data.data, // sesuai response BaseResponse -> { data: ... }
+    });
+    return { data, isLoading, isError };
+  };
+  
+  const useGetRecapPayments = () => {
+    const { data, isLoading, isError } = useQuery({
+      queryKey: ["RecapSPP-Payments"],
+      queryFn: getRecapSPPPayment,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
       select: (data) => data.data, // sesuai response BaseResponse -> { data: ... }
@@ -151,5 +166,6 @@ export const useSppPaymentModule = () => {
     useUpdatePayment,
     useDeletePayment,
     useDetailPayment,
+    useGetRecapPayments
   };
 };
