@@ -71,9 +71,14 @@ export function generateMenuDashboard({
           link: "/dashboard/pembayaran/input",
         },
         {
-          name: "Data Pembayaran",
+          name: "Data SPP",
           icon: <FileText className="mr-2" size={16} />,
-          link: "/dashboard/pembayaran/view",
+          link: "/dashboard/pembayaran/spp",
+        },
+        {
+          name: "Data Selain SPP",
+          icon: <FileText className="mr-2" size={16} />,
+          link: "/dashboard/pembayaran/other/view",
         },
       ],
     },

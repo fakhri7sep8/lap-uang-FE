@@ -17,6 +17,7 @@ import { viewPengeluaran } from '@/data/view-pengeluaran'
 import { Button } from '@/components/ui/button'
 import CardInformation from '@/components/fragments/dashboard/card-information'
 import Link from 'next/link'
+import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
 
 const LihatSemuaPengeluaran = () => {
   const [showFilter, setShowFilter] = useState(false)
@@ -67,8 +68,7 @@ const LihatSemuaPengeluaran = () => {
     alert('delete pengeluaran berjalan')
   }
 
-  const formatRupiah = (num: number) =>
-    'Rp ' + num.toLocaleString('id-ID')
+  const formatRupiah = (num: number) => 'Rp ' + num.toLocaleString('id-ID')
 
   return (
     <section className='flex flex-col gap-10 w-full'>
@@ -146,46 +146,11 @@ const LihatSemuaPengeluaran = () => {
               )}
             </TableBody>
           </Table>
-        </div>
-        <div className="flex items-center justify-between mt-4 px-2">
-          {/* Tombol tambah kategori pembayaran di kiri */}
-          <Link href="/dashboard/pengeluaran/category/create">
-            <Button className="bg-green-500 hover:bg-green-600 text-white shadow-md transition-colors duration-200">
-              + Tambah Kategori Pembayaran
-            </Button>
-          </Link>
-          {/* Pagination di kanan */}
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
-              <Button
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                className="rounded-full px-3 py-2 bg-white border border-green-400 text-green-600 hover:bg-green-50"
-              >
-                &lt;
-              </Button>
-              {[...Array(totalPages)].map((_, idx) => (
-                <Button
-                  key={idx + 1}
-                  onClick={() => setCurrentPage(idx + 1)}
-                  className={`rounded-full px-3 py-2 mx-1 ${
-                    currentPage === idx + 1
-                      ? "bg-green-400 text-white"
-                      : "bg-white border border-green-400 text-green-600 hover:bg-green-50"
-                  }`}
-                >
-                  {idx + 1}
-                </Button>
-              ))}
-              <Button
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                className="rounded-full px-3 py-2 bg-white border border-green-400 text-green-600 hover:bg-green-50"
-              >
-                &gt;
-              </Button>
-            </div>
-          )}
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </section>
 
@@ -223,10 +188,15 @@ const LihatSemuaPengeluaran = () => {
                   <select
                     className='mt-1 border border-gray-300 rounded-md px-3 py-2'
                     value={filterJenis}
-                    onChange={e => { setFilterJenis(e.target.value); setCurrentPage(1) }}
+                    onChange={e => {
+                      setFilterJenis(e.target.value)
+                      setCurrentPage(1)
+                    }}
                   >
                     <option value=''>Semua</option>
-                    {[...new Set(viewPengeluaran.map(p => p.jenisPengeluaran))].map(jenis => (
+                    {[
+                      ...new Set(viewPengeluaran.map(p => p.jenisPengeluaran))
+                    ].map(jenis => (
                       <option key={jenis} value={jenis}>
                         {jenis}
                       </option>
@@ -238,7 +208,10 @@ const LihatSemuaPengeluaran = () => {
                   <select
                     className='mt-1 border border-gray-300 rounded-md px-3 py-2'
                     value={filterBulan}
-                    onChange={e => { setFilterBulan(e.target.value); setCurrentPage(1) }}
+                    onChange={e => {
+                      setFilterBulan(e.target.value)
+                      setCurrentPage(1)
+                    }}
                   >
                     <option value=''>Semua</option>
                     {bulanIndo.map(bulan => (
@@ -251,7 +224,11 @@ const LihatSemuaPengeluaran = () => {
               </div>
               <div className='mt-auto flex flex-col gap-2'>
                 <button
-                  onClick={() => { setFilterJenis(''); setFilterBulan(''); setCurrentPage(1) }}
+                  onClick={() => {
+                    setFilterJenis('')
+                    setFilterBulan('')
+                    setCurrentPage(1)
+                  }}
                   className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
                 >
                   Reset Filter

@@ -20,7 +20,7 @@ export default function TutorialPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800">
-      <header className="bg-white shadow-sm p-4 border-b border-slate-300">
+      <header className="bg-white shadow-sm p-4 border-b -300">
         <h1 className="font-bold text-xl flex items-center gap-2">
           📊 Laporan Keuangan
         </h1>
