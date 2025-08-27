@@ -3,6 +3,7 @@ import { axiosClient } from "@/lib/axiosClient";
 import { useMutation } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 import Cookie from "js-cookie";
+import { useRouter } from "next/navigation";
 
 export const useAuthModule = () => {
   const Login = async (payload: any) => {
@@ -37,6 +38,7 @@ export const useAuthModule = () => {
   };
 
   const useLogin = () => {
+    const router = useRouter()
     const mutation = useMutation({
       mutationFn: (payload: any) => Login(payload),
       onSuccess: (data) => {
@@ -46,6 +48,11 @@ export const useAuthModule = () => {
           title: "Berhasil!",
           text: "Login berhasil, Anda akan diarahkan ke halaman admin.",
           icon: "success",
+          confirmButtonText: "OK",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            router.push("/dashboard"); // redirect ke dashboard
+          }
         });
       },
       onError: (error) => {

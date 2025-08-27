@@ -160,6 +160,7 @@ const DataSelainSpp = () => {
           </div>
 
           <button
+            title='button'
             onClick={handleNext}
             disabled={startIndex >= categories.length - maxVisible}
             className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"

@@ -35,6 +35,7 @@ const UpdateKategori = () => {
   const { useDetailCategory, useUpdateCategory } = useCategoryPaymentModule();
   const { mutate } = useUpdateCategory(id as string);
   const { data, isLoading } = useDetailCategory(id as string);
+  console.log(data);
 
   const formik = useFormik({
     initialValues: {

@@ -108,7 +108,7 @@ export function AppSidebar () {
                 <SidebarMenuItem>
                   <SidebarMenuButton>
                     <LayoutDashboard className='mr-2' size={18} />
-                    <Link href="http://localhost:3050/dashboard">
+                    <Link href="https://laporan-keuangan-sekolah.vercel.app/dashboard">
                     <span className={`font-semibold ${poppins.className}`}>
                       Dashboard Utama
                     </span>
