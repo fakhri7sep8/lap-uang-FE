@@ -23,7 +23,10 @@ const createCategorySchema = Yup.object().shape({
     .min(1, 'Minimal semester 1')
     .max(8, 'Maksimal semester 8'),
   TA: Yup.string().required('Tahun ajaran wajib diisi'),
-  type: Yup.string().oneOf(['NORMAL', 'INSTALLMENT'], 'Tipe tidak valid')
+  type: Yup.string().oneOf(['NORMAL', 'INSTALLMENT'], 'Tipe tidak valid'),
+  nominal: Yup.number()
+    .required('Nominal wajib diisi')
+    .min(0, 'Nominal minimal 0')
 })
 
 const CreateKategori = () => {
@@ -35,7 +38,8 @@ const CreateKategori = () => {
       name: '',
       semester: '',
       TA: '',
-      type: ''
+      type: '',
+      nominal: ''
     },
     validationSchema: createCategorySchema,
     onSubmit: values => {
@@ -118,10 +122,7 @@ const CreateKategori = () => {
                     <SelectItem value='NORMAL' className='hover:bg-gray-50'>
                       Normal
                     </SelectItem>
-                    <SelectItem
-                      value='INSTALLMENT'
-                      className='hover:bg-gray-50'
-                    >
+                    <SelectItem value='INSTALLMENT' className='hover:bg-gray-50'>
                       Installment
                     </SelectItem>
                   </SelectGroup>
@@ -129,6 +130,22 @@ const CreateKategori = () => {
               </Select>
               {formik.touched.type && formik.errors.type && (
                 <p className='text-red-500 text-sm'>{formik.errors.type}</p>
+              )}
+            </div>
+
+            {/* Nominal */}
+            <div className='w-full flex flex-col gap-4'>
+              <Label>Nominal</Label>
+              <Input
+                type='number'
+                name='nominal'
+                value={formik.values.nominal}
+                onChange={formik.handleChange}
+                placeholder='masukan nominal'
+                className='border-slate-300 rounded-md px-3 py-6'
+              />
+              {formik.touched.nominal && formik.errors.nominal && (
+                <p className='text-red-500 text-sm'>{formik.errors.nominal}</p>
               )}
             </div>
           </div>

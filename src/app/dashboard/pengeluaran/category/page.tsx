@@ -229,7 +229,7 @@ const LihatSemuaPengeluaran = () => {
                     setFilterBulan('')
                     setCurrentPage(1)
                   }}
-                  className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
+                  className='w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-gray-300'
                 >
                   Reset Filter
                 </button>
