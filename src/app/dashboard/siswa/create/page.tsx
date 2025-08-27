@@ -28,7 +28,7 @@ const tambahSiswaSchema = Yup.object().shape({
 
 const TambahSiswa = () => {
   const { useCreateStudent } = useStudentModule();
-  const { mutate } = useCreateStudent();
+  const { mutate, isPending } = useCreateStudent();
 
   const formik = useFormik({
     initialValues: {
@@ -127,7 +127,7 @@ const TambahSiswa = () => {
             type="submit"
             className="bg-blue-500 hover:bg-blue-600 text-white shadow-md"
           >
-            Tambah
+            {isPending ? "Menyimpan..." : "Simpan"}
           </Button>
           <Button
             type="button"

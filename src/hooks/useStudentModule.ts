@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { axiosClient } from "@/lib/axiosClient";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -24,7 +24,7 @@ export const useStudentModule = () => {
 
   const useCreateStudent = () => {
     const router = useRouter();
-    const mutation = useMutation({
+    const {mutate, isPending} = useMutation({
       mutationFn: (data: any) => createStudent(data),
       onSuccess: (data) => {
         Swal.fire({
@@ -48,7 +48,7 @@ export const useStudentModule = () => {
         console.log("Error creating student data:", error);
       },
     });
-    return mutation; // return object lengkap mutation
+    return {mutate, isPending}; // return object lengkap mutation
   };
 
   const useUpdateStudent = (id: string) => {
@@ -77,10 +77,13 @@ export const useStudentModule = () => {
   };
 
   const useDeleteStudent = () => {
+    const queryClient = useQueryClient();
+
     const mutate = useMutation({
       mutationFn: (id: string) => deleteStudent(id),
       onSuccess: (data) => {
         console.log("Delete berhasil", data);
+        queryClient.invalidateQueries({ queryKey: ["get-student"] });
       },
       onError: (error) => {
         console.error("Gagal menghapus data siswa:", error);
