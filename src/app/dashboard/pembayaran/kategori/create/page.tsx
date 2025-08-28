@@ -24,6 +24,10 @@ const createCategorySchema = Yup.object().shape({
     .max(8, "Maksimal semester 8"),
   TA: Yup.string().required("Tahun ajaran wajib diisi"),
   type: Yup.string().oneOf(["NORMAL", "INSTALLMENT"], "Tipe tidak valid"),
+  nominal: Yup.number()
+  .required('Nominal wajib diisi')
+  .min(0, 'Nominal minimal 0')
+
 });
 
 const getAcademicYears = (count = 5) => {
@@ -36,15 +40,6 @@ const getAcademicYears = (count = 5) => {
 };
 
 const academicYears = getAcademicYears();
-    .required('Semester wajib diisi')
-    .min(1, 'Minimal semester 1')
-    .max(8, 'Maksimal semester 8'),
-  TA: Yup.string().required('Tahun ajaran wajib diisi'),
-  type: Yup.string().oneOf(['NORMAL', 'INSTALLMENT'], 'Tipe tidak valid'),
-  nominal: Yup.number()
-    .required('Nominal wajib diisi')
-    .min(0, 'Nominal minimal 0')
-})
 
 const CreateKategori = () => {
   const { useCreateCategory } = useCategoryPaymentModule();
@@ -56,10 +51,6 @@ const CreateKategori = () => {
       semester: "",
       TA: "",
       type: "",
-      name: '',
-      semester: '',
-      TA: '',
-      type: '',
       nominal: ''
     },
     validationSchema: createCategorySchema,
@@ -169,6 +160,7 @@ const CreateKategori = () => {
                       className="hover:bg-gray-50"
                     >
                       Daftar Ulang
+                      </SelectItem>
                     <SelectItem value='INSTALLMENT' className='hover:bg-gray-50'>
                       Installment
                     </SelectItem>
