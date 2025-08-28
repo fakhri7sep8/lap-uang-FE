@@ -196,7 +196,6 @@ const SPP = () => {
                     <TableCell>{getPaymentBadge(s.oktober)}</TableCell>
                     <TableCell>{getPaymentBadge(s.november)}</TableCell>
                     <TableCell>{getPaymentBadge(s.desember)}</TableCell>
-                    <TableCell>{getPaymentBadge(s.desember)}</TableCell>
                     <TableCell>{getPaymentBadge(s.januari)}</TableCell>
                     <TableCell>{getPaymentBadge(s.februari)}</TableCell>
                     <TableCell>{getPaymentBadge(s.maret)}</TableCell>
