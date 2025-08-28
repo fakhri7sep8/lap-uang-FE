@@ -196,7 +196,6 @@ const SPP = () => {
                     <TableCell>{getPaymentBadge(s.oktober)}</TableCell>
                     <TableCell>{getPaymentBadge(s.november)}</TableCell>
                     <TableCell>{getPaymentBadge(s.desember)}</TableCell>
-                    <TableCell>{getPaymentBadge(s.desember)}</TableCell>
                     <TableCell>{getPaymentBadge(s.januari)}</TableCell>
                     <TableCell>{getPaymentBadge(s.februari)}</TableCell>
                     <TableCell>{getPaymentBadge(s.maret)}</TableCell>
@@ -205,11 +204,11 @@ const SPP = () => {
                     <TableCell>{getPaymentBadge(s.juni)}</TableCell>
 
                     <TableCell className='flex gap-2 justify-center'>
-                      <Link href={`/dashboard/spp/update/${s.id}`}>
+                      {/* <Link href={`/dashboard/spp/update/${s.id}`}>
                         <Button className='bg-blue-500 hover:bg-blue-600 text-white'>
                           <SquarePen />
                         </Button>
-                      </Link>
+                      </Link> */}
                       <Button
                         className='bg-red-500 hover:bg-red-600 text-white px-4'
                         onClick={() => handleDelete(s.id as string)}
