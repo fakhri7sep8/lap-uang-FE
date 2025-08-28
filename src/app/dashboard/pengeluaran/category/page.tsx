@@ -100,8 +100,8 @@ const LihatSemuaPengeluaran = () => {
         />
 
         {/* Table */}
-        <div className='w-full h-full rounded-xl overflow-hidden bg-white p-1'>
-          <Table className='w-full h-full table-auto bg-white text-gray-700'>
+        <div className="w-full rounded-xl overflow-hidden bg-white p-4">
+          <Table className="w-full table-auto text-gray-700">
             <TableHeader className='text-sm font-semibold text-center'>
               <TableRow>
                 <TableHead className='text-center py-4'>Tanggal</TableHead>
