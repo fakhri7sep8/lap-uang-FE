@@ -20,7 +20,7 @@ export const usePaymentModule = () => {
   };
 
   const getRecapPayments = async () => {
-    return await axiosClient.get("/payments/rekap").then((res) => res.data);
+    return await axiosClient.get("/payments/rekap/2025").then((res) => res.data);
   };
 
   const createPayment = async (payload: any) => {

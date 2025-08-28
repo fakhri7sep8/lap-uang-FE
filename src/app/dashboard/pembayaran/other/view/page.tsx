@@ -3,6 +3,7 @@
 import {
   ChevronLeft,
   ChevronRight,
+  Download,
   GraduationCap,
   SquarePen,
   Users,
@@ -29,6 +30,7 @@ import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
 import Loader from "@/components/ui/loader";
 import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
 import { DataDummySiswa } from "@/data/other_dummy";
+import { usePaymentModule } from "@/hooks/use-payment";
 
 const DataSelainSpp = () => {
   const [showFilter, setShowFilter] = useState(false);
@@ -54,19 +56,21 @@ const DataSelainSpp = () => {
   };
 
   // ambil data siswa dari API
-  const { useGetStudent } = useStudentModule();
-  const { data: siswa = [], isLoading, isError } = useGetStudent();
+  const { useGetRecapPayments } = usePaymentModule();
+  const { data: recap = [], isLoading, isError } = useGetRecapPayments();
 
-  const filteredData = DataDummySiswa.filter((s: any) =>
-    searchTerm
-      ? s.namaSiswa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.kategoriPembayaran.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s.tanggalPembayaran.includes(searchTerm)
-      : true
-  )
+  const filteredData = recap
+    .filter((p: any) =>
+      searchTerm
+        ? p.name.toLowerCase().includes(searchTerm.toLowerCase())
+        : true
+    )
+    .filter((p: any) =>
+      filterStatus
+        ? p.uang_masuk === filterStatus || p.daftar_ulang === filterStatus
+        : true
+    );
 
-    .filter((s: any) => (filterAngkatan ? s.angkatan === filterAngkatan : true))
-    .filter((s: any) => (filterStatus ? s.status === filterStatus : true));
   const totalPages = Math.ceil(filteredData.length / showCount);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * showCount,
@@ -74,12 +78,12 @@ const DataSelainSpp = () => {
   );
 
   const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "Lunas":
+    switch (status.toUpperCase()) {
+      case "LUNAS":
         return "bg-green-100 text-green-700";
-      case "Belum Lunas":
+      case "BELUM_LUNAS":
         return "bg-yellow-100 text-yellow-700";
-      case "Tunggakan":
+      case "TUNGGAKAN":
         return "bg-red-100 text-red-700";
       default:
         return "bg-gray-100 text-gray-700";
@@ -104,7 +108,7 @@ const DataSelainSpp = () => {
         <CardInformation
           color={"blue"}
           title={"Total Data"}
-          value={siswa.length}
+          value={recap.length}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
@@ -124,8 +128,6 @@ const DataSelainSpp = () => {
           setShowCount={setShowCount}
           type={"normal"}
         />
-
-        {/* carousel kategori dari API */}
         <div className="w-full flex items-center">
           <button
             onClick={handlePrev}
@@ -160,7 +162,7 @@ const DataSelainSpp = () => {
           </div>
 
           <button
-            title='button'
+            title="button"
             onClick={handleNext}
             disabled={startIndex >= categories.length - maxVisible}
             className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
@@ -168,62 +170,68 @@ const DataSelainSpp = () => {
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
-
-        {/* tabel data siswa */}
         <div className="w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
           <Table className="w-full h-full table-auto bg-white text-gray-700">
             <TableHeader className="text-sm font-semibold text-center">
               <TableRow className="text-center">
                 <TableHead className="py-4">No</TableHead>
                 <TableHead className="py-4">Nama Siswa</TableHead>
-                <TableHead className="py-4">Uang Masuk</TableHead>
-                <TableHead className="py-4">Daftar Ulang</TableHead>
+                {categories.map((c:any, index:number) => (
+                  <TableHead key={index} className="py-4">{c.name}</TableHead>
+                ))}
                 <TableHead className="py-4">Aksi</TableHead>
               </TableRow>
             </TableHeader>
 
-            <TableBody className="text-sm divide-y divide-gray-200 text-center">
+            <TableBody>
               {paginatedData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-8 text-gray-400">
+                  <TableCell colSpan={5} className="py-8 text-gray-400">
                     Data not found
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedData.map((s: any, idx) => (
-                  <TableRow key={s.id}>
-                    <TableCell className="py-4 font-medium">
+                paginatedData.map((p: any, idx: number) => (
+                  <TableRow key={p.id}>
+                    <TableCell className=" text-center py-4 font-medium">
                       {idx + 1}
                     </TableCell>
-                    {/* <TableCell className="py-4 font-medium">{s.namaSiswa}</TableCell>
-                    <TableCell className="py-4">{s.kategoriPembayaran}</TableCell>
-                    <TableCell className="py-4">{s.angkatan}</TableCell>
-                    <TableCell className="py-4">{s.totalPembayaran}</TableCell> */}
-                    <TableCell className="py-4">{s.namaSiswa}</TableCell>
-                    <TableCell className="py-4">
-                      <span
-                        className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                          s.uangMasuk
-                        )}`}
-                      >
-                        {s.uangMasuk}
-                      </span>
-                    </TableCell>
-                    <TableCell className="py-4">
-                      <span
-                        className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                          s.daftarUlang
-                        )}`}
-                      >
-                        {s.daftarUlang}
-                      </span>
-                    </TableCell>
+                    <TableCell className="text-center">{p.name}</TableCell>
+                    {p.payments.map((pmt: any, index: number) => (
+                      <TableCell key={index} className="text-center">
+                        <span
+                          className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
+                            pmt.status
+                          )}`}
+                        >
+                          {pmt.status}
+                        </span>
+                      </TableCell>
+                    ))}
                     <TableCell className="flex w-full gap-2 items-center justify-center">
-                      <Link href={`/dashboard/siswa/update/${s.id}`}>
-                        <Button className="bg-blue-400 text-white cursor-pointer">
-                          <SquarePen />
-                        </Button>
-                      </Link>
+                      <Button
+                        className="bg-blue-500 hover:border-blue-600 hover:bg-white hover:text-blue-400 border text-white cursor-pointer"
+                        onClick={() => {
+                          Swal.fire({
+                            title: "Download data?",
+                            text: "Apakah kamu yakin ingin download file ini?",
+                            icon: "question",
+                            showCancelButton: true,
+                            confirmButtonText: "Ya, download",
+                            cancelButtonText: "Batal",
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              Swal.fire(
+                                "Berhasil!",
+                                "File berhasil didownload.",
+                                "success"
+                              );
+                            }
+                          });
+                        }}
+                      >
+                        <Download />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
