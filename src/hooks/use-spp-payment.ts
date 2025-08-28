@@ -23,6 +23,10 @@ export const useSppPaymentModule = () => {
     return await axiosClient.get(`/spp-payment/rekap/2025`).then((res) => res.data);
   }
 
+  const getByStudentID = async (studentID:string) => {
+    return await axiosClient.get(`/spp-payment/student/${studentID}`).then((res) => res.data);
+  }
+
   const createPayment = async (payload: CreateSppPayment) => {
     return await axiosClient
       .post("/spp-payment", payload)
@@ -43,6 +47,17 @@ export const useSppPaymentModule = () => {
 
   const detailPayment = async (id: string) => {
     return await axiosClient.get(`/spp-payment/${id}`).then((res) => res.data);
+  };
+
+
+  const useGetByStudentID = (studentID: string) => {
+    const { data, isLoading, isError } = useQuery({
+      queryKey: ["sppPayments", studentID],
+      queryFn: () => getByStudentID(studentID),
+      enabled: !!studentID,
+      select: (data) => data.data, // sesuai response BaseResponse -> { data: ... }
+    });
+    return { data, isLoading, isError };
   };
 
   // React Query hooks
@@ -68,7 +83,7 @@ export const useSppPaymentModule = () => {
     return { data, isLoading, isError };
   };
 
-  const useCreatePayment = () => {
+  const useCreateSPPPayment = () => {
     const queryClient = useQueryClient();
     const mutate = useMutation({
       mutationFn: (payload: CreateSppPayment) => createPayment(payload),
@@ -162,10 +177,11 @@ export const useSppPaymentModule = () => {
 
   return {
     useGetPayments,
-    useCreatePayment,
+    useCreateSPPPayment,
     useUpdatePayment,
     useDeletePayment,
     useDetailPayment,
-    useGetRecapPayments
+    useGetRecapPayments,
+    useGetByStudentID,
   };
 };

@@ -47,9 +47,7 @@ export const usePaymentModule = () => {
       .then((res) => res.data);
   };
 
-  // ====================
-  // QUERIES
-  // ====================
+  
   const useGetPayments = () => {
     const { data, isLoading, isError } = useQuery({
       queryKey: ["payments"],
