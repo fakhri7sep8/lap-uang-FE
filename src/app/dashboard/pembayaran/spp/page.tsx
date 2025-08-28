@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
-import { GraduationCap, SquarePen, Trash2, Users } from 'lucide-react'
+import { Download, GraduationCap, SquarePen, Trash2, Users } from 'lucide-react'
 import React, { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
@@ -209,11 +209,28 @@ const SPP = () => {
                           <SquarePen />
                         </Button>
                       </Link> */}
-                      <Button
-                        className='bg-red-500 hover:bg-red-600 text-white px-4'
-                        onClick={() => handleDelete(s.id as string)}
+                       <Button
+                        className="bg-blue-500 hover:border-blue-600 hover:bg-white hover:text-blue-400 border text-white cursor-pointer"
+                        onClick={() => {
+                          Swal.fire({
+                            title: "Download data?",
+                            text: "Apakah kamu yakin ingin download file ini?",
+                            icon: "question",
+                            showCancelButton: true,
+                            confirmButtonText: "Ya, download",
+                            cancelButtonText: "Batal",
+                          }).then((result) => {
+                            if (result.isConfirmed) {
+                              Swal.fire(
+                                "Berhasil!",
+                                "File berhasil didownload.",
+                                "success"
+                              );
+                            }
+                          });
+                        }}
                       >
-                        <Trash2 />
+                        <Download />
                       </Button>
                     </TableCell>
                   </TableRow>
