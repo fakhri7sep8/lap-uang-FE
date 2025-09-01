@@ -106,7 +106,7 @@ const HorizontalProgressChart: React.FC<HorizontalProgressChartProps> = ({ fullD
         <h2 className="text-2xl font-bold text-green-600">
           RP. {totalTercapai.toLocaleString("id-ID")}
         </h2>
-        <p className="text-sm text-gray-500">Rincian penerimaan</p>
+        <p className="text-sm text-gray-500">{modalTitle ? modalTitle : "Rincian Penerimaan Semua Bulan"}</p>
       </div>
       <ReactECharts option={getOption(dataToShow)} style={{ height: chartHeight }} />
       <div className="flex justify-center mt-4">
