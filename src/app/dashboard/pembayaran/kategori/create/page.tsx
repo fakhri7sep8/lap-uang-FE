@@ -166,21 +166,10 @@ const CreateKategori = () => {
                   <SelectGroup className="flex flex-col gap-1">
                     <SelectLabel>Tipe Kategori</SelectLabel>
                     <SelectItem value="NORMAL" className="hover:bg-gray-50">
-                      SPP
+                      Normal
                     </SelectItem>
-                    <SelectItem value="UANG MASUK" className="hover:bg-gray-50">
-                      Uang Masuk
-                    </SelectItem>
-                    <SelectItem
-                      value="DAFTAR ULANG"
-                      className="hover:bg-gray-50"
-                    >
-                      Daftar Ulang
-                    </SelectItem>
-                    <SelectItem
-                      value="INSTALLMENT"
-                      className="hover:bg-gray-50"
-                    >
+                   
+                    <SelectItem value='INSTALLMENT' className='hover:bg-gray-50'>
                       Installment
                     </SelectItem>
                   </SelectGroup>
