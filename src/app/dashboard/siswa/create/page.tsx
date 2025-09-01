@@ -19,6 +19,7 @@ const tambahSiswaSchema = Yup.object().shape({
   name: Yup.string().required("Nama wajib diisi"),
   InductNumber: Yup.string().required("No Induk wajib diisi"),
   dorm: Yup.string().required("Asrama wajib diisi"),
+  NIS: Yup.string().required("NIS wajib diisi"),
   generation: Yup.number()
     .typeError("Angkatan harus berupa angka")
     .required("Angkatan wajib diisi"),
@@ -35,6 +36,7 @@ const TambahSiswa = () => {
       name: "",
       InductNumber: "",
       dorm: "",
+      NIS: "",
       generation: "",
       major: "",
       status: "",
@@ -45,8 +47,11 @@ const TambahSiswa = () => {
         ...values,
         generation: Number(values.generation),
       };
-      mutate(payload);
-      resetForm();
+      mutate(payload, {
+        onSuccess: () => {
+          resetForm();
+        },
+      });
     },
   });
 
@@ -70,11 +75,7 @@ const TambahSiswa = () => {
     </div>
   );
 
-  const renderSelect = (
-    label: string,
-    name: string,
-    options: string[]
-  ) => (
+  const renderSelect = (label: string, name: string, options: string[]) => (
     <div className="flex flex-col gap-1">
       <label className="text-sm font-medium">{label}</label>
       <Select
@@ -111,15 +112,9 @@ const TambahSiswa = () => {
           {renderField("No Induk", "InductNumber")}
           {renderField("Angkatan", "generation")}
           {renderField("Asrama", "dorm")}
-          {renderSelect("Jurusan", "major", [
-            "RPL",
-            "TKJ",
-          ])}
-          {renderSelect("Status", "status", [
-            "ACTIVE",
-            "GRADUATION",
-            "OUT",
-          ])}
+          {renderField("NIS", "NIS")}
+          {renderSelect("Jurusan", "major", ["RPL", "TKJ"])}
+          {renderSelect("Status", "status", ["ACTIVE", "GRADUATION", "OUT"])}
         </div>
 
         <div className="flex flex-row gap-4 justify-end mt-4">

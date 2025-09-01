@@ -32,9 +32,7 @@ export const useStudentModule = () => {
           title: "Berhasil",
           text: "Data siswa berhasil ditambahkan",
           confirmButtonColor: "#3085d6",
-        }).then(() => {
-          router.push("/dashboard/siswa/view");
-        });
+        })
 
         console.log("Student data created successfully:", data);
       },

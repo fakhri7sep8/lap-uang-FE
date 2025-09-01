@@ -15,6 +15,7 @@ import {
 import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import currency from "currency.js";
 
 const createCategorySchema = Yup.object().shape({
   name: Yup.string().required("Nama kategori wajib diisi"),
@@ -25,9 +26,8 @@ const createCategorySchema = Yup.object().shape({
   TA: Yup.string().required("Tahun ajaran wajib diisi"),
   type: Yup.string().oneOf(["NORMAL", "INSTALLMENT"], "Tipe tidak valid"),
   nominal: Yup.number()
-  .required('Nominal wajib diisi')
-  .min(0, 'Nominal minimal 0')
-
+    .required("Nominal wajib diisi")
+    .min(0, "Nominal minimal 0"),
 });
 
 const getAcademicYears = (count = 5) => {
@@ -40,6 +40,13 @@ const getAcademicYears = (count = 5) => {
 };
 
 const academicYears = getAcademicYears();
+const formatRupiah = (value: number | string) =>
+  currency(value || 0, {
+    symbol: "Rp",
+    separator: ".",
+    decimal: ",",
+    precision: 0,
+  }).format();
 
 const CreateKategori = () => {
   const { useCreateCategory } = useCategoryPaymentModule();
@@ -51,7 +58,7 @@ const CreateKategori = () => {
       semester: "",
       TA: "",
       type: "",
-      nominal: ''
+      nominal: "",
     },
     validationSchema: createCategorySchema,
     onSubmit: (values) => {
@@ -90,14 +97,26 @@ const CreateKategori = () => {
             {/* Semester */}
             <div className="w-full flex flex-col gap-4">
               <Label>Semester</Label>
-              <Input
-                type="number"
-                name="semester"
-                value={formik.values.semester}
-                onChange={formik.handleChange}
-                placeholder="masukan semester"
-                className="border-slate-300 rounded-md px-3 py-6"
-              />
+              <Select
+                value={formik.values.semester.toString()}
+                onValueChange={(val) =>
+                  formik.setFieldValue("semester", Number(val))
+                }
+              >
+                <SelectTrigger className="w-full py-6 px-3 border-slate-300 rounded-md text-slate-500">
+                  <SelectValue placeholder="Pilih Semester" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-none">
+                  <SelectGroup>
+                    <SelectLabel>Semester</SelectLabel>
+                    {Array.from({ length: 6 }, (_, i) => i + 1).map((sem) => (
+                      <SelectItem key={sem} value={sem.toString()}>
+                        {sem}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
               {formik.touched.semester && formik.errors.semester && (
                 <p className="text-red-500 text-sm">{formik.errors.semester}</p>
               )}
@@ -149,10 +168,7 @@ const CreateKategori = () => {
                     <SelectItem value="NORMAL" className="hover:bg-gray-50">
                       SPP
                     </SelectItem>
-                    <SelectItem
-                      value="UANG MASUK"
-                      className="hover:bg-gray-50"
-                    >
+                    <SelectItem value="UANG MASUK" className="hover:bg-gray-50">
                       Uang Masuk
                     </SelectItem>
                     <SelectItem
@@ -160,8 +176,11 @@ const CreateKategori = () => {
                       className="hover:bg-gray-50"
                     >
                       Daftar Ulang
-                      </SelectItem>
-                    <SelectItem value='INSTALLMENT' className='hover:bg-gray-50'>
+                    </SelectItem>
+                    <SelectItem
+                      value="INSTALLMENT"
+                      className="hover:bg-gray-50"
+                    >
                       Installment
                     </SelectItem>
                   </SelectGroup>
@@ -172,19 +191,28 @@ const CreateKategori = () => {
               )}
             </div>
 
+
             {/* Nominal */}
-            <div className='w-full flex flex-col gap-4'>
+            <div className="w-full flex flex-col gap-4 ">
               <Label>Nominal</Label>
               <Input
-                type='number'
-                name='nominal'
-                value={formik.values.nominal}
-                onChange={formik.handleChange}
-                placeholder='masukan nominal'
-                className='border-slate-300 rounded-md px-3 py-6'
+                type="text"
+                name="nominal"
+                value={formatRupiah(formik.values.nominal)}
+                onChange={(e) => {
+                  // Ambil hanya angka dari input
+                  const rawValue = e.target.value.replace(/[^0-9]/g, "");
+                  // Simpan ke formik sebagai number
+                  formik.setFieldValue(
+                    "nominal",
+                    rawValue ? Number(rawValue) : ""
+                  );
+                }}
+                placeholder="masukan nominal"
+                className="border-slate-300 text-slate-500 rounded-md px-3 py-6"
               />
               {formik.touched.nominal && formik.errors.nominal && (
-                <p className='text-red-500 text-sm'>{formik.errors.nominal}</p>
+                <p className="text-red-500 text-sm">{formik.errors.nominal}</p>
               )}
             </div>
           </div>
