@@ -1,0 +1,85 @@
+export const TunggakanSiswa =[
+    [
+    {
+        id: 1,
+        nama: 'Ahmad Zaki',
+        kelas: 'XII TKJ 1',
+        Bulan: 'Januari',
+        status: 'Belum Lunas',
+        Tunggakan: 'Rp. 500.000',
+    },
+    {
+        id: 2,
+        nama: 'Budi Santoso',
+        kelas: 'XI RPL 2',
+        Bulan: 'Februari',
+        status: 'Belum Lunas',
+        Tunggakan: 'Rp. 350.000',
+    },
+    {
+        id: 3,
+        nama: 'Dimas Saputra',
+        kelas: 'X TKJ 2',
+        Bulan: 'Maret',
+        status: 'Cicilan',
+        Tunggakan: 'Rp. 200.000',
+    },
+    {
+        id: 4,
+        nama: 'Eko Prasetyo',
+        kelas: 'XII RPL 1',
+        Bulan: 'April',
+        status: 'Belum Lunas',
+        Tunggakan: 'Rp. 400.000',
+    },
+    {
+        id: 5,
+        nama: 'Fajar Hidayat',
+        kelas: 'XI TKJ 3',
+        Bulan: 'Mei',
+        status: 'Belum Lunas',
+        Tunggakan: 'Rp. 600.000',
+    },
+    {
+        id: 6,
+        nama: 'Gilang Ramadhan',
+        kelas: 'X RPL 1',
+        Bulan: 'Juni',
+        status: 'Cicilan',
+        Tunggakan: 'Rp. 250.000',
+    },
+    {
+        id: 7,
+        nama: 'Hendra Wijaya',
+        kelas: 'XII TKJ 2',
+        Bulan: 'Juli',
+        status: 'Belum Lunas',
+        Tunggakan: 'Rp. 700.000',
+    },
+    {
+        id: 8,
+        nama: 'Iqbal Maulana',
+        kelas: 'XI RPL 3',
+        Bulan: 'Agustus',
+        status: 'Belum Lunas',
+        Tunggakan: 'Rp. 550.000',
+    },
+    {
+        id: 9,
+        nama: 'Joko Kurniawan',
+        kelas: 'X TKJ 1',
+        Bulan: 'September',
+        status: 'Belum Lunas',
+        Tunggakan: 'Rp. 300.000',
+    },
+    {
+        id: 10,
+        nama: 'Kurnia Adi',
+        kelas: 'XII RPL 2',
+        Bulan: 'Oktober',
+        status: 'Cicilan',
+        Tunggakan: 'Rp. 150.000',
+    }
+]
+
+]
