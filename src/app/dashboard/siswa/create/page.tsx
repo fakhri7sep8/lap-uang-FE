@@ -75,8 +75,13 @@ const TambahSiswa = () => {
     </div>
   );
 
-  const renderSelect = (label: string, name: string, options: string[]) => (
-    <div className="flex flex-col gap-1">
+  const renderSelect = (
+    label: string,
+    name: string,
+    options: string[],
+    className = ""
+  ) => (
+    <div className={`flex flex-col gap-1 ${className}`}>
       <label className="text-sm font-medium">{label}</label>
       <Select
         value={(formik.values as any)[name]}
@@ -114,7 +119,7 @@ const TambahSiswa = () => {
           {renderField("Asrama", "dorm")}
           {renderField("NIS", "NIS")}
           {renderSelect("Jurusan", "major", ["RPL", "TKJ"])}
-          {renderSelect("Status", "status", ["ACTIVE", "GRADUATION", "OUT"])}
+          {renderSelect("Status", "status", ["ACTIVE", "GRADUATION", "OUT"], "col-span-2")}
         </div>
 
         <div className="flex flex-row gap-4 justify-end mt-4">

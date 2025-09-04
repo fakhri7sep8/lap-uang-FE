@@ -63,18 +63,19 @@ const LihatSemuaSiswa = () => {
     currentPage * showCount
   );
 
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case "ACTIVE":
-        return "bg-green-100 text-green-700";
-      case "Lulus":
-        return "bg-yellow-100 text-yellow-700";
-      case "Keluar":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  };
+const getStatusBadgeClass = (status: string) => {
+  switch (status) {
+    case "ACTIVE":
+      return "bg-green-100 text-green-700";
+    case "GRADUATION":
+      return "bg-yellow-100 text-yellow-700";
+    case "OUT":
+      return "bg-red-100 text-red-700";
+    default:
+      return "bg-gray-100 text-gray-700";
+  }
+};
+
 
   const handleDelete = async (id: string) => {
     try {
@@ -173,7 +174,7 @@ const LihatSemuaSiswa = () => {
                     <TableCell>{s.generation}</TableCell>
                     <TableCell>
                       <span
-                        className={`inline-block w-20 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
+                        className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
                           s.status
                         )}`}
                       >
@@ -246,8 +247,8 @@ const LihatSemuaSiswa = () => {
                   >
                     <option value="">Semua</option>
                     <option value="ACTIVE">Aktif</option>
-                    <option value="Lulus">Lulus</option>
-                    <option value="Keluar">Keluar</option>
+                    <option value="GRADUATION">Lulus</option>
+                    <option value="OUT">Keluar</option>
                   </select>
                 </label>
                 <label className="flex flex-col text-sm">
