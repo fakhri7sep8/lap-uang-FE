@@ -74,7 +74,7 @@ const UpdateKategori = () => {
 
   return (
     <section className=' pt-16'>
-      <div className='bg-white rounded-xl p-8 w-full mx-auto shadow-md h-full flex flex-col items-center'>
+      <div className=' rounded-xl p-8 w-full mx-auto shadow-md h-full flex flex-col items-center'>
         <h1 className='w-full h-24 text-2xl font-semibold'>
           Update Kategori Pembayaran
         </h1>
@@ -158,7 +158,7 @@ const UpdateKategori = () => {
             <div className='w-full flex flex-col gap-4'>
               <Label>Tipe Kategori</Label>
               <Select
-                value={data?.data?.type}
+                defaultValue={data?.data?.type}
                 onValueChange={val => formik.setFieldValue('type', val)}
               >
                 <SelectTrigger className='w-full py-6 px-3 border-slate-300 rounded-md text-slate-500'>

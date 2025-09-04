@@ -1,91 +1,195 @@
-"use client";
+'use client'
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
-import { useFormik } from "formik";
-import * as Yup from "yup";
-import { useStudentModule } from "@/hooks/useStudentModule";
+import { useFormik } from 'formik'
+import * as Yup from 'yup'
+import { useStudentModule } from '@/hooks/useStudentModule'
 
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"; // pastikan path sesuai
+  SelectValue
+} from '@/components/ui/select' // pastikan path sesuai
+import {
+  CircleFadingPlus,
+  FileDown,
+  FolderDown,
+  SquarePen,
+  Trash
+} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import Swal from 'sweetalert2'
+import { readerExcel } from '@/helper/excelReader'
 
 const tambahSiswaSchema = Yup.object().shape({
-  name: Yup.string().required("Nama wajib diisi"),
-  InductNumber: Yup.string().required("No Induk wajib diisi"),
-  dorm: Yup.string().required("Asrama wajib diisi"),
+  name: Yup.string().required('Nama wajib diisi'),
+  InductNumber: Yup.string().required('No Induk wajib diisi'),
+  dorm: Yup.string().required('Asrama wajib diisi'),
   generation: Yup.number()
-    .typeError("Angkatan harus berupa angka")
-    .required("Angkatan wajib diisi"),
-  major: Yup.string().required("Jurusan wajib diisi"),
-  status: Yup.string().required("Status wajib diisi"),
-});
+    .typeError('Angkatan harus berupa angka')
+    .required('Angkatan wajib diisi'),
+  major: Yup.string().required('Jurusan wajib diisi'),
+  status: Yup.string().required('Status wajib diisi')
+})
 
 const TambahSiswa = () => {
-  const { useCreateStudent } = useStudentModule();
-  const { mutate, isPending } = useCreateStudent();
+  const { useCreateStudent } = useStudentModule()
+  const { mutate, isPending } = useCreateStudent()
+  const initialValue = {
+    name: '',
+    InductNumber: '',
+    dorm: '',
+    generation: '',
+    major: '',
+    status: ''
+  }
+  const [form, setForm] = useState<typeof initialValue[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('form-data-create-student')
+      return stored ? JSON.parse(stored) : []
+    }
+    return []
+  })
 
+  useEffect(() => {
+    sessionStorage.setItem('form-data-create-student', JSON.stringify(form))
+  }, [form])
+
+  const handleDelete = (index: number) => {
+    const session = sessionStorage.getItem('form-data-create-student')
+    if (session) {
+      const json = JSON.parse(session)
+      json.splice(index, 1)
+      sessionStorage.setItem('form-data-create-student', JSON.stringify(json))
+      setForm(json)
+    } else {
+      Swal.fire({
+        title: 'Error',
+        text: 'Tidak ada data yang dapat dihapus',
+        icon: 'error'
+      })
+    }
+  }
+  const handleCreateForm = () => {
+    const session = sessionStorage.getItem('form-data-create-student')
+    if (!session) {
+      sessionStorage.setItem(
+        'form-data-create-student',
+        JSON.stringify([initialValue])
+      )
+      setForm([initialValue])
+    } else {
+      sessionStorage.setItem(
+        'form-data-create-student',
+        JSON.stringify([...JSON.parse(session), initialValue])
+      )
+      setForm([...JSON.parse(session), initialValue])
+    }
+  }
+  const handleReadExcel = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const arr = []
+    const ValueExcel = await readerExcel(event)
+    // console.log(ValueExcel?.json);
+    for (const i in ValueExcel?.json) {
+      // console.log(ValueExcel?.json[i]);
+      arr.push({
+        name: (ValueExcel?.json[i] as any).Name || '',
+        InductNumber: (ValueExcel?.json[i] as any).No_Induk || '',
+        dorm: (ValueExcel?.json[i] as any).Asrama || '',
+        generation: (ValueExcel?.json[i] as any).generasi || '',
+        major: (ValueExcel?.json[i] as any).jurusan || '',
+        status: (ValueExcel?.json[i] as any).status || ''
+      })
+      // console.log(i);
+    }
+    setForm([...form, ...arr])
+    Swal.fire({
+      icon: 'success',
+      title: 'File berhasil dibaca!',
+      text: 'Data sudah siap diproses.'
+    })
+
+    // ✅ reset supaya bisa pilih file yang sama lagi
+    event.target.value = ''
+  }
+
+  const handleImportClick = () => {
+    Swal.fire({
+      title: 'Apakah anda sudah mengetahui cara menggunakan fitur ini?',
+      // text: 'Pastikan file Excel sesuai format yang ditentukan.',
+      icon: 'warning',
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: 'Lanjut pilih file',
+      denyButtonText: 'Lihat dokumentasi',
+      cancelButtonText: 'Batal'
+    }).then(result => {
+      if (result.isConfirmed) {
+        // Klik "Lanjut pilih file"
+        document.getElementById('file')?.click()
+      } else if (result.isDenied) {
+        // Klik "Lihat dokumentasi"
+        window.open('/dashboard/siswa/create/doc', '_blank')
+        // ganti dengan URL dokumentasi kamu
+      } else {
+        return
+      }
+      // Klik cancel = tidak melakukan apa-apa
+    })
+  }
+  // console.log(form)
   const formik = useFormik({
-    initialValues: {
-      name: "",
-      InductNumber: "",
-      dorm: "",
-      generation: "",
-      major: "",
-      status: "",
-    },
+    initialValues: initialValue,
     validationSchema: tambahSiswaSchema,
     onSubmit: (values, { resetForm }) => {
       const payload = {
         ...values,
-        generation: Number(values.generation),
-      };
-      mutate(payload);
-      resetForm();
-    },
-  });
+        generation: Number(values.generation)
+      }
+      mutate(payload)
+      resetForm()
+    }
+  })
 
-  const renderField = (label: string, name: string, type = "text") => (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium">{label}</label>
+  const renderField = (label: string, name: string, type = 'text') => (
+    <div className='flex flex-col gap-1'>
+      <label className='text-sm font-medium'>{label}</label>
       <Input
         type={type}
         name={name}
         value={(formik.values as any)[name]}
         onChange={formik.handleChange}
         onBlur={formik.handleBlur}
-        className="w-full border-slate-300"
+        placeholder={`Masukkan ${label}`}
+        className='w-full border-slate-300 py-6'
       />
       {formik.touched[name as keyof typeof formik.touched] &&
         formik.errors[name as keyof typeof formik.errors] && (
-          <p className="text-red-600 text-sm">
+          <p className='text-red-600 text-sm'>
             {formik.errors[name as keyof typeof formik.errors] as string}
           </p>
         )}
     </div>
-  );
+  )
 
-  const renderSelect = (
-    label: string,
-    name: string,
-    options: string[]
-  ) => (
-    <div className="flex flex-col gap-1">
-      <label className="text-sm font-medium">{label}</label>
+  const renderSelect = (label: string, name: string, options: string[]) => (
+    <div className='flex flex-col gap-1'>
+      <label className='text-sm font-medium'>{label}</label>
       <Select
         value={(formik.values as any)[name]}
-        onValueChange={(value) => formik.setFieldValue(name, value)}
+        onValueChange={value => formik.setFieldValue(name, value)}
       >
-        <SelectTrigger className="w-full border-slate-300">
+        <SelectTrigger className='w-full border-slate-300 py-6'>
           <SelectValue placeholder={`Pilih ${label}`} />
         </SelectTrigger>
-        <SelectContent className="bg-white border-slate-200">
-          {options.map((option) => (
+        <SelectContent className='bg-white border-slate-200'>
+          {options.map(option => (
             <SelectItem key={option} value={option}>
               {option}
             </SelectItem>
@@ -94,52 +198,235 @@ const TambahSiswa = () => {
       </Select>
       {formik.touched[name as keyof typeof formik.touched] &&
         formik.errors[name as keyof typeof formik.errors] && (
-          <p className="text-red-600 text-sm">
+          <p className='text-red-600 text-sm'>
             {formik.errors[name as keyof typeof formik.errors] as string}
           </p>
         )}
     </div>
-  );
+  )
 
   return (
-    <section className="w-full bg-white rounded-xl p-8 flex flex-col gap-8">
-      <h1 className="font-semibold text-2xl">Tambah Siswa</h1>
-
-      <form onSubmit={formik.handleSubmit} className="flex flex-col gap-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {renderField("Nama Siswa", "name")}
-          {renderField("No Induk", "InductNumber")}
-          {renderField("Angkatan", "generation")}
-          {renderField("Asrama", "dorm")}
-          {renderSelect("Jurusan", "major", [
-            "RPL",
-            "TKJ",
-          ])}
-          {renderSelect("Status", "status", [
-            "ACTIVE",
-            "GRADUATION",
-            "OUT",
-          ])}
-        </div>
-
-        <div className="flex flex-row gap-4 justify-end mt-4">
-          <Button
-            type="submit"
-            className="bg-blue-500 hover:bg-blue-600 text-white shadow-md"
+    <section className='w-full rounded-xl p-8 flex flex-col gap-6'>
+      <div className='bg-white  dark:text-[#ABB2BF] w-full h-full border-l-4 border-green-500 shadow-md rounded-md p-6 flex flex-col gap-4 '>
+        <div className='flex items-center mb-4'>
+          <svg
+            className='w-6 h-6 text-green-500 mr-2'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2'
+            viewBox='0 0 24 24'
           >
-            {isPending ? "Menyimpan..." : "Simpan"}
-          </Button>
-          <Button
-            type="button"
-            onClick={() => formik.resetForm()}
-            className="bg-red-500 hover:bg-red-600 text-white shadow-md"
-          >
-            Batal
-          </Button>
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              d='M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z'
+            />
+          </svg>
+          <h2 className='text-xl font-semibold text-gray-800 dark:text-[#ABB2BF]'>
+            Tambah Siswa
+          </h2>
         </div>
-      </form>
+        <p>
+          Tampilan aplikasi yang dimana admin dapat menginput data siswa. fitur
+          yang terdapat pada halaman ini admin dapat menginput banyak data,
+          mengimpor data dari excel dan juga dapat menginput data siswa satu per
+          satu.{' '}
+        </p>
+      </div>
+      <div className='w-full h-full px-4 py-8 bg-white rounded-xl'>
+        <form onSubmit={formik.handleSubmit} className='flex flex-col gap-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+            {renderField('Nama Siswa', 'name')}
+            {renderField('No Induk', 'InductNumber')}
+            {renderField('Angkatan', 'generation')}
+            {renderField('Asrama', 'dorm')}
+            {renderSelect('Jurusan', 'major', ['RPL', 'TKJ'])}
+            {renderSelect('Status', 'status', ['ACTIVE', 'GRADUATION', 'OUT'])}
+          </div>
+        </form>
+      </div>
+      {form.map((item: typeof initialValue, index: number) => (
+        <CardFormStudent
+          onDelete={() => handleDelete(index)}
+          key={index}
+          name={item.name}
+          inductNumber={item.InductNumber}
+          generation={item.generation}
+          dorm={item.dorm}
+          major={item.major}
+          status={item.status}
+          index={0}
+          dataForm={form}
+        />
+      ))}
+      <button
+        onClick={handleImportClick}
+        // onClick={() => handleCreateForm()}
+        className='py-5 hover:bg-green-500 hover:text-white transition-all cursor-pointer border border-green-500 text-green-500 text-lg flex items-center justify-center gap-2 rounded-xl'
+      >
+        <FileDown size={24} />
+        impor dari excel
+      </button>
+      <input
+        title='Import Excel'
+        type='file'
+        id='file'
+        className='hidden'
+        accept='.xlsx, .xls'
+        onChange={handleReadExcel}
+      />
+      <button
+        onClick={() => handleCreateForm()}
+        className='py-5 hover:bg-purple-500 hover:text-white transition-all cursor-pointer border border-purple-500 text-purple-500 text-lg flex items-center justify-center gap-2 rounded-xl'
+      >
+        <CircleFadingPlus size={24} />
+        Tambah Kolom Siswa
+      </button>
     </section>
-  );
-};
+  )
+}
 
-export default TambahSiswa;
+type CardFormStudentProps = React.HTMLAttributes<HTMLDivElement> & {
+  onDelete: () => void
+  name: string
+  inductNumber: string
+  generation: string
+  dorm: string
+  major: string
+  status: string
+  index: number
+  dataForm: {
+    name: string
+    InductNumber: string
+    generation: string
+    dorm: string
+    major: string
+    status: string
+  }[]
+}
+
+const CardFormStudent = ({
+  onDelete,
+  name,
+  inductNumber,
+  generation,
+  dorm,
+  major,
+  status,
+  dataForm,
+  index,
+  ...props
+}: CardFormStudentProps) => {
+  const [localData, setLocalData] = useState({
+  name: name || '',
+  inductNumber: inductNumber || '',
+  generation: generation || '',
+  dorm: dorm || '',
+  major: major || '',
+  status: status || ''
+})
+
+  return (
+    <div
+      className='w-full h-full px-4 pt-4 pb-8 bg-white rounded-xl'
+      {...props}
+    >
+      <div className='w-full px-4 flex  justify-end items-center'>
+        <div
+          title='delete'
+          className='cursor-pointer text-red-500 p-2 hover:bg-slate-100 rounded-lg transition-all'
+          onClick={() => onDelete()}
+        >
+          <Trash size={18} />
+        </div>
+      </div>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        <div className='flex flex-col gap-1'>
+          <label className='text-sm font-medium'>Nama siswa</label>
+          <Input
+            onChange={(e) =>
+              setLocalData({ ...localData, name: e.target.value })
+            }
+            defaultValue={name || ''}
+            placeholder={`Masukkan Nama siswa`}
+            className='w-full border-slate-300 py-6'
+          />
+        </div>
+        <div className='flex flex-col gap-1'>
+          <label className='text-sm font-medium'>No Induk</label>
+          <Input
+            onChange={(e) =>
+              setLocalData({ ...localData, inductNumber: e.target.value })
+            }
+
+            defaultValue={inductNumber || ''}
+            placeholder={`Masukkan No Induk`}
+            className='w-full border-slate-300 py-6'
+          />
+        </div>
+        <div className='flex flex-col gap-1'>
+          <label className='text-sm font-medium'>Angkatan</label>
+          <Input
+            onChange={(e) =>
+              setLocalData({ ...localData, generation: e.target.value })
+            }
+
+            defaultValue={generation || ''}
+            placeholder={`Masukkan Angkatan`}
+            className='w-full border-slate-300 py-6'
+          />
+        </div>
+        <div className='flex flex-col gap-1'>
+          <label className='text-sm font-medium'>Asrama</label>
+          <Input
+            onChange={(e) =>
+              setLocalData({ ...localData, dorm: e.target.value })
+            }
+
+            defaultValue={dorm || ''}
+            placeholder={`Masukkan Asrama`}
+            className='w-full border-slate-300 py-6'
+          />
+        </div>
+        <div className='flex flex-col gap-1'>
+          <label className='text-sm font-medium'>Jurusan</label>
+          <Select>
+            <SelectTrigger className='w-full border-slate-300 py-6'>
+              <SelectValue
+                placeholder={`Pilih Jurusan`}
+                defaultValue={major || ''}
+              />
+            </SelectTrigger>
+            <SelectContent className='bg-white border-slate-200'>
+              {['RPL', 'TKJ'].map(option => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className='flex flex-col gap-1'>
+          <label className='text-sm font-medium'>Jurusan</label>
+          <Select>
+            <SelectTrigger className='w-full border-slate-300 py-6'>
+              <SelectValue
+                placeholder={`Pilih Jurusan`}
+                defaultValue={status || ''}
+              />
+            </SelectTrigger>
+            <SelectContent className='bg-white border-slate-200'>
+              {['ACTIVE', 'GRADUATION', 'OUT'].map(option => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default TambahSiswa
