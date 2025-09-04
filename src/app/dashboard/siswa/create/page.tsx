@@ -18,12 +18,14 @@ import {
   CircleFadingPlus,
   FileDown,
   FolderDown,
+  Send,
   SquarePen,
   Trash
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import Swal from 'sweetalert2'
 import { readerExcel } from '@/helper/excelReader'
+import Loader from '@/components/ui/loader'
 
 const tambahSiswaSchema = Yup.object().shape({
   name: Yup.string().required('Nama wajib diisi'),
@@ -33,19 +35,22 @@ const tambahSiswaSchema = Yup.object().shape({
     .typeError('Angkatan harus berupa angka')
     .required('Angkatan wajib diisi'),
   major: Yup.string().required('Jurusan wajib diisi'),
-  status: Yup.string().required('Status wajib diisi')
+  status: Yup.string().required('Status wajib diisi'),
+  NIS: Yup.string().required('NIS wajib diisi'),
 })
 
 const TambahSiswa = () => {
-  const { useCreateStudent } = useStudentModule()
+  const { useCreateStudent, useCreateBulk } = useStudentModule()
   const { mutate, isPending } = useCreateStudent()
+  const { mutate: mutateBulk, isPending: isPendingBulk } = useCreateBulk()
   const initialValue = {
     name: '',
     InductNumber: '',
     dorm: '',
-    generation: '',
+    generation: "",
     major: '',
-    status: ''
+    status: '',
+    NIS: ""
   }
   const [form, setForm] = useState<typeof initialValue[]>(() => {
     if (typeof window !== 'undefined') {
@@ -104,19 +109,27 @@ const TambahSiswa = () => {
         dorm: (ValueExcel?.json[i] as any).Asrama || '',
         generation: (ValueExcel?.json[i] as any).generasi || '',
         major: (ValueExcel?.json[i] as any).jurusan || '',
-        status: (ValueExcel?.json[i] as any).status || ''
+        status: (ValueExcel?.json[i] as any).status || '',
+        NIS: (ValueExcel?.json[1] as any).NIS || ''
       })
       // console.log(i);
     }
-    setForm([...form, ...arr])
-    Swal.fire({
-      icon: 'success',
-      title: 'File berhasil dibaca!',
-      text: 'Data sudah siap diproses.'
-    })
+    mutateBulk(arr)
+    // setForm([...form, ...arr])
+    // Swal.fire({
+    //   icon: 'success',
+    //   title: 'File berhasil dibaca!',
+    //   text: 'Data sudah siap diproses.'
+    // })
 
     // ✅ reset supaya bisa pilih file yang sama lagi
     event.target.value = ''
+  }
+  const handleDownloadFormatExcel = () => {
+    const link = document.createElement('a')
+    link.href = '/xlsx/format_data.xlsx' // path dari folder public
+    link.download = 'format_data.xlsx'
+    link.click()
   }
 
   const handleImportClick = () => {
@@ -127,7 +140,7 @@ const TambahSiswa = () => {
       showCancelButton: true,
       showDenyButton: true,
       confirmButtonText: 'Lanjut pilih file',
-      denyButtonText: 'Lihat dokumentasi',
+      denyButtonText: 'Download Format',
       cancelButtonText: 'Batal'
     }).then(result => {
       if (result.isConfirmed) {
@@ -135,7 +148,7 @@ const TambahSiswa = () => {
         document.getElementById('file')?.click()
       } else if (result.isDenied) {
         // Klik "Lihat dokumentasi"
-        window.open('/dashboard/siswa/create/doc', '_blank')
+        // window.open('/dashboard/siswa/create/doc', '_blank')
         // ganti dengan URL dokumentasi kamu
       } else {
         return
@@ -153,7 +166,7 @@ const TambahSiswa = () => {
         generation: Number(values.generation)
       }
       mutate(payload)
-      resetForm()
+      // resetForm()
     }
   })
 
@@ -204,38 +217,44 @@ const TambahSiswa = () => {
         )}
     </div>
   )
-
+  if (isPendingBulk) {
+    return (
+      <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
+        <Loader />
+      </div>
+    )
+  }
   return (
     <section className='w-full rounded-xl p-8 flex flex-col gap-6'>
-      <div className='bg-white  dark:text-[#ABB2BF] w-full h-full border-l-4 border-green-500 shadow-md rounded-md p-6 flex flex-col gap-4 '>
-        <div className='flex items-center mb-4'>
-          <svg
-            className='w-6 h-6 text-green-500 mr-2'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
-            viewBox='0 0 24 24'
-          >
-            <path
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              d='M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z'
-            />
-          </svg>
-          <h2 className='text-xl font-semibold text-gray-800 dark:text-[#ABB2BF]'>
-            Tambah Siswa
-          </h2>
+      <form onSubmit={formik.handleSubmit} className='flex flex-col gap-6'>
+        <div className='bg-white  dark:text-[#ABB2BF] w-full h-full border-l-4 border-green-500 shadow-md rounded-md p-6 flex flex-col gap-4 '>
+          <div className='flex items-center mb-4'>
+            <svg
+              className='w-6 h-6 text-green-500 mr-2'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              viewBox='0 0 24 24'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                d='M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 100-16 8 8 0 000 16z'
+              />
+            </svg>
+            <h2 className='text-xl font-semibold text-gray-800 dark:text-[#ABB2BF]'>
+              Tambah Siswa
+            </h2>
+          </div>
+          <p>
+            Tampilan aplikasi yang dimana admin dapat menginput data siswa.
+            fitur yang terdapat pada halaman ini admin dapat menginput banyak
+            data, mengimpor data dari excel dan juga dapat menginput data siswa
+            satu per satu.{' '}
+          </p>
         </div>
-        <p>
-          Tampilan aplikasi yang dimana admin dapat menginput data siswa. fitur
-          yang terdapat pada halaman ini admin dapat menginput banyak data,
-          mengimpor data dari excel dan juga dapat menginput data siswa satu per
-          satu.{' '}
-        </p>
-      </div>
-      <div className='w-full h-full px-4 py-8 bg-white rounded-xl'>
-        <form onSubmit={formik.handleSubmit} className='flex flex-col gap-6'>
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        <div className='w-full h-full px-4 py-8 bg-white rounded-xl'>
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-6 pb-4'>
             {renderField('Nama Siswa', 'name')}
             {renderField('No Induk', 'InductNumber')}
             {renderField('Angkatan', 'generation')}
@@ -243,45 +262,62 @@ const TambahSiswa = () => {
             {renderSelect('Jurusan', 'major', ['RPL', 'TKJ'])}
             {renderSelect('Status', 'status', ['ACTIVE', 'GRADUATION', 'OUT'])}
           </div>
-        </form>
-      </div>
-      {form.map((item: typeof initialValue, index: number) => (
-        <CardFormStudent
-          onDelete={() => handleDelete(index)}
-          key={index}
-          name={item.name}
-          inductNumber={item.InductNumber}
-          generation={item.generation}
-          dorm={item.dorm}
-          major={item.major}
-          status={item.status}
-          index={0}
-          dataForm={form}
+          {renderField('NIS', 'NIS')}
+        </div>
+        {form.map((item: typeof initialValue, index: number) => (
+          <CardFormStudent
+            onDelete={() => handleDelete(index)}
+            key={index}
+            name={item.name}
+            inductNumber={item.InductNumber}
+            generation={item.generation}
+            dorm={item.dorm}
+            major={item.major}
+            status={item.status}
+            index={0}
+            dataForm={form}
+          />
+        ))}
+        <button
+          onClick={handleImportClick}
+          // onClick={() => handleCreateForm()}
+          className='py-5 hover:bg-purple-500 hover:text-white transition-all cursor-pointer border border-purple-500 text-purple-500 text-lg flex items-center justify-center gap-2 rounded-xl'
+        >
+          <FileDown size={24} />
+          impor dari excel
+        </button>
+        <input
+          title='Import Excel'
+          type='file'
+          id='file'
+          className='hidden'
+          accept='.xlsx, .xls'
+          onChange={handleReadExcel}
         />
-      ))}
-      <button
-        onClick={handleImportClick}
-        // onClick={() => handleCreateForm()}
-        className='py-5 hover:bg-green-500 hover:text-white transition-all cursor-pointer border border-green-500 text-green-500 text-lg flex items-center justify-center gap-2 rounded-xl'
-      >
-        <FileDown size={24} />
-        impor dari excel
-      </button>
-      <input
-        title='Import Excel'
-        type='file'
-        id='file'
-        className='hidden'
-        accept='.xlsx, .xls'
-        onChange={handleReadExcel}
-      />
-      <button
+        <button
+          onClick={() => handleDownloadFormatExcel()}
+          className='py-5 hover:bg-blue-500 hover:text-white transition-all cursor-pointer border border-blue-500 text-blue-500 text-lg flex items-center justify-center gap-2 rounded-xl'
+        >
+          <FileDown size={24} />
+          Download format excel
+        </button>
+        <button
+          type='submit'
+          className='py-5 hover:bg-green-500 hover:text-white transition-all cursor-pointer border border-green-500 text-green-500 text-lg flex items-center justify-center gap-2 rounded-xl'
+        >
+          {/* <FileDown size={24} /> */}
+          <Send  size={24}/>
+
+          {isPending ? "Proses Menyimpan data siswa ..." : "simpan siswa"}
+        </button>
+      </form>
+      {/* <button
         onClick={() => handleCreateForm()}
         className='py-5 hover:bg-purple-500 hover:text-white transition-all cursor-pointer border border-purple-500 text-purple-500 text-lg flex items-center justify-center gap-2 rounded-xl'
-      >
+        >
         <CircleFadingPlus size={24} />
         Tambah Kolom Siswa
-      </button>
+      </button> */}
     </section>
   )
 }

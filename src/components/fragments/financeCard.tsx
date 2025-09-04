@@ -11,7 +11,6 @@ const colorMap: Record<string, string> = {
 interface CardWithCircleProps {
   title: string
   amount: number
-  month: string
   percentage: number
   icon: any
   type: "income"| "expense" | "Surplus"
@@ -20,7 +19,6 @@ interface CardWithCircleProps {
 const CardWithCircle: FC<CardWithCircleProps> = ({
   title,
   amount,
-  month,
   percentage,
   icon,
   type
@@ -56,7 +54,7 @@ const CardWithCircle: FC<CardWithCircleProps> = ({
             <p className='text-2xl font-semibold text-gray-900'>
               Rp. {amount.toLocaleString('id-ID')}
             </p>
-            <p className='text-md text-gray-400'>Bulan {month}</p>
+            <p className='text-md text-gray-400'>Tahun {new Date().getFullYear()}</p>
           </div>
         </div>
       </div>
