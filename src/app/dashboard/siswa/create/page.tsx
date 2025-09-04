@@ -318,13 +318,13 @@ const CardFormStudent = ({
   ...props
 }: CardFormStudentProps) => {
   const [localData, setLocalData] = useState({
-  name: name || '',
-  inductNumber: inductNumber || '',
-  generation: generation || '',
-  dorm: dorm || '',
-  major: major || '',
-  status: status || ''
-})
+    name: name || '',
+    inductNumber: inductNumber || '',
+    generation: generation || '',
+    dorm: dorm || '',
+    major: major || '',
+    status: status || ''
+  })
 
   return (
     <div
@@ -344,9 +344,7 @@ const CardFormStudent = ({
         <div className='flex flex-col gap-1'>
           <label className='text-sm font-medium'>Nama siswa</label>
           <Input
-            onChange={(e) =>
-              setLocalData({ ...localData, name: e.target.value })
-            }
+            onChange={e => setLocalData({ ...localData, name: e.target.value })}
             defaultValue={name || ''}
             placeholder={`Masukkan Nama siswa`}
             className='w-full border-slate-300 py-6'
@@ -355,10 +353,9 @@ const CardFormStudent = ({
         <div className='flex flex-col gap-1'>
           <label className='text-sm font-medium'>No Induk</label>
           <Input
-            onChange={(e) =>
+            onChange={e =>
               setLocalData({ ...localData, inductNumber: e.target.value })
             }
-
             defaultValue={inductNumber || ''}
             placeholder={`Masukkan No Induk`}
             className='w-full border-slate-300 py-6'
@@ -367,10 +364,9 @@ const CardFormStudent = ({
         <div className='flex flex-col gap-1'>
           <label className='text-sm font-medium'>Angkatan</label>
           <Input
-            onChange={(e) =>
+            onChange={e =>
               setLocalData({ ...localData, generation: e.target.value })
             }
-
             defaultValue={generation || ''}
             placeholder={`Masukkan Angkatan`}
             className='w-full border-slate-300 py-6'
@@ -379,10 +375,7 @@ const CardFormStudent = ({
         <div className='flex flex-col gap-1'>
           <label className='text-sm font-medium'>Asrama</label>
           <Input
-            onChange={(e) =>
-              setLocalData({ ...localData, dorm: e.target.value })
-            }
-
+            onChange={e => setLocalData({ ...localData, dorm: e.target.value })}
             defaultValue={dorm || ''}
             placeholder={`Masukkan Asrama`}
             className='w-full border-slate-300 py-6'

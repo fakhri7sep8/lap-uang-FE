@@ -5,7 +5,7 @@ import SelectLimitData from './select-dataLimit'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-const SearchDataTableSPP = ({
+const SearchDataTableKategori = ({
   searchTerm,
   setSearchTerm,
   setShowFilter,
@@ -31,7 +31,7 @@ const SearchDataTableSPP = ({
             <Search className='' />
             <Input
               type='text'
-              placeholder='Cari nama'
+              placeholder='Cari nama / tahun ajaran'
               className='w-full h-full outline-none focus-visible:outline-none ring-0 focus:ring-0 border-none shadow-none'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -70,7 +70,7 @@ const SearchDataTableSPP = ({
             <Search className='' />
             <Input
               type='text'
-              placeholder='Cari nama '
+              placeholder='Cari nama / Tahun Ajaran'
               className='w-full h-full outline-none focus-visible:outline-none ring-0 focus:ring-0 border-none shadow-none'
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
@@ -94,4 +94,4 @@ const SearchDataTableSPP = ({
   }
 }
 
-export default SearchDataTableSPP
+export default SearchDataTableKategori

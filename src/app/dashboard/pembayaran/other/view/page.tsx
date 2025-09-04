@@ -194,7 +194,7 @@ const DataSelainSpp = () => {
                 paginatedData.map((p: any, idx: number) => (
                   <TableRow key={p.id}>
                     <TableCell className=" text-center py-4 font-medium">
-                      {idx + 1}
+                      {(currentPage - 1) * showCount + idx + 1}
                     </TableCell>
                     <TableCell className="text-center">{p.name}</TableCell>
                     {p.payments.map((pmt: any, index: number) => (

@@ -1,7 +1,7 @@
 "use client";
 
 import { GraduationCap, SquarePen, Trash2, Users } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import {
@@ -21,26 +21,35 @@ import { useStudentModule } from "@/hooks/useStudentModule";
 import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
 import { Badge } from "@/components/ui/badge";
 import Loader from "@/components/ui/loader";
+import { formatRupiah } from "@/lib/format-rupiah";
+import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
+import SearchDataTableKategori from "@/components/fragments/dashboard/search-data-table-kategory";
 
 const DataPembayaran = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [showCount, setShowCount] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ state filter baru
+  // ✅ state filter aktif
   const [filterSemester, setFilterSemester] = useState("");
   const [filterTipeKategori, setFilterTipeKategori] = useState("");
   const [filterNominal, setFilterNominal] = useState("");
 
-  // Ambil data siswa dari API
-  const { useGetStudent, useDeleteStudent } = useStudentModule();
+  // ✅ state filter sementara
+  const [tempFilterSemester, setTempFilterSemester] = useState("");
+  const [tempFilterTipeKategori, setTempFilterTipeKategori] = useState("");
+  const [tempFilterNominal, setTempFilterNominal] = useState("");
+
+  const { useGetStudent } = useStudentModule();
   const { useGetCategory, useDeleteCategory } = useCategoryPaymentModule();
   const { data: kategori, isLoading, isError } = useGetCategory();
   const { mutate: deleteCategory } = useDeleteCategory();
 
+  const [currentPage, setCurrentPage] = useState(1);
+
   // ✅ logika filter
-  const filteredData = kategori
-    ?.filter((s: any) =>
+  const filteredData = (kategori ?? [])
+    .filter((s: any) =>
       searchTerm
         ? s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           s.TA.toLowerCase().includes(searchTerm.toLowerCase())
@@ -55,6 +64,23 @@ const DataPembayaran = () => {
     .filter((s: any) =>
       filterNominal ? s.nominal.toString() === filterNominal : true
     );
+
+  const totalPages = Math.ceil(filteredData.length / showCount);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * showCount,
+    currentPage * showCount
+  );
+
+  // ✅ reset ke halaman 1 kalau filter/search berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    filterSemester,
+    filterTipeKategori,
+    filterNominal,
+    showCount,
+  ]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -90,26 +116,26 @@ const DataPembayaran = () => {
   }
 
   return (
-    <section className="flex flex-col gap-10 w-full ">
+    <section className="flex flex-col gap-10 w-full">
       {/* Card Info */}
-      <section className="grid grid-cols-2 gap-4 ">
+      <section className="grid grid-cols-2 gap-4">
         <CardInformation
           color={"blue"}
           title={"Total Data"}
-          value={kategori.length}
+          value={kategori?.length ?? 0}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
           color={"green"}
           title={"Data Terfilter"}
-          value={filteredData.slice(0, showCount).length}
+          value={filteredData.length}
           icon={<Users size={32} className="text-green-500" />}
         />
       </section>
 
       {/* Search & Table */}
       <section className="w-full flex flex-col gap-6 h-full pb-6">
-        <SearchDataTable
+        <SearchDataTableKategori
           title={"Manajement Kategori Pembayaran"}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -124,45 +150,71 @@ const DataPembayaran = () => {
             <TableHeader className=" text-sm font-semibold text-center">
               <TableRow className="text-center">
                 <TableHead className="text-center py-4">No</TableHead>
-                <TableHead className="text-center py-4">Nama Kategori</TableHead>
+                <TableHead className="text-center py-4">
+                  Nama Kategori
+                </TableHead>
                 <TableHead className="text-center py-4">Semester</TableHead>
                 <TableHead className="text-center py-4">Tahun Ajaran</TableHead>
-                <TableHead className="text-center py-4">Tipe Kategori</TableHead>
+                <TableHead className="text-center py-4">
+                  Tipe Kategori
+                </TableHead>
                 <TableHead className="text-center py-4">Nominal</TableHead>
                 <TableHead className="text-center py-4 w-24">Aksi</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody className="text-sm divide-y divide-gray-200 text-center">
-              {filteredData.slice(0, showCount).map((s: any, i: number) => (
-                <TableRow key={s.id}>
-                  <TableCell className=" py-4 font-medium">{i + 1}</TableCell>
-                  <TableCell className=" py-4 font-medium">{s.name}</TableCell>
-                  <TableCell className=" py-4 font-medium">{s.semester}</TableCell>
-                  <TableCell className=" py-4 font-medium">{s.TA}</TableCell>
-                  <TableCell className=" py-4 font-medium">
-                    <Badge className="bg-purple-200 py-1 rounded-full px-4 text-purple-500">
-                      {s.type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className=" py-4 font-medium">{s.nominal}</TableCell>
-                  <TableCell className="flex gap-2 items-center ">
-                    <Link href={`/dashboard/pembayaran/kategori/update/${s.id}`}>
-                      <Button className="bg-blue-400 text-white cursor-pointer">
-                        <SquarePen />
+              {paginatedData.length > 0 ? (
+                paginatedData.map((s: any, i: number) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="py-4 font-medium">
+                      {(currentPage - 1) * showCount + i + 1}
+                    </TableCell>
+                    <TableCell className="py-4 font-medium">{s.name}</TableCell>
+                    <TableCell className="py-4 font-medium">
+                      {s.semester}
+                    </TableCell>
+                    <TableCell className="py-4 font-medium">{s.TA}</TableCell>
+                    <TableCell className="py-4 font-medium">
+                      <Badge className="bg-purple-200 py-1 rounded-full px-4 text-purple-500">
+                        {s.type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="py-4 font-medium">
+                      {formatRupiah(s.nominal)}
+                    </TableCell>
+                    <TableCell className="flex gap-2 items-center justify-center">
+                      <Link
+                        href={`/dashboard/pembayaran/kategori/update/${s.id}`}
+                      >
+                        <Button className="bg-blue-400 text-white cursor-pointer">
+                          <SquarePen />
+                        </Button>
+                      </Link>
+                      <Button
+                        className="bg-red-500 text-white cursor-pointer px-4"
+                        onClick={() => handleDelete(s.id as string)}
+                      >
+                        <Trash2 />
                       </Button>
-                    </Link>
-                    <Button
-                      className="bg-red-500 text-white cursor-pointer px-4"
-                      onClick={() => handleDelete(s.id as string)}
-                    >
-                      <Trash2 />
-                    </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-6 text-gray-500">
+                    Tidak ada data
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
+
+          <CustomPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </section>
 
@@ -200,8 +252,8 @@ const DataPembayaran = () => {
                   Semester
                   <select
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
-                    value={filterSemester}
-                    onChange={(e) => setFilterSemester(e.target.value)}
+                    value={tempFilterSemester}
+                    onChange={(e) => setTempFilterSemester(e.target.value)}
                   >
                     <option value="">Semua</option>
                     <option value="1">Semester 1</option>
@@ -218,12 +270,12 @@ const DataPembayaran = () => {
                   Tipe Kategori
                   <select
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
-                    value={filterTipeKategori}
-                    onChange={(e) => setFilterTipeKategori(e.target.value)}
+                    value={tempFilterTipeKategori}
+                    onChange={(e) => setTempFilterTipeKategori(e.target.value)}
                   >
                     <option value="">Semua</option>
                     <option value="NORMAL">Normal</option>
-                    <option value="Installment">Installment</option>
+                    <option value="INSTALLMENT">Installment</option>
                   </select>
                 </label>
 
@@ -231,27 +283,37 @@ const DataPembayaran = () => {
                 <label className="flex flex-col text-sm">
                   Nominal
                   <input
-                    type="number"
+                    type="text"
                     placeholder="Masukkan nominal"
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
-                    value={filterNominal}
-                    onChange={(e) => setFilterNominal(e.target.value)}
+                    value={
+                      tempFilterNominal ? formatRupiah(tempFilterNominal) : ""
+                    }
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\D/g, "");
+                      setTempFilterNominal(raw);
+                    }}
                   />
                 </label>
               </div>
               <div className="mt-auto flex flex-col gap-2">
                 <button
                   onClick={() => {
-                    setFilterSemester("");
-                    setFilterTipeKategori("");
-                    setFilterNominal("");
+                    setTempFilterSemester("");
+                    setTempFilterTipeKategori("");
+                    setTempFilterNominal("");
                   }}
-                  className="w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-gray-300"
+                  className="w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600"
                 >
                   Reset Filter
                 </button>
                 <button
-                  onClick={() => setShowFilter(false)}
+                  onClick={() => {
+                    setFilterSemester(tempFilterSemester);
+                    setFilterTipeKategori(tempFilterTipeKategori);
+                    setFilterNominal(tempFilterNominal);
+                    setShowFilter(false);
+                  }}
                   className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                 >
                   Terapkan Filter

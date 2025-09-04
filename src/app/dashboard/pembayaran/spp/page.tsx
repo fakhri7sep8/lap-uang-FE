@@ -188,7 +188,7 @@ const SPP = () => {
               ) : (
                 paginatedData.map((s: any, idx: number) => (
                   <TableRow key={s.id} className='hover:bg-gray-50 transition'>
-                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell>{(currentPage - 1) * showCount + idx + 1}</TableCell>
                     <TableCell className='font-medium'>{s.nama}</TableCell>
                     <TableCell>{getPaymentBadge(s.juli)}</TableCell>
                     <TableCell>{getPaymentBadge(s.agustus)}</TableCell>
