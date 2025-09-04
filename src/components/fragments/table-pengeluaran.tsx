@@ -1,9 +1,16 @@
-import { viewPengeluaran } from "@/data/view-pengeluaran";
+
+type PengeluaranItem = {
+  id: string;
+  tanggal: string;
+  jenisPengeluaran: string;
+  deskripsi: string;
+  amount: number;
+};
 
 const formatRupiah = (num: number) =>
   "Rp. " + num.toLocaleString("id-ID");
 
-const getBulan = (tanggal: string) => {
+export const getBulan = (tanggal: string) => {
   const bulanIndo = [
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
@@ -12,8 +19,13 @@ const getBulan = (tanggal: string) => {
   return bulanIndo[dateObj.getMonth()];
 };
 
-const TablePengeluaran = () => {
-  const sortedPengeluaran = [...viewPengeluaran].sort(
+interface TablePengeluaranProps {
+  data: PengeluaranItem[];
+  children?: React.ReactNode;
+}
+
+const TablePengeluaran: React.FC<TablePengeluaranProps> = ({ data, children }) => {
+  const sortedPengeluaran = [...data].sort(
     (a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()
   );
 
@@ -36,13 +48,15 @@ const TablePengeluaran = () => {
               <td className="py-2 px-4">{item.tanggal}</td>
               <td className="py-2 px-4">{item.jenisPengeluaran}</td>
               <td className="py-2 px-4">{item.deskripsi}</td>
-              <td className="py-2 px-4 text-right">
+              <td className="py-2 px-4">
                 {formatRupiah(item.amount)}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {/* Pagination/children slot */}
+      {children && <div className="w-full mt-4">{children}</div>}
     </div>
   );
 };
