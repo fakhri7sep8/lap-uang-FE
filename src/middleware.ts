@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export default function middleware(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const token = req.cookies.get("x-auth")?.value || "";
 
 
@@ -10,7 +10,7 @@ export default function middleware(req: NextRequest) {
   }
 
   if (token && req.nextUrl.pathname.startsWith("/auth/login")) {
-    return NextResponse.redirect(new URL("/admin", req.url));
+    return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
   return NextResponse.next();

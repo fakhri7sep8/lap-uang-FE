@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { useAuthModule } from "@/hooks/useAuthModule";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Email tidak valid").required("Email wajib diisi"),
@@ -20,6 +22,15 @@ const LoginPage = () => {
   const { useLogin } = useAuthModule();
 
   const { mutate, isPending } = useLogin();
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = Cookies.get("x-auth");
+    if (token) {
+      router.replace("/dashboard"); 
+    }
+  }, [router]);
+
 
   const formik = useFormik({
     initialValues: {

@@ -20,6 +20,7 @@ import Swal from "sweetalert2";
 import { useStudentModule } from "@/hooks/useStudentModule";
 import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
 import Loader from "@/components/ui/loader";
+import dayjs from "dayjs";
 
 const LihatSemuaSiswa = () => {
   const [showFilter, setShowFilter] = useState(false);
@@ -165,7 +166,7 @@ const LihatSemuaSiswa = () => {
               ) : (
                 paginatedData.map((s: any, idx: number) => (
                   <TableRow key={s.id}>
-                    <TableCell>{idx + 1}</TableCell>
+                    <TableCell>{(currentPage - 1) * showCount + (idx + 1)}</TableCell>
                     <TableCell className="font-medium">{s.name}</TableCell>
                     <TableCell>{s.InductNumber}</TableCell>
                     <TableCell>{s.dorm}</TableCell>
@@ -180,7 +181,7 @@ const LihatSemuaSiswa = () => {
                       </span>
                     </TableCell>
                     <TableCell>{s.major}</TableCell>
-                    <TableCell>{s.createdAt}</TableCell>
+                    <TableCell>{dayjs(s.createdAt).format("DD MMM YYYY")}</TableCell>
                     <TableCell className="flex gap-2 justify-center">
                       <Link href={`/dashboard/siswa/update/${s.id}`}>
                         <Button className="bg-blue-400 text-white">
