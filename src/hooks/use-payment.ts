@@ -19,6 +19,15 @@ export const usePaymentModule = () => {
     return await axiosClient.get("/payments/semua").then((res) => res.data);
   };
 
+  const getPaymentsByCNS = async (ids: string , idc : string) => {
+    return await axiosClient.get(`/payments/filter/${ids}/${idc}`).then((res) => res.data);
+  }
+
+  const getByCategories = async (name: string) => {
+  const res = await axiosClient.get(`/payments/category/${name}`);
+  return res.data;
+};
+
   const getRecapPayments = async () => {
     return await axiosClient.get("/payments/rekap/2025").then((res) => res.data);
   };
@@ -29,9 +38,9 @@ export const usePaymentModule = () => {
       .then((res) => res.data);
   };
 
-  const updatePayment = async (id: string, payload: any) => {
+  const updatePayment = async (id: string, payload: any , typeId:string ) => {
     return await axiosClient
-      .patch(`/payments/update/${id}`, payload)
+      .patch(`/payments/update/${id}/2025/${typeId}`, payload)
       .then((res) => res.data);
   };
 
@@ -94,14 +103,28 @@ export const usePaymentModule = () => {
     });
   };
 
-  const useUpdatePayment = (id: string) => {
+  const useGetPaymentsByCategory = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (name: string) => getByCategories(name),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+    },
+    onError: (error: any) => {
+      Swal.fire("Error", "Gagal mengambil data: " + error.message, "error");
+    },
+  });
+};
+
+  const useUpdatePayment = () => {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: (payload:any) => updatePayment(id, payload),
+      mutationFn: (payload:any) => updatePayment(payload.studentId, payload, payload.typeId),
       onSuccess: () => {
         Swal.fire("Berhasil", "Pembayaran berhasil diupdate", "success");
         queryClient.invalidateQueries({ queryKey: ["payments"] });
-        queryClient.invalidateQueries({ queryKey: ["payment-detail", id] });
+        queryClient.invalidateQueries({ queryKey: ["payment-detail", ] });
       },
       onError: (error: any) => {
         Swal.fire("Error", "Gagal mengupdate: " + error.message, "error");
@@ -123,6 +146,19 @@ export const usePaymentModule = () => {
     });
   };
 
+  const useGetPaymentsByCNS = (ids: string, idc: string) => {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["payments-by-cns", ids, idc],
+    queryFn: () => getPaymentsByCNS(ids, idc),
+    enabled: !!ids && !!idc, // hanya jalan kalau ada param
+    refetchOnWindowFocus: false,
+    select: (res) => res.data, // asumsi res = { data: ... }
+  });
+
+  return { data, isLoading, isError };
+};
+
+
   return {
     useGetPayments,
     useGetRecapPayments,
@@ -130,5 +166,7 @@ export const usePaymentModule = () => {
     useCreatePayment,
     useUpdatePayment,
     useDeletePayment,
+    useGetPaymentsByCategory,
+    useGetPaymentsByCNS,
   };
 };
