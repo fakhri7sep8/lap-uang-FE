@@ -55,6 +55,7 @@ const InputPembayaranpage = () => {
 
   const { useCreatePayment } = usePaymentModule()
   const { mutate: createPayments } = useCreatePayment()
+  
 
   const { useGetCategory, useDetailCategory } = useCategoryPaymentModule()
   const { data: categoryMQ, isLoading: isLoadingKategori } = useGetCategory()
@@ -80,6 +81,7 @@ const InputPembayaranpage = () => {
   // }, [selectedKategori])
 
   const handleSubmit = (e: any) => {
+    const  getPaymentByCNS = [];
     e.preventDefault()
 
     if (selectedKategori !== 'spp') {
