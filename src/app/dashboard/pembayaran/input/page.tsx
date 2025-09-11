@@ -24,6 +24,7 @@ import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
 import { useSppPaymentModule } from "@/hooks/use-spp-payment";
 import { usePaymentModule } from "@/hooks/use-payment";
 import { Checkbox } from "@/components/ui/checkbox";
+import { formatRupiah } from "@/lib/format-rupiah";
 
 const bulanList = [
   "Januari",
@@ -43,16 +44,12 @@ const bulanList = [
 const InputPembayaranpage = () => {
   const [selectedSiswa, setSelectedSiswa] = useState<string>("");
   const [selectedKategori, setSelectedKategori] = useState<string>("spp");
-  const [selectIDCateogry, setIDCategory] = useState<string>(
-    "13dd5ec7-3c5b-4afb-b430-1ac1f1745c6d"
-  );
+  const [selectIDCateogry, setIDCategory] = useState<string>("13dd5ec7-3c5b-4afb-b430-1ac1f1745c6d");
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
-  const [selectStatus, setSelectStatus] = useState<string>("BELUM_LUNAS");
   const [methodPayments, setMethodPayments] = useState<string>("NORMAL");
-
+  const [cicilanNominal, setCicilanNominal] = useState<number>(0);
   const { useGetStudent } = useStudentModule();
   const { data: siswaMQ } = useGetStudent();
-
   const { useCreateSPPPayment, useGetByStudentID } = useSppPaymentModule();
   const { mutate: createSPPPayment } = useCreateSPPPayment();
   const { data: sppPayments } = useGetByStudentID(
@@ -60,21 +57,26 @@ const InputPembayaranpage = () => {
       (s: any) => s?.InductNumber === selectedSiswa || s?.name === selectedSiswa
     )?.id
   );
-
-  const { useCreatePayment, useUpdatePayment, useGetPaymentsByCNS } =
-    usePaymentModule();
+  const { useCreatePayment, useUpdatePayment, useGetPaymentsByCNS } = usePaymentModule();
   const { mutate: createPayments } = useCreatePayment();
   const { mutate: updatePayments } = useUpdatePayment();
-
   const { useGetCategory, useDetailCategory } = useCategoryPaymentModule();
   const { data: categoryMQ } = useGetCategory();
-  const { data: detailCategoryMQ } = useDetailCategory(
-    selectIDCateogry || "13dd5ec7-3c5b-4afb-b430-1ac1f1745c6d"
-  );
+  const { data: detailCategoryMQ } = useDetailCategory(selectIDCateogry);
 
   const siswa = siswaMQ?.find(
     (s: any) => s?.InductNumber === selectedSiswa || s?.name === selectedSiswa
   );
+  const handleCicilanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const raw = e.target.value.replace(/\D/g, "");
+  const inputNominal = Number(raw || 0);
+  const sudahDibayar = existingPayment?.reduce((acc: number, p: any) => acc + p.amount, 0) || 0;
+  const totalTagihan = detailCategoryMQ?.data?.nominal || 0;
+  const sisaTagihan = Math.max(totalTagihan - sudahDibayar, 0);
+  const finalNominal = inputNominal > sisaTagihan ? sisaTagihan : inputNominal;
+
+  setCicilanNominal(finalNominal);
+};
 
   const { data: existingPayment } = useGetPaymentsByCNS(
     siswa?.id || "",
@@ -82,25 +84,22 @@ const InputPembayaranpage = () => {
   );
 
   useEffect(() => {
-  if (selectedKategori === "spp" && siswa?.id && sppPayments?.spp) {
-    const belumLunasBulan = bulanList.find((bulan) => {
-      const dataBulan = sppPayments?.spp?.find(
-        (s: any) => s.month === bulan && s.studentId === siswa?.id
-      );
-      // kalau belum ada data / status != LUNAS, berarti bulan ini dipilih
-      return !dataBulan || dataBulan.status !== "LUNAS";
-    });
+    if (selectedKategori === "spp" && siswa?.id && sppPayments?.spp) {
+      const belumLunasBulan = bulanList.find((bulan) => {
+        const dataBulan = sppPayments?.spp?.find(
+          (s: any) => s.month === bulan && s.studentId === siswa?.id
+        );
+        return !dataBulan || dataBulan.status !== "LUNAS";
+      });
 
-    if (belumLunasBulan) {
-      setSelectedMonths([belumLunasBulan]);
-    } else {
-      setSelectedMonths([]); // kalau semua udah lunas
+      if (belumLunasBulan) {
+        setSelectedMonths([belumLunasBulan]);
+      } else {
+        setSelectedMonths([]);
+      }
     }
-  }
-}, [siswa?.id, sppPayments, selectedKategori]);
+  }, [siswa?.id, sppPayments, selectedKategori]);
 
-
-  // toggle bulan dipilih
   const toggleMonth = (month: string) => {
     if (selectedMonths.includes(month)) {
       setSelectedMonths(selectedMonths.filter((m) => m !== month));
@@ -111,34 +110,15 @@ const InputPembayaranpage = () => {
 
   const handleSubmit = (e: any) => {
     e.preventDefault();
+    if (!siswa) return;
 
-    if (selectedKategori !== "spp") {
-      const paymentsDTO = {
-        studentId: siswa?.id,
-        date: new Date().toISOString(),
-        amount: detailCategoryMQ?.data?.nominal,
-        method: methodPayments,
-        status: selectStatus === "BELUM_LUNAS" ? "BELUM LUNAS" : selectStatus,
-        month: new Date().getMonth() + 1,
-        year: new Date().getFullYear(),
-        typeId: selectIDCateogry || "",
-      };
-
-      if (existingPayment?.length > 0) {
-        const existing = existingPayment[0];
-        updatePayments({ id: existing.id, payload: paymentsDTO });
-      } else {
-        createPayments(paymentsDTO as any);
-      }
-    } else {
-      // pembayaran spp → bisa multi bulan
+    if (selectedKategori === "spp") {
       selectedMonths.forEach((month) => {
         const sppPaymentsDTO = {
           studentId: siswa?.id,
           month,
           year: new Date().getFullYear(),
           nominal: 2500000,
-          status: selectStatus,
         };
 
         const existingSPP = sppPayments?.spp?.find(
@@ -149,12 +129,47 @@ const InputPembayaranpage = () => {
           createSPPPayment.mutate(sppPaymentsDTO as any);
         }
       });
+    } else {
+      if (detailCategoryMQ?.data?.type === "NORMAL") {
+        const paymentsDTO = {
+          studentId: siswa?.id,
+          date: new Date().toISOString(),
+          amount: detailCategoryMQ?.data?.nominal,
+          method: methodPayments,
+          year: new Date().getFullYear(),
+          typeId: selectIDCateogry || "",
+        };
+
+        if (existingPayment?.length > 0) {
+          const existing = existingPayment[0];
+          updatePayments({ id: existing.id, payload: paymentsDTO });
+        } else {
+          createPayments(paymentsDTO as any);
+          console.log(paymentsDTO);
+        }
+      }
+
+      if (detailCategoryMQ?.data?.type === "INSTALLMENT") {
+        const paymentsDTO = {
+          studentId: siswa?.id,
+          date: new Date().toISOString(),
+          amount: cicilanNominal,
+          method: methodPayments,
+          year: new Date().getFullYear(),
+          typeId: selectIDCateogry || "",
+        };
+
+        createPayments(paymentsDTO as any);
+        console.log(paymentsDTO);
+      }
     }
   };
 
   const totalNominal =
     selectedKategori === "spp"
       ? 2500000 * selectedMonths.length
+      : detailCategoryMQ?.data?.type === "INSTALLMENT"
+      ? cicilanNominal
       : detailCategoryMQ?.data?.nominal || 0;
 
   return (
@@ -248,10 +263,7 @@ const InputPembayaranpage = () => {
                     </TableHeader>
                     <TableBody>
                       {sppPayments?.spp?.map((item: any, index: number) => (
-                        <TableRow
-                          key={index}
-                          className="hover:bg-gray-100"
-                        >
+                        <TableRow key={index} className="hover:bg-gray-100">
                           <TableCell className="border border-gray-300">
                             {item.month}
                           </TableCell>
@@ -302,36 +314,119 @@ const InputPembayaranpage = () => {
               </div>
             )}
 
+            {detailCategoryMQ?.data?.type === "INSTALLMENT" && (
+              <div className="flex flex-col gap-4">
+                {/* History cicilan */}
+                <div>
+                  <label className="text-sm font-medium mb-2">
+                    Data Cicilan (History)
+                  </label>
+                  <Table className="w-full border-collapse">
+                    <TableHeader>
+                      <TableRow className="bg-gray-200">
+                        <TableHead className="text-left border border-gray-300">
+                          Nama Siswa
+                        </TableHead>
+                        <TableHead className="text-left border border-gray-300">
+                          Nama Kategori
+                        </TableHead>
+                        <TableHead className="text-left border border-gray-300">
+                          Nominal Dibayar
+                        </TableHead>
+                        <TableHead className="text-left border border-gray-300">
+                          Status
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {existingPayment?.map((item: any, index: number) => {
+                        // total sudah dibayar sampai transaksi ini
+                        const totalSoFar = existingPayment
+                          .slice(0, index + 1)
+                          .reduce((acc: number, p: any) => acc + p.amount, 0);
+
+                        const status =
+                          totalSoFar >= (detailCategoryMQ?.data?.nominal || 0)
+                            ? "LUNAS"
+                            : "BELUM_LUNAS";
+
+                        return (
+                          <TableRow key={index} className="hover:bg-gray-100">
+                            <TableCell className="border border-gray-300">
+                              {siswa?.name}
+                            </TableCell>
+                            <TableCell className="border border-gray-300">
+                              {detailCategoryMQ?.data?.name}
+                            </TableCell>
+                            <TableCell className="border border-gray-300">
+                              Rp. {item.amount.toLocaleString("id-ID")}
+                            </TableCell>
+                            <TableCell className="border border-gray-300">
+                              {status}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Input cicilan */}
+                <div className="flex flex-col">
+                  <label className="text-sm font-medium">Nominal Cicilan</label>
+                  <input
+                    type="text"
+                    value={cicilanNominal ? formatRupiah(cicilanNominal) : ""}
+                    onChange={handleCicilanChange}
+                    className="border-slate-300 border rounded-md px-4 py-2"
+                    placeholder="Masukkan jumlah cicilan"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Status pembayaran */}
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">
                 Status Pembayaran
               </label>
-              <Select
-                defaultValue="BELUM_LUNAS"
-                onValueChange={(val) => {
-                  setSelectStatus(val);
-                }}
-              >
-                <SelectTrigger className="w-full py-6">
-                  <SelectValue placeholder="Pilih status" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-50 border-slate-300">
-                  <SelectGroup>
-                    <SelectItem value="LUNAS">Lunas</SelectItem>
-                    <SelectItem value="BELUM_LUNAS">Belum Lunas</SelectItem>
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
+              <div className="w-full border rounded-md p-4 border-slate-300">
+                <p className="font-semibold text-lg ">
+                  {detailCategoryMQ?.data?.type === "INSTALLMENT"
+                    ? cicilanNominal >=
+                      (detailCategoryMQ?.data?.nominal || 0) -
+                        (existingPayment?.reduce(
+                          (acc: number, p: any) => acc + p.amount,
+                          0
+                        ) || 0)
+                      ? "LUNAS"
+                      : "BELUM_LUNAS"
+                    : "LUNAS"}
+                </p>
+              </div>
             </div>
 
             {/* Nominal */}
             <div className="flex flex-col">
               <label className="text-sm font-medium mb-1">Nominal</label>
               <div className="w-full border rounded-md p-4 border-slate-300">
-                <p className="font-semibold text-lg">
-                  Rp. {totalNominal.toLocaleString("id-ID")}
-                </p>
+                {detailCategoryMQ?.data?.type === "INSTALLMENT" ? (
+                  <p className="font-semibold text-lg">
+                    Rp.{" "}
+                    {(
+                      (detailCategoryMQ?.data?.nominal || 0) -
+                      ((existingPayment?.reduce(
+                        (acc: number, p: any) => acc + p.amount,
+                        0
+                      ) || 0) +
+                        cicilanNominal)
+                    ).toLocaleString("id-ID")}
+                  </p>
+                ) : (
+                  <p className="font-semibold text-lg">
+                    Rp. {totalNominal.toLocaleString("id-ID")}
+                  </p>
+                )}
               </div>
             </div>
 
