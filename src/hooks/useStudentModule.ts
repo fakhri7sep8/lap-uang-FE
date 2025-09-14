@@ -13,6 +13,9 @@ export const useStudentModule = () => {
   const createStudent = async (data: any) => {
     return await axiosClient.post("/student/create", data);
   };
+  const createStudentBulk = async (data: any) => {
+    return await axiosClient.post("/student/createBulk", data);
+  };
 
   const updateStudent = async (data: any, id: string) => {
     return await axiosClient.put(`/student/update/${id}`, data);
@@ -21,6 +24,31 @@ export const useStudentModule = () => {
   const deleteStudent = async (id: string) => {
     return await axiosClient.delete(`/student/delete/${id}`);
   };
+
+  const useCreateBulk = () => {
+    const mutate = useMutation({
+      mutationFn: (payload: any) => createStudentBulk(payload),
+      onSuccess: () => {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+        })
+      },
+      
+      onError: (error) => { 
+        if (axios.isAxiosError(error)) {
+          Swal.fire({
+            icon: "error",
+            title: "Gagal",
+            text: error.response?.data?.message || "Terjadi kesalahan saat menambahkan data siswa",
+            confirmButtonColor: "#d33",
+          });
+        }
+      }
+    })
+
+    return mutate;
+  }
 
   const useCreateStudent = () => {
     const router = useRouter();
@@ -105,5 +133,6 @@ export const useStudentModule = () => {
     useGetStudent,
     useDeleteStudent,
     useUpdateStudent,
+    useCreateBulk
   };
 };

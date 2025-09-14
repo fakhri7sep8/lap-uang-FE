@@ -57,15 +57,34 @@ const LihatSemuaPengeluaran = () => {
     .filter(p => (filterJenis ? p.jenisPengeluaran === filterJenis : true))
     .filter(p => (filterBulan ? getBulan(p.tanggal) === filterBulan : true))
 
+  // Data dummy siswa
+  const siswaData = [
+    { id: 1, nama: 'Fathan', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 2, nama: 'Arga', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 3, nama: 'Dafiz', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 4, nama: 'Fakhri', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 5, nama: 'Fawwaz', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 6, nama: 'Rizky', semester: 1, tahun: 2024, status: 'Normal' },
+    { id: 7, nama: 'Alya', semester: 1, tahun: 2024, status: 'Normal' },
+    { id: 8, nama: 'Bima', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 9, nama: 'Citra', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 10, nama: 'Dewi', semester: 1, tahun: 2024, status: 'Normal' },
+    { id: 11, nama: 'Eka', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 12, nama: 'Farhan', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 13, nama: 'Gita', semester: 1, tahun: 2024, status: 'Normal' },
+    { id: 14, nama: 'Hafiz', semester: 2, tahun: 2023, status: 'Normal' },
+    { id: 15, nama: 'Intan', semester: 2, tahun: 2023, status: 'Normal' }
+  ]
+
   // Pagination logic
-  const totalPages = Math.ceil(filteredData.length / showCount)
-  const paginatedData = filteredData.slice(
+  const totalPages = Math.ceil(siswaData.length / showCount)
+  const paginatedData = siswaData.slice(
     (currentPage - 1) * showCount,
     currentPage * showCount
   )
 
   const handleDelete = () => {
-    alert('delete pengeluaran berjalan')
+    alert('delete siswa berjalan')
   }
 
   const formatRupiah = (num: number) => 'Rp ' + num.toLocaleString('id-ID')
@@ -104,36 +123,37 @@ const LihatSemuaPengeluaran = () => {
           <Table className="w-full table-auto text-gray-700">
             <TableHeader className='text-sm font-semibold text-center'>
               <TableRow>
-                <TableHead className='text-center py-4'>Tanggal</TableHead>
-                <TableHead className='text-center py-4'>Jenis</TableHead>
-                <TableHead className='text-center py-4'>Deskripsi</TableHead>
-                <TableHead className='text-center py-4'>Jumlah</TableHead>
-                <TableHead className='text-center py-4'>Aksi</TableHead>
+                <TableHead className='text-center py-4 text-[16px]'>ID</TableHead>
+                <TableHead className='text-center py-4 text-[16px]'>Nama Siswa</TableHead>
+                <TableHead className='text-center py-4 text-[16px]'>Semester</TableHead>
+                <TableHead className='text-center py-4 text-[16px]'>Tahun Ajaran</TableHead>
+                <TableHead className='text-center py-4 text-[16px]'>Status</TableHead>
+                <TableHead className='text-center py-4 text-[16px]'>Action</TableHead>
               </TableRow>
             </TableHeader>
-
             <TableBody className='text-sm divide-y divide-gray-200 text-center'>
               {paginatedData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className='py-8 text-gray-400'>
+                  <TableCell colSpan={6} className='py-8 text-gray-400'>
                     Data not found
                   </TableCell>
                 </TableRow>
               ) : (
-                paginatedData.map(p => (
-                  <TableRow key={p.id}>
-                    <TableCell className='py-4'>{p.tanggal}</TableCell>
-                    <TableCell className='py-4'>{p.jenisPengeluaran}</TableCell>
-                    <TableCell className='py-4'>{p.deskripsi}</TableCell>
-                    <TableCell className='py-4 font-semibold'>
-                      {formatRupiah(p.amount)}
+                paginatedData.map(siswa => (
+                  <TableRow key={siswa.id}>
+                    <TableCell className='py-4'>{siswa.id}</TableCell>
+                    <TableCell className='py-4'>{siswa.nama}</TableCell>
+                    <TableCell className='py-4'>{siswa.semester}</TableCell>
+                    <TableCell className='py-4'>{siswa.tahun}</TableCell>
+                    <TableCell className='py-4'>
+                      <span className="px-3 py-1 rounded bg-orange-100 text-orange-700 text-xs font-semibold">
+                        {siswa.status}
+                      </span>
                     </TableCell>
-                    <TableCell className='flex gap-2 justify-center'>
-                      <Link href={`/dashboard/pengeluaran/update/${p.id}`}>
-                        <Button className='bg-blue-400 text-white'>
-                          <SquarePen />
-                        </Button>
-                      </Link>
+                    <TableCell className='flex gap-2 justify-center py-4'>
+                      <Button className='bg-blue-400 text-white'>
+                        <SquarePen />
+                      </Button>
                       <Button
                         className='bg-red-500 text-white'
                         onClick={handleDelete}
@@ -146,12 +166,15 @@ const LihatSemuaPengeluaran = () => {
               )}
             </TableBody>
           </Table>
-          <CustomPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+          <div className="w-full mt-4">
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
         </div>
+        p
       </section>
 
       {/* Filter Drawer */}

@@ -69,4 +69,11 @@ export const viewPengeluaran = [
     deskripsi: "Pembayaran biaya liburan pegawai",
     amount: 2500000,
   },
+  {
+    id: "kkookk3hv14-5k2h3v4-1k2h3v4",
+    tanggal: "2021-01-23",
+    jenisPengeluaran: "Biaya Liburan",
+    deskripsi: "Pembayaran biaya liburan pegawai",
+    amount: 2500000,
+  },
 ];

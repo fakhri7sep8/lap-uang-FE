@@ -46,7 +46,7 @@ const LoginPage = () => {
   return (
     <div>
       <section className="flex flex-col md:flex-row min-h-screen">
-        <div className="hidden md:flex w-1/2 bg-[url('/img/login.png')] bg-cover bg-no-repeat bg-center items-center justify-center"></div>
+        <div className="hidden md:flex w-1/2 bg-[url('/img/login.webp')] bg-cover bg-no-repeat bg-center items-center justify-center"></div>
         <div className="w-full md:w-1/2 bg-[url('/img/bg-login.png')] bg-cover flex items-center justify-center px-6 py-12">
           <div className="glass-card w-full max-w-md flex flex-col justify-center items-center gap-6 rounded-4xl py-6 px-6 md:px-12 bg-white/20 backdrop-blur-md">
             <Image src="/img/logo.png" alt="Logo" width={100} height={100} />

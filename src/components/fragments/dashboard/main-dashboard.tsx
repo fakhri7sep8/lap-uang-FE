@@ -177,9 +177,9 @@ export const MainDashboard = () => {
             <div className="md:w-1/2 w-full flex gap-4">
               <div className="w-1/2">
                 <FinanceCard
-                  title={"Pendapatan Bulan Ini"}
+                  title={"Pendapatan Tahun Ini"}
                   amount={1230000000}
-                  month={"Juli"}
+                  
                   percentage={-30}
                   type="income"
                   icon={<Wallet size={44} />}
@@ -187,9 +187,9 @@ export const MainDashboard = () => {
               </div>
               <div className="w-1/2">
                 <FinanceCard
-                  title={"Pengeluaran Bulan Ini"}
+                  title={"Pengeluaran Tahun Ini"}
                   amount={1230000000}
-                  month={"Juli"}
+                  
                   percentage={-30}
                   type="expense"
                   icon={<Wallet size={44} />}
@@ -200,9 +200,9 @@ export const MainDashboard = () => {
           <div className="w-full flex gap-4 h-[250px] flex-row">
             <div className="w-1/2 ">
               <FinanceCard
-                title={"Pengeluaran Bulan Ini"}
+                title={"Pengeluaran Tahun Ini"}
                 amount={1230000000}
-                month={"Juli"}
+                
                 percentage={-30}
                 type="Surplus"
                 icon={<Wallet size={44} />}
@@ -211,9 +211,9 @@ export const MainDashboard = () => {
             <div className="w-1/2 flex gap-4">
               <div className="w-1/2">
                 <FinanceCard
-                  title={"Pengeluaran Bulan Ini"}
+                  title={"Pengeluaran Tahun Ini"}
                   amount={1230000000}
-                  month={"Juli"}
+                  
                   percentage={-30}
                   type="expense"
                   icon={<Wallet size={44} />}
@@ -221,9 +221,9 @@ export const MainDashboard = () => {
               </div>
               <div className="w-1/2">
                 <FinanceCard
-                  title={"Pengeluaran Bulan Ini"}
+                  title={"Pengeluaran Tahun Ini"}
                   amount={1230000000}
-                  month={"Juli"}
+                  
                   percentage={-30}
                   type="expense"
                   icon={<Wallet size={44} />}
