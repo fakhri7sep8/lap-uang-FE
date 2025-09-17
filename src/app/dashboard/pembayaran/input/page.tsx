@@ -41,6 +41,21 @@ const bulanList = [
   "Desember",
 ];
 
+const bulanListTable = [
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+];
+
 const InputPembayaranpage = () => {
   const [selectedSiswa, setSelectedSiswa] = useState<string>("");
   const [selectedKategori, setSelectedKategori] = useState<string>("spp");
@@ -275,7 +290,7 @@ const InputPembayaranpage = () => {
                     ?.slice() // copy array biar ga mutasi state
                     ?.sort(
                       (a: any, b: any) =>
-                        bulanList.indexOf(a.month) - bulanList.indexOf(b.month)
+                        bulanListTable.indexOf(a.month) - bulanListTable.indexOf(b.month)
                     )
                     ?.map((item: any, i: number) => (
                       <TableRow
