@@ -65,7 +65,7 @@ export function Combobox ({
           </Button>
         </PopoverTrigger>
         <PopoverContent className={cn('p-0', contentClassName)}>
-          <Command className='w-full '>
+          <Command className='w-full bg-white'>
             <CommandInput placeholder='Cari...' />
             <CommandList>
               <CommandEmpty>Tidak ditemukan.</CommandEmpty>

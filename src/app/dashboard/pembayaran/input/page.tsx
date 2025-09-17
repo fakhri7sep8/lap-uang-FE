@@ -70,7 +70,7 @@ const InputPembayaranpage = () => {
   const { useGetStudent } = useStudentModule();
   const { data: siswaMQ } = useGetStudent();
   const { useCreateSPPPayment, useGetByStudentID } = useSppPaymentModule();
-  const { mutate: createSPPPayment } = useCreateSPPPayment();
+  const { mutate: createSPPPayment, isPending } = useCreateSPPPayment();
   const { data: sppPayments } = useGetByStudentID(
     siswaMQ?.find(
       (s: any) => s?.InductNumber === selectedSiswa || s?.name === selectedSiswa
@@ -78,7 +78,7 @@ const InputPembayaranpage = () => {
   );
   const { useCreatePayment, useUpdatePayment, useGetPaymentsByCNS } =
     usePaymentModule();
-  const { mutate: createPayments, isPending } = useCreatePayment();
+  const { mutate: createPayments } = useCreatePayment();
   const { mutate: updatePayments } = useUpdatePayment();
   const { useGetCategory, useDetailCategory } = useCategoryPaymentModule();
   const { data: categoryMQ } = useGetCategory();
@@ -134,13 +134,13 @@ const InputPembayaranpage = () => {
           (s: any) => s.month === month && s.studentId === siswa?.id
         );
         if (!existingSPP) {
-          createSPPPayment.mutate({
+          createSPPPayment({
             studentId: siswa.id,
             month,
             year: new Date().getFullYear(),
             nominal: 2500000,
             status: "LUNAS",
-          } as any);
+          });
         }
       });
     } else {
@@ -182,7 +182,7 @@ const InputPembayaranpage = () => {
       const totalBulan = bulanList.length;
       const totalLunas =
         sppPayments?.spp?.filter((s: any) => s.status === "LUNAS")?.length || 0;
-      if (totalLunas === totalBulan) return "LUNAS";
+      if (totalLunas >= totalBulan) return "LUNAS";
       if (totalLunas > 0)
         return `BELUM LUNAS (${totalLunas}/${totalBulan} bulan)`;
       return "BELUM BAYAR";
@@ -290,7 +290,8 @@ const InputPembayaranpage = () => {
                     ?.slice() // copy array biar ga mutasi state
                     ?.sort(
                       (a: any, b: any) =>
-                        bulanListTable.indexOf(a.month) - bulanListTable.indexOf(b.month)
+                        bulanListTable.indexOf(a.month) -
+                        bulanListTable.indexOf(b.month)
                     )
                     ?.map((item: any, i: number) => (
                       <TableRow
