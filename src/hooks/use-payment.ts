@@ -9,27 +9,35 @@ export interface CreatePaymentDto {
   nominal: number;
   month?: string;
   year?: number;
-  status?: "LUNAS" | "BELUM_LUNAS";
+  // status?: "LUNAS" | "BELUM_LUNAS";
 }
 
-
 export const usePaymentModule = () => {
-
   const getPayments = async () => {
     return await axiosClient.get("/payments/semua").then((res) => res.data);
   };
 
-  const getPaymentsByCNS = async (ids: string , idc : string) => {
-    return await axiosClient.get(`/payments/filter/${ids}/${idc}`).then((res) => res.data);
-  }
+  const getPaymentsByCNS = async (ids: string, idc: string) => {
+    return await axiosClient
+      .get(`/payments/filter/${ids}/${idc}`)
+      .then((res) => res.data);
+  };
 
   const getByCategories = async (name: string) => {
-  const res = await axiosClient.get(`/payments/category/${name}`);
-  return res.data;
-};
+    const res = await axiosClient.get(`/payments/category/${name}`);
+    return res.data;
+  };
+
+  const getCicilanPayments = async (typeId: string) => {
+    return await axiosClient
+      .get(`/payments/cicilan/${typeId}`)
+      .then((res) => res.data);
+  };
 
   const getRecapPayments = async () => {
-    return await axiosClient.get("/payments/rekap/2025").then((res) => res.data);
+    return await axiosClient
+      .get("/payments/rekap/2025")
+      .then((res) => res.data);
   };
 
   const createPayment = async (payload: any) => {
@@ -38,7 +46,7 @@ export const usePaymentModule = () => {
       .then((res) => res.data);
   };
 
-  const updatePayment = async (id: string, payload: any , typeId:string ) => {
+  const updatePayment = async (id: string, payload: any, typeId: string) => {
     return await axiosClient
       .patch(`/payments/update/${id}/2025/${typeId}`, payload)
       .then((res) => res.data);
@@ -56,7 +64,6 @@ export const usePaymentModule = () => {
       .then((res) => res.data);
   };
 
-  
   const useGetPayments = () => {
     const { data, isLoading, isError } = useQuery({
       queryKey: ["payments"],
@@ -86,9 +93,15 @@ export const usePaymentModule = () => {
     return { data, isLoading, isError };
   };
 
-  // ====================
-  // MUTATIONS
-  // ====================
+  const useGetCicilanPayments = () => {
+    const mutation = useMutation({
+      mutationFn: (typeId: string) =>
+        getCicilanPayments(typeId).then((res) => res.data),
+    });
+
+    return mutation;
+  };
+
   const useCreatePayment = () => {
     const queryClient = useQueryClient();
     return useMutation({
@@ -104,27 +117,28 @@ export const usePaymentModule = () => {
   };
 
   const useGetPaymentsByCategory = () => {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (name: string) => getByCategories(name),
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ["payments"] });
-    },
-    onError: (error: any) => {
-      Swal.fire("Error", "Gagal mengambil data: " + error.message, "error");
-    },
-  });
-};
+    return useMutation({
+      mutationFn: (name: string) => getByCategories(name),
+      onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["payments"] });
+      },
+      onError: (error: any) => {
+        Swal.fire("Error", "Gagal mengambil data: " + error.message, "error");
+      },
+    });
+  };
 
   const useUpdatePayment = () => {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: (payload:any) => updatePayment(payload.studentId, payload, payload.typeId),
+      mutationFn: (payload: any) =>
+        updatePayment(payload.studentId, payload, payload.typeId),
       onSuccess: () => {
         Swal.fire("Berhasil", "Pembayaran berhasil diupdate", "success");
         queryClient.invalidateQueries({ queryKey: ["payments"] });
-        queryClient.invalidateQueries({ queryKey: ["payment-detail", ] });
+        queryClient.invalidateQueries({ queryKey: ["payment-detail"] });
       },
       onError: (error: any) => {
         Swal.fire("Error", "Gagal mengupdate: " + error.message, "error");
@@ -147,17 +161,16 @@ export const usePaymentModule = () => {
   };
 
   const useGetPaymentsByCNS = (ids: string, idc: string) => {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["payments-by-cns", ids, idc],
-    queryFn: () => getPaymentsByCNS(ids, idc),
-    enabled: !!ids && !!idc, // hanya jalan kalau ada param
-    refetchOnWindowFocus: false,
-    select: (res) => res.data, // asumsi res = { data: ... }
-  });
+    const { data, isLoading, isError } = useQuery({
+      queryKey: ["payments-by-cns", ids, idc],
+      queryFn: () => getPaymentsByCNS(ids, idc),
+      enabled: !!ids && !!idc, // hanya jalan kalau ada param
+      refetchOnWindowFocus: false,
+      select: (res) => res.data, // asumsi res = { data: ... }
+    });
 
-  return { data, isLoading, isError };
-};
-
+    return { data, isLoading, isError };
+  };
 
   return {
     useGetPayments,
@@ -168,5 +181,6 @@ export const usePaymentModule = () => {
     useDeletePayment,
     useGetPaymentsByCategory,
     useGetPaymentsByCNS,
+    useGetCicilanPayments,
   };
 };
