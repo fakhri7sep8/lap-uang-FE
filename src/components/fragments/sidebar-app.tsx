@@ -118,7 +118,7 @@ export function AppSidebar () {
                 {/* 📌 TUNGGAKAN */}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <Link href='/dashboard/tunggakan' className='flex items-center'>
+                    <Link href='/dashboard/tunggakan'>
                       <AlertTriangle className='mr-2' size={18} />
                       <span className={`font-semibold ${poppins.className}`}>
                         Tunggakan
