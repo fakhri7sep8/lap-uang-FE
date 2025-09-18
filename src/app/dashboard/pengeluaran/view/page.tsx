@@ -1,17 +1,25 @@
 "use client";
 
-
-import TablePengeluaran, { getBulan } from "@/components/fragments/table-pengeluaran";
-import CardInformation from "@/components/fragments/dashboard/card-information";
-import { viewPengeluaran } from "@/data/view-pengeluaran";
-import SearchDataTable from "@/components/fragments/dashboard/search-data-table";
-import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
-import { AnimatePresence, motion } from "framer-motion";
+import { SquarePen, Trash2, FileText, Wallet } from "lucide-react";
 import React, { useState } from "react";
-import { FaMoneyBill, FaRegFile, FaUserGroup } from "react-icons/fa6";
+import { AnimatePresence, motion } from "framer-motion";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import SearchDataTable from "@/components/fragments/dashboard/search-data-table";
+import { Button } from "@/components/ui/button";
+import CardInformation from "@/components/fragments/dashboard/card-information";
+import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
+import { useBudgetExpenseModule } from "@/hooks/usePengeluaran";
+import Loader from "@/components/ui/loader";
 
 export default function PengeluaranViewPage() {
-  // State untuk search, filter, dan pagination
   const [showFilter, setShowFilter] = useState(false);
   const [showCount, setShowCount] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,14 +27,54 @@ export default function PengeluaranViewPage() {
   const [filterBulan, setFilterBulan] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Logic filter dan search
-  const filteredData = viewPengeluaran
+  const { useGetBudgetExpense, useDeleteBudgetExpense } =
+    useBudgetExpenseModule();
+  const { data: pengeluaran = [], isLoading } = useGetBudgetExpense();
+  const { mutate: deletePengeluaran } = useDeleteBudgetExpense();
+
+  if (isLoading) {
+    return (
+      <div className="w-full h-[80vh] flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="p-6 text-red-500">Gagal memuat data pengeluaran.</div>
+    );
+  }
+
+  // Filter logic
+  const bulanIndo = [
+    "Januari",
+    "Februari",
+    "Maret",
+    "April",
+    "Mei",
+    "Juni",
+    "Juli",
+    "Agustus",
+    "September",
+    "Oktober",
+    "November",
+    "Desember",
+  ];
+  const getBulan = (tanggal: string) => {
+    const dateObj = new Date(tanggal);
+    return bulanIndo[dateObj.getMonth()];
+  };
+
+  const filteredData = pengeluaran
     .filter(
       (item) =>
-        item.deskripsi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.deskripsi?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.jenisPengeluaran.toLowerCase().includes(searchTerm.toLowerCase())
     )
-    .filter((item) => (filterJenis ? item.jenisPengeluaran === filterJenis : true))
+    .filter((item) =>
+      filterJenis ? item.jenisPengeluaran === filterJenis : true
+    )
     .filter((item) =>
       filterBulan ? getBulan(item.tanggal) === filterBulan : true
     );
@@ -34,54 +82,100 @@ export default function PengeluaranViewPage() {
   // Pagination
   const totalData = filteredData.length;
   const totalJumlah = filteredData.reduce((acc, curr) => acc + curr.amount, 0);
-  const totalPages = Math.ceil(filteredData.length / showCount);
+  const totalPages = Math.ceil(totalData / showCount);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * showCount,
     currentPage * showCount
   );
 
   return (
-    <div className="min-h-full bg-gray-100 flex flex-col items-center py-8 ">
-      {/* Card Information */}
-      <div className="w-full max-w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <section className="flex flex-col gap-10 w-full">
+      {/* Card Info */}
+      <section className="grid grid-cols-2 gap-4">
         <CardInformation
           color="blue"
           title="Total Data"
           value={totalData}
-          icon={<FaRegFile size={40} className="text-blue-400" />}
+          icon={<FileText size={32} className="text-blue-500" />}
         />
         <CardInformation
           color="green"
           title="Total Jumlah"
-          value={" RP." +totalJumlah.toLocaleString("id-ID")}
-          icon={<FaMoneyBill size={40} className="text-green-400" />}
+          value={"Rp " + totalJumlah.toLocaleString("id-ID")}
+          icon={<Wallet size={32} className="text-green-500" />}
         />
-      </div>
+      </section>
 
       {/* Search & Filter */}
-      <div className="w-full max-w-full mb-4">
+      <section className="w-full flex flex-col gap-6 h-full pb-6">
         <SearchDataTable
-          title={"Managemet Pengeluaran"}
+          title={"Manajemen Pengeluaran"}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           setShowFilter={setShowFilter}
           setShowCount={setShowCount}
-          type={"normal"}
+          type="normal"
         />
-      </div>
 
-      {/* Tabel Pengeluaran */}
-      <div className="w-full max-w-full">
-        <TablePengeluaran data={paginatedData}/>
-      </div>
-      {/* Pagination */}
-      <div className="w-full max-w-full mt-4">
-        <CustomPagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-      </div>
+        {/* Table */}
+        <div className="w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
+          <Table className="w-full h-full table-auto bg-white text-gray-700">
+            <TableHeader className="text-sm font-semibold text-center">
+              <TableRow>
+                <TableHead className="text-center py-4">No</TableHead>
+                <TableHead className="text-center py-4">Deskripsi</TableHead>
+                <TableHead className="text-center py-4">Jenis</TableHead>
+                <TableHead className="text-center py-4">Jumlah</TableHead>
+                <TableHead className="text-center py-4">Tanggal</TableHead>
+                <TableHead className="text-center py-4">Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="text-sm divide-y divide-gray-200 text-center">
+              {paginatedData.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="py-8 text-gray-400">
+                    Data not found
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedData.map((item, index) => (
+                  <TableRow key={item.id}>
+                    <TableCell className="py-4 font-medium">
+                      {(currentPage - 1) * showCount + index + 1}
+                    </TableCell>
+                    <TableCell className="py-4">{item.deskripsi}</TableCell>
+                    <TableCell className="py-4">
+                      {item.jenisPengeluaran}
+                    </TableCell>
+                    <TableCell className="py-4">
+                      Rp {item.amount.toLocaleString("id-ID")}
+                    </TableCell>
+                    <TableCell className="py-4">{item.tanggal}</TableCell>
+                    <TableCell className="flex justify-center gap-2 py-4">
+                      <Button className="bg-blue-400 text-white">
+                        <SquarePen />
+                      </Button>
+                      <Button
+                        className="bg-red-500 text-white"
+                        onClick={() => deletePengeluaran(item.id)}
+                      >
+                        <Trash2 />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+          <div className="w-full mt-4">
+            <CustomPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
+          </div>
+        </div>
+      </section>
 
       {/* Filter Drawer */}
       <AnimatePresence>
@@ -112,13 +206,12 @@ export default function PengeluaranViewPage() {
                 </button>
               </div>
               <div className="flex flex-col gap-4">
-                {/* Tambahkan filter sesuai kebutuhan pengeluaran di sini */}
                 <label className="flex flex-col text-sm">
                   Jenis Pengeluaran
                   <select
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
                     value={filterJenis}
-                    onChange={e => setFilterJenis(e.target.value)}
+                    onChange={(e) => setFilterJenis(e.target.value)}
                   >
                     <option value="">Semua</option>
                     <option value="Operasional">Operasional</option>
@@ -130,21 +223,14 @@ export default function PengeluaranViewPage() {
                   <select
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
                     value={filterBulan}
-                    onChange={e => setFilterBulan(e.target.value)}
+                    onChange={(e) => setFilterBulan(e.target.value)}
                   >
                     <option value="">Semua</option>
-                    <option value="Januari">Januari</option>
-                    <option value="Februari">Februari</option>
-                    <option value="Maret">Maret</option>
-                    <option value="April">April</option>
-                    <option value="Mei">Mei</option>
-                    <option value="Juni">Juni</option>
-                    <option value="Juli">Juli</option>
-                    <option value="Agustus">Agustus</option>
-                    <option value="September">September</option>
-                    <option value="Oktober">Oktober</option>
-                    <option value="November">November</option>
-                    <option value="Desember">Desember</option>
+                    {bulanIndo.map((b) => (
+                      <option key={b} value={b}>
+                        {b}
+                      </option>
+                    ))}
                   </select>
                 </label>
               </div>
@@ -169,6 +255,6 @@ export default function PengeluaranViewPage() {
           </>
         )}
       </AnimatePresence>
-    </div>
+    </section>
   );
 }

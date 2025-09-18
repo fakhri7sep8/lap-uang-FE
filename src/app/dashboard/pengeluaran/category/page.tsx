@@ -124,7 +124,7 @@ const LihatSemuaPengeluaran = () => {
             <TableHeader className='text-sm font-semibold text-center'>
               <TableRow>
                 <TableHead className='text-center py-4 text-[16px]'>ID</TableHead>
-                <TableHead className='text-center py-4 text-[16px]'>Nama Siswa</TableHead>
+                <TableHead className='text-center py-4 text-[16px]'>Jenis Pengeluaran</TableHead>
                 <TableHead className='text-center py-4 text-[16px]'>Semester</TableHead>
                 <TableHead className='text-center py-4 text-[16px]'>Tahun Ajaran</TableHead>
                 <TableHead className='text-center py-4 text-[16px]'>Status</TableHead>
