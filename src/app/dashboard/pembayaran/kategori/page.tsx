@@ -275,7 +275,7 @@ const DataPembayaran = () => {
                   >
                     <option value="">Semua</option>
                     <option value="NORMAL">Normal</option>
-                    <option value="INSTALLMENT">Installment</option>
+                    <option value="INSTALLMENT">Cicilan</option>
                   </select>
                 </label>
 

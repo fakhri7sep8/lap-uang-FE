@@ -20,12 +20,16 @@ export const useSppPaymentModule = () => {
   };
 
   const getRecapSPPPayment = async () => {
-    return await axiosClient.get(`/spp-payment/rekap/2025`).then((res) => res.data);
-  }
+    return await axiosClient
+      .get(`/spp-payment/rekap/2025`)
+      .then((res) => res.data);
+  };
 
-  const getByStudentID = async (studentID:string) => {
-    return await axiosClient.get(`/spp-payment/student/${studentID}`).then((res) => res.data);
-  }
+  const getByStudentID = async (studentID: string) => {
+    return await axiosClient
+      .get(`/spp-payment/student/${studentID}`)
+      .then((res) => res.data);
+  };
 
   const createPayment = async (payload: CreateSppPayment) => {
     return await axiosClient
@@ -49,7 +53,6 @@ export const useSppPaymentModule = () => {
     return await axiosClient.get(`/spp-payment/${id}`).then((res) => res.data);
   };
 
-
   const useGetByStudentID = (studentID: string) => {
     const { data, isLoading, isError } = useQuery({
       queryKey: ["sppPayments", studentID],
@@ -71,7 +74,7 @@ export const useSppPaymentModule = () => {
     });
     return { data, isLoading, isError };
   };
-  
+
   const useGetRecapPayments = () => {
     const { data, isLoading, isError } = useQuery({
       queryKey: ["RecapSPP-Payments"],
@@ -83,32 +86,31 @@ export const useSppPaymentModule = () => {
     return { data, isLoading, isError };
   };
 
-  const useCreateSPPPayment = () => {
-    const queryClient = useQueryClient();
-    const mutate = useMutation({
-      mutationFn: (payload: CreateSppPayment) => createPayment(payload),
-      onSuccess: () => {
-        Swal.fire({
-          title: "Berhasil",
-          text: "Pembayaran SPP berhasil dibuat",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-        // ⬇️ otomatis update cache
-        queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
-      },
-      onError: (error: any) => {
-        Swal.fire({
-          title: "Error",
-          text: "Pembayaran gagal dibuat: " + error.message,
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      },
-    });
+const useCreateSPPPayment = () => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (payload: CreateSppPayment) => createPayment(payload),
+    onSuccess: () => {
+      Swal.fire({
+        title: "Berhasil",
+        text: "Pembayaran SPP berhasil dibuat",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
+    },
+    onError: (error: any) => {
+      Swal.fire({
+        title: "Error",
+        text: "Pembayaran gagal dibuat: " + error.message,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    },
+  });
+  return { mutate: mutation.mutate, isPending: mutation.isPending };
+};
 
-    return { mutate };
-  };
 
   const useUpdatePayment = (id: string) => {
     const queryClient = useQueryClient();
@@ -138,32 +140,31 @@ export const useSppPaymentModule = () => {
   };
 
   const useDeletePayment = () => {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
 
-  const { mutate } = useMutation({
-    mutationFn: (id: string) => deletePayment(id),
-    onSuccess: () => {
-      Swal.fire({
-        title: "Berhasil",
-        text: "Pembayaran SPP berhasil dihapus",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
-      queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
-    },
-    onError: (error: any) => {
-      Swal.fire({
-        title: "Error",
-        text: "Pembayaran gagal dihapus: " + error.message,
-        icon: "error",
-        confirmButtonText: "OK",
-      });
-    },
-  });
+    const { mutate } = useMutation({
+      mutationFn: (id: string) => deletePayment(id),
+      onSuccess: () => {
+        Swal.fire({
+          title: "Berhasil",
+          text: "Pembayaran SPP berhasil dihapus",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+        queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
+      },
+      onError: (error: any) => {
+        Swal.fire({
+          title: "Error",
+          text: "Pembayaran gagal dihapus: " + error.message,
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      },
+    });
 
-  return { mutate }; // sekarang mutate benar2 function
-};
-
+    return { mutate }; // sekarang mutate benar2 function
+  };
 
   const useDetailPayment = (id: string) => {
     const { data, isLoading, isError } = useQuery({

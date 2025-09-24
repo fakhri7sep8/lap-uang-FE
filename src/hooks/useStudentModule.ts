@@ -21,8 +21,8 @@ export const useStudentModule = () => {
     return await axiosClient.put(`/student/update/${id}`, data);
   };
 
-  const deleteStudent = async (id: string) => {
-    return await axiosClient.delete(`/student/delete/${id}`);
+  const deleteStudent = async (id: string, payload:any) => {
+    return await axiosClient.patch(`/student/updateStatusDelete/${id}`, payload);
   };
 
   const useCreateBulk = () => {
@@ -106,7 +106,7 @@ export const useStudentModule = () => {
     const queryClient = useQueryClient();
 
     const mutate = useMutation({
-      mutationFn: (id: string) => deleteStudent(id),
+      mutationFn: (id: string) => deleteStudent(id, { isDelete: true }),
       onSuccess: (data) => {
         console.log("Delete berhasil", data);
         queryClient.invalidateQueries({ queryKey: ["get-student"] });

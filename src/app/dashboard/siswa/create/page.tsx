@@ -166,7 +166,7 @@ const TambahSiswa = () => {
         generation: Number(values.generation)
       }
       mutate(payload)
-      // resetForm()
+      resetForm()
     }
   })
 

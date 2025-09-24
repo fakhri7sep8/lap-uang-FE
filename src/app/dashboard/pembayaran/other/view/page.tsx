@@ -37,21 +37,29 @@ const DataSelainSpp = () => {
   const [showFilter, setShowFilter] = useState(false);
 
   const { useGetCategory } = useCategoryPaymentModule();
-  const { data: categories = [], isLoading: isLoadingCategory } = useGetCategory() as any;
+  const { data: categories = [], isLoading: isLoadingCategory } =
+    useGetCategory() as any;
 
-  const { useGetRecapPayments, useGetPaymentsByCategory, useGetCicilanPayments } = usePaymentModule();
+  const {
+    useGetRecapPayments,
+    useGetPaymentsByCategory,
+    useGetCicilanPayments,
+  } = usePaymentModule();
   const { data: recap = [], isLoading, isError } = useGetRecapPayments() as any;
 
-  const { mutate: getPaymentsByCategory, data: paymentsByCategory } = useGetPaymentsByCategory() as any;
+  const { mutate: getPaymentsByCategory, data: paymentsByCategory } =
+    useGetPaymentsByCategory() as any;
   const { mutate: getCicilanPayments } = useGetCicilanPayments() as any;
 
-  const selectedCategoryType: any = categories.find((c: any) => c.id === selectedCategory?.id)?.type;
+  const selectedCategoryType: any = categories.find(
+    (c: any) => c.id === selectedCategory?.id
+  )?.type;
 
-  const getPaymentStatus = (amount: any, nominal: any) => {
-    if (amount >= nominal) return "LUNAS";
-    if (amount === 0) return "BELUM BAYAR";
-    return "BELUM LUNAS";
-  };
+  // const getPaymentStatus = (amount: any, nominal: any) => {
+  //   if (amount >= nominal) return "LUNAS";
+  //   if (amount === 0) return "BELUM BAYAR";
+  //   return "BELUM LUNAS";
+  // };
 
   const filteredData: any[] = recap.filter((p: any) =>
     searchTerm ? p.name.toLowerCase().includes(searchTerm.toLowerCase()) : true
@@ -125,7 +133,7 @@ const DataSelainSpp = () => {
 
       <section className="w-full flex flex-col gap-6 h-full pb-6">
         {/* {tabel} */}
-         <SearchDataTable
+        <SearchDataTable
           title={"Data Pembayaran"}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
@@ -137,6 +145,7 @@ const DataSelainSpp = () => {
         {/* Carousel */}
         <div className="w-full flex items-center">
           <button
+            title="Previous"
             onClick={handlePrev}
             disabled={startIndex === 0}
             className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
@@ -176,6 +185,7 @@ const DataSelainSpp = () => {
             </div>
           </div>
           <button
+            title="Next"
             onClick={handleNext}
             disabled={startIndex >= categories.length - maxVisible}
             className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
@@ -270,10 +280,10 @@ const DataSelainSpp = () => {
                         <TableCell>
                           <span
                             className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                              getPaymentStatus(item.amount, item.type?.nominal)
+                              item.status
                             )}`}
                           >
-                            {getPaymentStatus(item.amount, item.type?.nominal)}
+                            {item.status}
                           </span>
                         </TableCell>
                         <TableCell className="flex gap-2 justify-center">
@@ -298,7 +308,7 @@ const DataSelainSpp = () => {
             )
           ) : (
             // Semua
-            <Table className="w-full h-full table-auto bg-white text-gray-700">
+            <Table className="w-full h-full table-auto bg-white text-gray-700 text-center">
               <TableHeader>
                 <TableRow>
                   <TableHead>No</TableHead>
