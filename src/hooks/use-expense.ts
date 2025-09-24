@@ -12,14 +12,14 @@ export interface CreateExpense {
 
 // export interface UpdateExpense extends Partial<CreateExpense> {}
 
-export interface CreateCategory {
-  name: string;
-}
+// export interface CreateCategory {
+//   name: string;
+// }
 
 export const useExpenseModule = () => {
   // API calls
   const getExpenses = async () => {
-    return await axiosClient.get("/expense/getAll").then((res) => res.data);
+    return await axiosClient.get("/expense/").then((res) => res.data);
   };
 
   const createManyExpenses = async (payload: CreateExpense[]) => {
@@ -28,22 +28,40 @@ export const useExpenseModule = () => {
       .then((res) => res.data);
   };
 
+  const createExpense = async (payload: CreateExpense) => {
+    return await axiosClient.post("/expense/create", payload);
+  };
+
   const updateExpense = async (id: string, payload: any) => {
     return await axiosClient
       .post(`/expense/updateExpense/${id}`, payload)
       .then((res) => res.data);
   };
 
-  const getCategories = async () => {
-    return await axiosClient.get("/expense/getCategory").then((res) => res.data);
+  const useCreateExpense = () => {
+    const queryClient = useQueryClient();
+    const mutate = useMutation({
+      mutationFn: (payload: CreateExpense) => createExpense(payload),
+      onSuccess: () => {
+        Swal.fire({
+          title: "Berhasil",
+          text: "Pengeluaran berhasil ditambahkan",
+          icon: "success",
+          confirmButtonText: "OK",
+        });
+        queryClient.invalidateQueries({ queryKey: ["expenses"] });
+      },
+      onError: (error: any) => {
+        Swal.fire({
+          title: "Error",
+          text: "Gagal menambahkan pengeluaran: " + error.message,
+          icon: "error",
+          confirmButtonText: "OK",
+        });
+      },
+    });
+    return { mutate };
   };
-
-  const createCategory = async (payload: CreateCategory) => {
-    return await axiosClient
-      .post("/expense/categoryCreate", payload)
-      .then((res) => res.data);
-  };
-
   // React Query hooks
   const useGetExpenses = () => {
     const { data, isLoading, isError } = useQuery({
@@ -104,47 +122,10 @@ export const useExpenseModule = () => {
     });
     return { mutate };
   };
-
-  const useGetCategories = () => {
-    const { data, isLoading, isError } = useQuery({
-      queryKey: ["expenseCategories"],
-      queryFn: getCategories,
-      refetchOnWindowFocus: false,
-      select: (data) => data.data,
-    });
-    return { data, isLoading, isError };
-  };
-
-  const useCreateCategory = () => {
-    const queryClient = useQueryClient();
-    const mutate = useMutation({
-      mutationFn: (payload: CreateCategory) => createCategory(payload),
-      onSuccess: () => {
-        Swal.fire({
-          title: "Berhasil",
-          text: "Kategori berhasil dibuat",
-          icon: "success",
-          confirmButtonText: "OK",
-        });
-        queryClient.invalidateQueries({ queryKey: ["expenseCategories"] });
-      },
-      onError: (error: any) => {
-        Swal.fire({
-          title: "Error",
-          text: "Gagal membuat kategori: " + error.message,
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      },
-    });
-    return { mutate };
-  };
-
   return {
     useGetExpenses,
     useCreateManyExpenses,
     useUpdateExpense,
-    useGetCategories,
-    useCreateCategory,
+    useCreateExpense
   };
 };

@@ -6,6 +6,7 @@ import HorizontalProgressChart from "../horizontalBar";
 import MonthlyGroupedBarChart from "../monthlyFinanceChart";
 import DonutPieChart from "../donutChart";
 import CandlestickChart from "../candleStick";
+import BarChart from "../candle-new";
 const sampleDates = [
   "2023-11-01",
   "2023-11-02",
@@ -275,12 +276,7 @@ export const MainDashboard = () => {
           </div>
           <div className="w-full flex gap-4 h-full flex-row">
             <div className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
-              <CandlestickChart
-                data={sampleDates.map((date, idx) => ({
-                  date,
-                  values: sampleData[idx] as [number, number, number, number],
-                }))}
-              />
+                <BarChart/>
             </div>
           </div>
           <div className="w-full flex gap-4 h-full flex-row-reverse">
