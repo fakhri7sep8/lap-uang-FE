@@ -47,7 +47,7 @@ export function Combobox ({
 }: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
 
-  const selected = options.find(o => o.value === value)
+  const selected = options?.find(o => o.value === value)
 
   return (
     <div className={cn('flex flex-col gap-1', className)}>
@@ -70,7 +70,7 @@ export function Combobox ({
             <CommandList>
               <CommandEmpty>Tidak ditemukan.</CommandEmpty>
               <CommandGroup>
-                {options.map(option => (
+                {options?.map(option => (
                   <CommandItem
                     key={option.value}
                     value={option.value}

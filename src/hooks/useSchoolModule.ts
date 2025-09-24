@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { axiosClient } from "@/lib/axiosClient";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useSchoolModule = () => {
   const getSchoolData = async () => {
@@ -46,9 +46,11 @@ export const useSchoolModule = () => {
   };
 
   const useDeleteSchool = (id:string) => {
+    const queryClient = useQueryClient();
     const mutate = useMutation({
       mutationFn: (data:any) => DeleteSchool(data, id),
       onSuccess: (data) => {
+        queryClient.invalidateQueries({ queryKey: ["schools"] });
         console.log("Delete berhasil", data);
       },
       onError: (error) => {

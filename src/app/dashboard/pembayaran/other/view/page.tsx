@@ -1,217 +1,351 @@
-'use client'
+"use client";
 
-import { GraduationCap, SquarePen, Trash2, Users } from 'lucide-react'
-import React, { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-
+import {
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  GraduationCap,
+  Users,
+} from "lucide-react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
-} from '@/components/ui/table'
-import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import CardInformation from '@/components/fragments/dashboard/card-information'
-import Swal from 'sweetalert2'
-import { DataPembayaranSiswa } from '@/data/pembayaran'
-import { useStudentModule } from '@/hooks/useStudentModule'
-import Loader from '@/components/ui/loader'
-import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import CardInformation from "@/components/fragments/dashboard/card-information";
+import Loader from "@/components/ui/loader";
+import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
+import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
+import { usePaymentModule } from "@/hooks/use-payment";
+import SearchDataTable from "@/components/fragments/dashboard/search-data-table";
 
-const DataPembayaran = () => {
-  const [showFilter, setShowFilter] = useState(false)
-  const [showCount, setShowCount] = useState(10)
-  const [filterStatus, setFilterStatus] = useState('')
-  const [filterJurusan, setFilterJurusan] = useState('')
-  const [filterKategori, setFilterKategori] = useState('')
-  const [filterAngkatan, setFilterAngkatan] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
+const DataSelainSpp = () => {
+  const [showCount, setShowCount] = useState<any>(10);
+  const [currentPage, setCurrentPage] = useState<any>(1);
+  const [startIndex, setStartIndex] = useState<any>(0);
+  const [searchTerm, setSearchTerm] = useState<any>("");
+  const maxVisible = 4;
 
-  // Ambil data siswa dari API
-  const { useGetStudent, useDeleteStudent } = useStudentModule()
-  const { data: siswa = [], isLoading, isError } = useGetStudent()
-  const { mutateAsync: deleteStudent } = useDeleteStudent()
+  // selectedCategory object
+  const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [cicilanData, setCicilanData] = useState<any[]>([]);
+  const [showFilter, setShowFilter] = useState(false);
 
-  const filteredData = DataPembayaranSiswa
-    // Search bebas (nama, kategori, tanggal)
-    .filter((s: any) =>
-      searchTerm
-        ? s.namaSiswa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          s.kategoriPembayaran
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          s.tanggalPembayaran.includes(searchTerm)
-        : true
-    )
-    // Filter kategori pembayaran
-    .filter((s: any) =>
-      filterKategori ? s.kategoriPembayaran === filterKategori : true
-    )
-    // Filter angkatan (tahun)
-    .filter((s: any) => (filterAngkatan ? s.angkatan === filterAngkatan : true))
-    // Filter status "Lunas" atau "Belum Lunas"
-    .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
-    // Filter jurusan "RPL" atau "TKJ"
-    .filter((s: any) => (filterJurusan ? s.jurusan === filterJurusan : true))
+  const { useGetCategory } = useCategoryPaymentModule();
+  const { data: categories = [], isLoading: isLoadingCategory } = useGetCategory() as any;
 
-  const totalPages = Math.ceil(filteredData.length / showCount)
-  const paginatedData = filteredData.slice(
+  const { useGetRecapPayments, useGetPaymentsByCategory, useGetCicilanPayments } = usePaymentModule();
+  const { data: recap = [], isLoading, isError } = useGetRecapPayments() as any;
+
+  const { mutate: getPaymentsByCategory, data: paymentsByCategory } = useGetPaymentsByCategory() as any;
+  const { mutate: getCicilanPayments } = useGetCicilanPayments() as any;
+
+  const selectedCategoryType: any = categories.find((c: any) => c.id === selectedCategory?.id)?.type;
+
+  const getPaymentStatus = (amount: any, nominal: any) => {
+    if (amount >= nominal) return "LUNAS";
+    if (amount === 0) return "BELUM BAYAR";
+    return "BELUM LUNAS";
+  };
+
+  const filteredData: any[] = recap.filter((p: any) =>
+    searchTerm ? p.name.toLowerCase().includes(searchTerm.toLowerCase()) : true
+  );
+  const totalPages: any = Math.ceil(filteredData.length / showCount);
+  const paginatedData: any[] = filteredData.slice(
     (currentPage - 1) * showCount,
     currentPage * showCount
-  )
+  );
 
-  const getStatusBadgeClass = (status: string) => {
-    switch (status) {
-      case 'Lunas':
-        return 'bg-green-100 text-green-700'
-      case 'Belum Lunas':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'Tunggakan':
-        return 'bg-red-100 text-red-700'
+  const getStatusBadgeClass = (status: any) => {
+    switch ((status || "").toUpperCase()) {
+      case "LUNAS":
+        return "bg-green-100 text-green-700";
+      case "BELUM_LUNAS":
+      case "BELUM LUNAS":
+        return "bg-yellow-100 text-yellow-700";
+      case "TUNGGAKAN":
+        return "bg-red-100 text-red-700";
       default:
-        return 'bg-gray-100 text-gray-700'
+        return "bg-gray-100 text-gray-700";
     }
-  }
+  };
 
-  // const handleDelete = async (id: string) => {
-  //   try {
-  //     const result = await Swal.fire({
-  //       title: 'Apakah kamu yakin?',
-  //       text: 'Data yang dihapus tidak bisa dikembalikan!',
-  //       icon: 'warning',
-  //       showCancelButton: true,
-  //       confirmButtonColor: '#d33',
-  //       cancelButtonColor: '#3085d6',
-  //       confirmButtonText: 'Ya, hapus!',
-  //       cancelButtonText: 'Batal'
-  //     })
+  // Ambil data sesuai type: cicilan pakai id, lainnya pakai name
+  useEffect(() => {
+    if (!selectedCategory) return;
 
-  //     if (result.isConfirmed) {
-  //       // Jalankan proses delete di sini, misal panggil API atau hapus data lokal
-  //       // Contoh simulasi:
-  //       await deleteStudent(id)
-  //     }
-  //   } catch (error) {
-  //     console.error(error)
-  //   }
-  // }
+    if (selectedCategoryType === "INSTALLMENT") {
+      getCicilanPayments(selectedCategory.id, {
+        onSuccess: (data: any) => setCicilanData(data),
+      });
+    } else {
+      getPaymentsByCategory(selectedCategory.name); // pakai name untuk kategori biasa
+    }
+  }, [selectedCategory, selectedCategoryType]);
 
- if (isLoading) {
+  if (isLoading || isLoadingCategory) {
     return (
-      <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
+      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
         <Loader />
       </div>
-    )
+    );
   }
 
   if (isError) {
-    return <div className='p-6 text-red-500'>Gagal memuat data siswa.</div>
+    return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
   }
 
+  const handlePrev = () => startIndex > 0 && setStartIndex(startIndex - 1);
+  const handleNext = () =>
+    startIndex < categories.length - maxVisible &&
+    setStartIndex(startIndex + 1);
+
   return (
-    <section className='flex flex-col gap-10 w-full '>
-      <section className='grid grid-cols-2 gap-4 '>
+    <section className="flex flex-col gap-10 w-full">
+      <section className="grid grid-cols-2 gap-4">
         <CardInformation
-          color={'blue'}
-          title={'Total Data'}
-          value={siswa.length}
-          icon={<GraduationCap size={32} className='text-blue-500' />}
+          color="blue"
+          title="Total Data"
+          value={recap.length}
+          icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
-          color={'green'}
-          title={'Lunas'}
+          color="green"
+          title="Lunas"
           value={filteredData.slice(0, showCount).length}
-          icon={<Users size={32} className='text-green-500' />}
+          icon={<Users size={32} className="text-green-500" />}
         />
       </section>
 
-      <section className='w-full flex flex-col gap-6 h-full pb-6'>
-        <SearchDataTable
-          title={'Data Pembayaran'}
+      <section className="w-full flex flex-col gap-6 h-full pb-6">
+        {/* {tabel} */}
+         <SearchDataTable
+          title={"Data Pembayaran"}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           setShowFilter={setShowFilter}
           setShowCount={setShowCount}
-          type={'normal'}
+          type={"normal"}
         />
 
-        <div className='w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4'>
-          <Table className='w-full h-full table-auto bg-white text-gray-700'>
-            <TableHeader className=' text-sm font-semibold text-center'>
-              <TableRow className='text-center'>
-                <TableHead className='text-center py-4'>No</TableHead>
-                <TableHead className='text-center py-4'>Nama Siswa</TableHead>
-                <TableHead className='text-center py-4'>
-                  Kategori Pembayaran
-                </TableHead>
-                <TableHead className='text-center py-4'>Angkatan</TableHead>
-                <TableHead className='text-center py-4'>
-                  Total Pembayaran
-                </TableHead>
-                <TableHead className='text-center py-4'>Status</TableHead>
-                <TableHead className='text-center py-4'>
-                  Tanggal Pembayaran
-                </TableHead>
-                <TableHead className='text-center py-4'>Jurusan</TableHead>
-                <TableHead className='text-center py-4'>Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
+        {/* Carousel */}
+        <div className="w-full flex items-center">
+          <button
+            onClick={handlePrev}
+            disabled={startIndex === 0}
+            className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <div className="overflow-hidden flex-1 mx-2">
+            <div
+              className="flex gap-4 transition-transform duration-500"
+              style={{
+                transform: `translateX(-${startIndex * (100 / maxVisible)}%)`,
+              }}
+            >
+              <div
+                onClick={() => setSelectedCategory(null)}
+                className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-16 rounded-xl cursor-pointer ${
+                  !selectedCategory ? "bg-blue-700" : "bg-blue-500"
+                }`}
+              >
+                <p className="text-white font-semibold text-xl">Semua</p>
+              </div>
+              {categories.map((kat: any, i: any) => (
+                <div
+                  key={i}
+                  onClick={() =>
+                    setSelectedCategory({ id: kat.id, name: kat.name })
+                  }
+                  className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-16 rounded-xl cursor-pointer ${
+                    selectedCategory?.id === kat.id
+                      ? "bg-blue-700"
+                      : "bg-blue-500"
+                  }`}
+                >
+                  <p className="text-white font-semibold text-xl">{kat.name}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <button
+            onClick={handleNext}
+            disabled={startIndex >= categories.length - maxVisible}
+            className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </div>
 
-            <TableBody className='text-sm divide-y divide-gray-200 text-center'>
-              {paginatedData.length === 0 ? (
+        {/* Table */}
+        <div className="w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
+          {selectedCategory ? (
+            selectedCategoryType === "INSTALLMENT" ? (
+              // Cicilan pakai ID
+              <Table className="w-full text-gray-700 text-center">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No</TableHead>
+                    <TableHead>Nama Siswa</TableHead>
+                    <TableHead>Kategori</TableHead>
+                    <TableHead>Nominal</TableHead>
+                    <TableHead>Sudah Dibayar</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cicilanData.length > 0 ? (
+                    cicilanData.map((item: any, idx: any) => (
+                      <TableRow key={item.studentId}>
+                        <TableCell>{idx + 1}</TableCell>
+                        <TableCell>{item.nama}</TableCell>
+                        <TableCell>{item.tipeKategori}</TableCell>
+                        <TableCell>
+                          Rp. {item.jumlahTagihan?.toLocaleString("id-ID")}
+                        </TableCell>
+                        <TableCell>
+                          Rp. {item.jumlahPembayaran?.toLocaleString("id-ID")}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
+                              item.status
+                            )}`}
+                          >
+                            {item.status}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button className="bg-blue-500 text-white">
+                            <Download size={16} />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-gray-400 py-6"
+                      >
+                        Tidak ada data cicilan
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            ) : (
+              // Biasa pakai name
+              <Table className="w-full text-gray-700 text-center">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>No</TableHead>
+                    <TableHead>Nama Siswa</TableHead>
+                    <TableHead>Tahun</TableHead>
+                    <TableHead>Kategori</TableHead>
+                    <TableHead>Nominal</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Aksi</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paymentsByCategory?.data?.length > 0 ? (
+                    paymentsByCategory.data.map((item: any, idx: any) => (
+                      <TableRow key={item.id}>
+                        <TableCell>{idx + 1}</TableCell>
+                        <TableCell>{item.student?.name}</TableCell>
+                        <TableCell>{item.year}</TableCell>
+                        <TableCell>{item.type?.name}</TableCell>
+                        <TableCell>
+                          Rp. {item.amount?.toLocaleString("id-ID")}
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
+                              getPaymentStatus(item.amount, item.type?.nominal)
+                            )}`}
+                          >
+                            {getPaymentStatus(item.amount, item.type?.nominal)}
+                          </span>
+                        </TableCell>
+                        <TableCell className="flex gap-2 justify-center">
+                          <Button className="bg-blue-500 text-white">
+                            <Download size={16} />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        className="text-center text-gray-400 py-6"
+                      >
+                        Tidak ada data untuk kategori ini
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            )
+          ) : (
+            // Semua
+            <Table className="w-full h-full table-auto bg-white text-gray-700">
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className='py-8 text-gray-400'>
-                    Data not found
-                  </TableCell>
+                  <TableHead>No</TableHead>
+                  <TableHead>Nama Siswa</TableHead>
+                  {categories.map((c: any) => (
+                    <TableHead key={c.id}>{c.name}</TableHead>
+                  ))}
+                  <TableHead>Aksi</TableHead>
                 </TableRow>
-              ) : (
-                paginatedData.slice(0, showCount).map((s: any) => (
-                  <TableRow key={s.id}>
-                    <TableCell className=' py-4 font-medium'>{s.no}</TableCell>
-                    <TableCell className=' py-4 font-medium'>
-                      {s.namaSiswa}
-                    </TableCell>
-                    <TableCell className=' py-4'>
-                      {s.kategoriPembayaran}
-                    </TableCell>
-                    <TableCell className=' py-4'>{s.angkatan}</TableCell>
-                    <TableCell className=' py-4'>{s.totalPembayaran}</TableCell>
-                    <TableCell className=' py-4'>
-                      <span
-                        className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                          s.status
-                        )}`}  
-                      >
-                        {s.status}
-                      </span>
-                    </TableCell>
-                    <TableCell className=' py-4'>
-                      {s.tanggalPembayaran}
-                    </TableCell>
-                    <TableCell className=' py-4'>{s.jurusan}</TableCell>
-                    <TableCell className='flex w-full gap-2 items-center'>
-                      <Link href={`/dashboard/siswa/update/${s.id}`}>
-                        <Button className='bg-blue-400 text-white cursor-pointer'>
-                          <SquarePen />
-                        </Button>
-                      </Link>
-                      {/* <Button
-                        className='bg-red-500 text-white cursor-pointer px-4'
-                        onClick={() => handleDelete(s.id as string)}
-                      >
-                        <Trash2 />
-                      </Button> */}
+              </TableHeader>
+              <TableBody>
+                {paginatedData.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="py-8 text-gray-400">
+                      Data not found
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  paginatedData.map((p: any, idx: any) => (
+                    <TableRow key={p.id}>
+                      <TableCell>
+                        {(currentPage - 1) * showCount + idx + 1}
+                      </TableCell>
+                      <TableCell>{p.name}</TableCell>
+                      {p.payments?.map((pmt: any, i: any) => (
+                        <TableCell key={i}>
+                          <span
+                            className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
+                              pmt.status
+                            )}`}
+                          >
+                            {pmt.status}
+                          </span>
+                        </TableCell>
+                      ))}
+                      <TableCell className="flex w-full gap-2 items-center justify-center">
+                        <Button className="bg-blue-500 text-white">
+                          <Download />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+
           <CustomPagination
             currentPage={currentPage}
             totalPages={totalPages}
@@ -219,111 +353,8 @@ const DataPembayaran = () => {
           />
         </div>
       </section>
-
-      <AnimatePresence>
-        {showFilter && (
-          <>
-            <motion.div
-              className='fixed inset-0 bg-black/40 z-40'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onClick={() => setShowFilter(false)}
-            />
-            <motion.div
-              className='fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 shadow-lg p-6 flex flex-col gap-6'
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
-            >
-              <div className='flex items-center justify-between'>
-                <h3 className='text-xl font-semibold'>Filter</h3>
-                <button
-                  onClick={() => setShowFilter(false)}
-                  className='text-gray-500 hover:text-gray-700 text-sm'
-                >
-                  ✕
-                </button>
-              </div>
-              <div className='flex flex-col gap-4'>
-                <label className='flex flex-col text-sm'>
-                  Status
-                  <select
-                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
-                    value={filterStatus}
-                    onChange={e => setFilterStatus(e.target.value)}
-                  >
-                    <option value=''>Semua</option>
-                    <option value='Lunas'>Lunas</option>
-                    <option value='Belum Lunas'>Belum Lunas</option>
-                  </select>
-                </label>
-                <label className='flex flex-col text-sm'>
-                  Jurusan
-                  <select
-                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
-                    value={filterJurusan}
-                    onChange={e => setFilterJurusan(e.target.value)}
-                  >
-                    <option value=''>Semua</option>
-                    <option value='TKJ'>TKJ</option>
-                    <option value='RPL'>RPL</option>
-                  </select>
-                </label>
-                <label className='flex flex-col text-sm'>
-                  Kategori Pembayaran
-                  <select
-                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
-                    value={filterKategori}
-                    onChange={e => setFilterKategori(e.target.value)}
-                  >
-                    <option value=''>Semua</option>
-                    <option value='SPP'>SPP</option>
-                    <option value='Praktikum'>Praktikum</option>
-                    <option value='Kegiatan'>Kegiatan</option>
-                  </select>
-                </label>
-                <label className='flex flex-col text-sm'>
-                  Angkatan
-                  <select
-                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
-                    value={filterAngkatan}
-                    onChange={e => setFilterAngkatan(e.target.value)}
-                  >
-                    <option value=''>Semua</option>
-                    <option value='2021'>2021</option>
-                    <option value='2022'>2022</option>
-                    <option value='2023'>2023</option>
-                  </select>
-                </label>
-              </div>
-              <div className='mt-auto flex flex-col gap-2'>
-                <button
-                  onClick={() => {
-                    setFilterKategori('')
-                    setFilterStatus('')
-                    setFilterJurusan('')
-                    setFilterAngkatan('')
-                  }}
-                  className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
-                >
-                  Reset Filter
-                </button>
-                <button
-                  onClick={() => setShowFilter(false)}
-                  className='w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600'
-                >
-                  Terapkan Filter
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </section>
-  )
-}
+  );
+};
 
-export default DataPembayaran
+export default DataSelainSpp;

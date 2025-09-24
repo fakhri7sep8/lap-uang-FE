@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { useAuthModule } from "@/hooks/useAuthModule";
+import { useRouter } from "next/navigation";
+import Cookies from "js-cookie";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Email tidak valid").required("Email wajib diisi"),
@@ -20,6 +22,15 @@ const LoginPage = () => {
   const { useLogin } = useAuthModule();
 
   const { mutate, isPending } = useLogin();
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = Cookies.get("x-auth");
+    if (token) {
+      router.replace("/dashboard"); 
+    }
+  }, [router]);
+
 
   const formik = useFormik({
     initialValues: {
@@ -35,7 +46,7 @@ const LoginPage = () => {
   return (
     <div>
       <section className="flex flex-col md:flex-row min-h-screen">
-        <div className="hidden md:flex w-1/2 bg-[url('/img/login.png')] bg-cover bg-no-repeat bg-center items-center justify-center"></div>
+        <div className="hidden md:flex w-1/2 bg-[url('/img/login.webp')] bg-cover bg-no-repeat bg-center items-center justify-center"></div>
         <div className="w-full md:w-1/2 bg-[url('/img/bg-login.png')] bg-cover flex items-center justify-center px-6 py-12">
           <div className="glass-card w-full max-w-md flex flex-col justify-center items-center gap-6 rounded-4xl py-6 px-6 md:px-12 bg-white/20 backdrop-blur-md">
             <Image src="/img/logo.png" alt="Logo" width={100} height={100} />

@@ -108,7 +108,7 @@ export function AppSidebar () {
                 <SidebarMenuItem>
                   <SidebarMenuButton>
                     <LayoutDashboard className='mr-2' size={18} />
-                    <Link href="http://localhost:3050/dashboard">
+                    <Link href="https://laporan-keuangan-sekolah.vercel.app/dashboard">
                     <span className={`font-semibold ${poppins.className}`}>
                       Dashboard Utama
                     </span>
@@ -118,7 +118,7 @@ export function AppSidebar () {
                 {/* 📌 TUNGGAKAN */}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <Link href='#tunggakan'>
+                    <Link href='/dashboard/tunggakan' className='flex items-center'>
                       <AlertTriangle className='mr-2' size={18} />
                       <span className={`font-semibold ${poppins.className}`}>
                         Tunggakan

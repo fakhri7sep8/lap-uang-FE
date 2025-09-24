@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { axiosClient } from "@/lib/axiosClient";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -13,6 +13,9 @@ export const useStudentModule = () => {
   const createStudent = async (data: any) => {
     return await axiosClient.post("/student/create", data);
   };
+  const createStudentBulk = async (data: any) => {
+    return await axiosClient.post("/student/createBulk", data);
+  };
 
   const updateStudent = async (data: any, id: string) => {
     return await axiosClient.put(`/student/update/${id}`, data);
@@ -22,9 +25,34 @@ export const useStudentModule = () => {
     return await axiosClient.delete(`/student/delete/${id}`);
   };
 
+  const useCreateBulk = () => {
+    const mutate = useMutation({
+      mutationFn: (payload: any) => createStudentBulk(payload),
+      onSuccess: () => {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil",
+        })
+      },
+      
+      onError: (error) => { 
+        if (axios.isAxiosError(error)) {
+          Swal.fire({
+            icon: "error",
+            title: "Gagal",
+            text: error.response?.data?.message || "Terjadi kesalahan saat menambahkan data siswa",
+            confirmButtonColor: "#d33",
+          });
+        }
+      }
+    })
+
+    return mutate;
+  }
+
   const useCreateStudent = () => {
     const router = useRouter();
-    const mutation = useMutation({
+    const {mutate, isPending} = useMutation({
       mutationFn: (data: any) => createStudent(data),
       onSuccess: (data) => {
         Swal.fire({
@@ -32,9 +60,7 @@ export const useStudentModule = () => {
           title: "Berhasil",
           text: "Data siswa berhasil ditambahkan",
           confirmButtonColor: "#3085d6",
-        }).then(() => {
-          router.push("/dashboard/siswa/view");
-        });
+        })
 
         console.log("Student data created successfully:", data);
       },
@@ -48,7 +74,7 @@ export const useStudentModule = () => {
         console.log("Error creating student data:", error);
       },
     });
-    return mutation; // return object lengkap mutation
+    return {mutate, isPending}; // return object lengkap mutation
   };
 
   const useUpdateStudent = (id: string) => {
@@ -77,10 +103,13 @@ export const useStudentModule = () => {
   };
 
   const useDeleteStudent = () => {
+    const queryClient = useQueryClient();
+
     const mutate = useMutation({
       mutationFn: (id: string) => deleteStudent(id),
       onSuccess: (data) => {
         console.log("Delete berhasil", data);
+        queryClient.invalidateQueries({ queryKey: ["get-student"] });
       },
       onError: (error) => {
         console.error("Gagal menghapus data siswa:", error);
@@ -104,5 +133,6 @@ export const useStudentModule = () => {
     useGetStudent,
     useDeleteStudent,
     useUpdateStudent,
+    useCreateBulk
   };
 };
