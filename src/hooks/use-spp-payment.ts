@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 export interface CreateSppPayment {
   studentId: string;
   month: string;
-  year: number;
+  year: string;
   nominal: number;
   status?: "LUNAS" | "BELUM_LUNAS";
 }
@@ -25,9 +25,9 @@ export const useSppPaymentModule = () => {
       .then((res) => res.data);
   };
 
-  const getByStudentID = async (studentID: string) => {
+  const getByStudentID = async (studentID: string, year: string) => {
     return await axiosClient
-      .get(`/spp-payment/student/${studentID}`)
+      .get(`/spp-payment/student/${studentID}/${year}`)
       .then((res) => res.data);
   };
 
@@ -53,14 +53,14 @@ export const useSppPaymentModule = () => {
     return await axiosClient.get(`/spp-payment/${id}`).then((res) => res.data);
   };
 
-  const useGetByStudentID = (studentID: string) => {
-    const { data, isLoading, isError } = useQuery({
+  const useGetByStudentID = (studentID: string, year: string) => {
+    const { data, isLoading, isError, refetch } = useQuery({
       queryKey: ["sppPayments", studentID],
-      queryFn: () => getByStudentID(studentID),
+      queryFn: () => getByStudentID(studentID , year),
       enabled: !!studentID,
       select: (data) => data.data, // sesuai response BaseResponse -> { data: ... }
     });
-    return { data, isLoading, isError };
+    return { data, isLoading, isError,refetch };
   };
 
   // React Query hooks

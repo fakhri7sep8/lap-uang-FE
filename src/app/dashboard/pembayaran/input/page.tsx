@@ -25,6 +25,7 @@ import { useSppPaymentModule } from "@/hooks/use-spp-payment";
 import { usePaymentModule } from "@/hooks/use-payment";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatRupiah } from "@/lib/format-rupiah";
+import { Label } from "@/components/ui/label";
 
 const bulanList = [
   "Juli",
@@ -62,9 +63,13 @@ const InputPembayaranpage = () => {
   const [selectIDCateogry, setIDCategory] = useState<string>(
     "13dd5ec7-3c5b-4afb-b430-1ac1f1745c6d"
   );
+
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
   const [methodPayments, setMethodPayments] = useState<string>("NORMAL");
   const [cicilanNominal, setCicilanNominal] = useState<number>(0);
+  const [yearSPP, setYearSPP] = useState(
+    `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
+  );
 
   // Hooks
   const { useGetStudent } = useStudentModule();
@@ -72,11 +77,13 @@ const InputPembayaranpage = () => {
   const { useCreateSPPPayment, useGetByStudentID } = useSppPaymentModule();
   const { mutate: createSPPPayment, isPending: isPendingSpp } =
     useCreateSPPPayment();
-  const { data: sppPayments } = useGetByStudentID(
+  const { data: sppPayments, refetch: refetchSppPayments } = useGetByStudentID(
     siswaMQ?.find(
       (s: any) => s?.InductNumber === selectedSiswa || s?.name === selectedSiswa
-    )?.id
+    )?.id,
+    yearSPP
   );
+
   const { useCreatePayment, useUpdatePayment, useGetPaymentsByCNS } =
     usePaymentModule();
   const { mutate: createPayments, isPending: isPendingCreate } =
@@ -96,6 +103,8 @@ const InputPembayaranpage = () => {
     siswa?.id || "",
     selectIDCateogry || ""
   );
+
+  const yearSelect = new Date().getFullYear();
 
   // Cicilan input
   const handleCicilanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +165,7 @@ const InputPembayaranpage = () => {
           createSPPPayment({
             studentId: siswa.id,
             month,
-            year: new Date().getFullYear(),
+            year: yearSPP,
             nominal: 2500000,
             status: "LUNAS",
           });
@@ -187,13 +196,13 @@ const InputPembayaranpage = () => {
     }
   };
 
-const totalNominal =
-  detailCategoryMQ?.data?.type === "INSTALLMENT"
-    ? (detailCategoryMQ?.data?.nominal || 0) - (existingPayment?.reduce((acc :any, p : any) => acc + p.amount, 0) || 0)
-    : selectedKategori === "spp"
-    ? 2500000 * selectedMonths.length
-    : detailCategoryMQ?.data?.nominal || 0;
-
+  const totalNominal =
+    detailCategoryMQ?.data?.type === "INSTALLMENT"
+      ? (detailCategoryMQ?.data?.nominal || 0) -
+        (existingPayment?.reduce((acc: any, p: any) => acc + p.amount, 0) || 0)
+      : selectedKategori === "spp"
+      ? 2500000 * selectedMonths.length
+      : detailCategoryMQ?.data?.nominal || 0;
 
   // === Helper Status Pembayaran ===
   const getStatusPembayaran = () => {
@@ -289,6 +298,45 @@ const totalNominal =
           {/* SPP */}
           {selectedKategori === "spp" && (
             <div className="flex flex-col gap-4">
+              <div className="flex w-full flex-col gap-2 mb-4">
+                <label className="text-sm font-medium">Tahun Ajaran</label>
+                <Select
+                  defaultValue={`${yearSelect}/${yearSelect + 1}`}
+                  onValueChange={(val) => {
+                    setYearSPP(val);
+                    setTimeout(() => {
+                      refetchSppPayments();
+                    }, 10);
+                  }}
+                >
+                  <SelectTrigger className="w-full py-6">
+                    <SelectValue placeholder="Pilih kategori" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-50 border-slate-300">
+                    <SelectGroup>
+                      <SelectLabel>Kategori</SelectLabel>
+                      <SelectItem
+                        value={`${yearSelect}/${yearSelect + 1}`}
+                      >{`${yearSelect}/${yearSelect + 1}`}</SelectItem>
+                      <SelectItem
+                        value={`${yearSelect + 1}/${yearSelect + 2}`}
+                      >{`${yearSelect + 1}/${yearSelect + 2}`}</SelectItem>
+                      <SelectItem
+                        value={`${yearSelect + 2}/${yearSelect + 3}`}
+                      >{`${yearSelect + 2}/${yearSelect + 3}`}</SelectItem>
+                      <SelectItem
+                        value={`${yearSelect + 3}/${yearSelect + 4}`}
+                      >{`${yearSelect + 3}/${yearSelect + 4}`}</SelectItem>
+                      <SelectItem
+                        value={`${yearSelect + 4}/${yearSelect + 5}`}
+                      >{`${yearSelect + 4}/${yearSelect + 5}`}</SelectItem>
+                      <SelectItem
+                        value={`${yearSelect + 5}/${yearSelect + 6}`}
+                      >{`${yearSelect + 5}/${yearSelect + 6}`}</SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
               {/* History SPP */}
               <Table className="w-full border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                 <TableHeader>
