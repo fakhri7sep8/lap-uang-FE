@@ -105,6 +105,10 @@ const InputPembayaranpage = () => {
       existingPayment?.reduce((acc: number, p: any) => acc + p.amount, 0) || 0;
     const totalTagihan = detailCategoryMQ?.data?.nominal || 0;
     const sisaTagihan = Math.max(totalTagihan - sudahDibayar, 0);
+    const totalNominal = detailCategoryMQ?.data?.nominal || 0;
+    const paidNominal = detailCategoryMQ?.data?.paid_nominal || 0;
+    const remainingNominal = totalNominal - paidNominal;
+
     setCicilanNominal(inputNominal > sisaTagihan ? sisaTagihan : inputNominal);
   };
 
@@ -183,12 +187,13 @@ const InputPembayaranpage = () => {
     }
   };
 
-  const totalNominal =
-    selectedKategori === "spp"
-      ? 2500000 * selectedMonths.length
-      : detailCategoryMQ?.data?.type === "INSTALLMENT"
-      ? cicilanNominal
-      : detailCategoryMQ?.data?.nominal || 0;
+const totalNominal =
+  detailCategoryMQ?.data?.type === "INSTALLMENT"
+    ? (detailCategoryMQ?.data?.nominal || 0) - (existingPayment?.reduce((acc :any, p : any) => acc + p.amount, 0) || 0)
+    : selectedKategori === "spp"
+    ? 2500000 * selectedMonths.length
+    : detailCategoryMQ?.data?.nominal || 0;
+
 
   // === Helper Status Pembayaran ===
   const getStatusPembayaran = () => {
@@ -301,7 +306,7 @@ const InputPembayaranpage = () => {
                 </TableHeader>
                 <TableBody>
                   {sppPayments?.spp
-                    ?.slice() // copy array biar ga mutasi state
+                    ?.slice()
                     ?.sort(
                       (a: any, b: any) =>
                         bulanListTable.indexOf(a.month) -
@@ -390,7 +395,7 @@ const InputPembayaranpage = () => {
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
-                <TableBody>
+                <TableBody className="text-center">
                   {existingPayment?.map((item: any, i: number) => {
                     const totalSoFar = existingPayment
                       .slice(0, i + 1)
