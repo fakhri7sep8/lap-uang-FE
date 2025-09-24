@@ -86,33 +86,31 @@ export const useSppPaymentModule = () => {
     return { data, isLoading, isError };
   };
 
-  const useCreateSPPPayment = () => {
-    const queryClient = useQueryClient();
-    const mutate = useMutation({
-      mutationFn: (payload: CreateSppPayment) => createPayment(payload),
-      onSuccess: () => {
-        Swal.fire({
-          title: "Berhasil",
-          text: "Pembayaran SPP berhasil dibuat",
-          icon: "success",
-          confirmButtonText: "OK",
-        }).then(() => {
-          window.location.reload();
-        });
-        queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
-      },
-      onError: (error: any) => {
-        Swal.fire({
-          title: "Error",
-          text: "Pembayaran gagal dibuat: " + error.message,
-          icon: "error",
-          confirmButtonText: "OK",
-        });
-      },
-    });
+const useCreateSPPPayment = () => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (payload: CreateSppPayment) => createPayment(payload),
+    onSuccess: () => {
+      Swal.fire({
+        title: "Berhasil",
+        text: "Pembayaran SPP berhasil dibuat",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
+    },
+    onError: (error: any) => {
+      Swal.fire({
+        title: "Error",
+        text: "Pembayaran gagal dibuat: " + error.message,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    },
+  });
+  return { mutate: mutation.mutate, isPending: mutation.isPending };
+};
 
-    return { mutate };
-  };
 
   const useUpdatePayment = (id: string) => {
     const queryClient = useQueryClient();
