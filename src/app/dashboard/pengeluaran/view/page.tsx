@@ -78,7 +78,7 @@ export default function PengeluaranViewPage () {
           value={' RP.' + totalJumlah?.toLocaleString('id-ID')}
           icon={<FaMoneyBill size={40} className='text-green-400' />}
         />
-      </section>
+      </div>
 
       {/* Search & Filter */}
       <div className='w-full max-w-full mb-4'>
