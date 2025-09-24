@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { GraduationCap, SquarePen, Trash2, Users } from "lucide-react";
