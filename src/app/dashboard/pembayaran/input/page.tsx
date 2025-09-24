@@ -27,18 +27,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatRupiah } from "@/lib/format-rupiah";
 
 const bulanList = [
-  "Januari",
-  "Februari",
-  "Maret",
-  "April",
-  "Mei",
-  "Juni",
   "Juli",
   "Agustus",
   "September",
   "Oktober",
   "November",
   "Desember",
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
 ];
 
 const bulanListTable = [
@@ -70,7 +70,8 @@ const InputPembayaranpage = () => {
   const { useGetStudent } = useStudentModule();
   const { data: siswaMQ } = useGetStudent();
   const { useCreateSPPPayment, useGetByStudentID } = useSppPaymentModule();
-  const { mutate: createSPPPayment, isPending } = useCreateSPPPayment();
+  const { mutate: createSPPPayment, isPending: isPendingSpp } =
+    useCreateSPPPayment();
   const { data: sppPayments } = useGetByStudentID(
     siswaMQ?.find(
       (s: any) => s?.InductNumber === selectedSiswa || s?.name === selectedSiswa
@@ -78,11 +79,14 @@ const InputPembayaranpage = () => {
   );
   const { useCreatePayment, useUpdatePayment, useGetPaymentsByCNS } =
     usePaymentModule();
-  const { mutate: createPayments } = useCreatePayment();
-  const { mutate: updatePayments } = useUpdatePayment();
+  const { mutate: createPayments, isPending: isPendingCreate } =
+    useCreatePayment();
+  const { mutate: updatePayments, isPending: isPendingUpdate } =
+    useUpdatePayment();
   const { useGetCategory, useDetailCategory } = useCategoryPaymentModule();
   const { data: categoryMQ } = useGetCategory();
   const { data: detailCategoryMQ } = useDetailCategory(selectIDCateogry);
+  const isSubmitting = isPendingSpp || isPendingCreate || isPendingUpdate;
 
   const siswa = siswaMQ?.find(
     (s: any) => s?.InductNumber === selectedSiswa || s?.name === selectedSiswa
@@ -118,9 +122,20 @@ const InputPembayaranpage = () => {
   }, [siswa?.id, sppPayments, selectedKategori]);
 
   const toggleMonth = (month: string) => {
-    setSelectedMonths((prev) =>
-      prev.includes(month) ? prev.filter((m) => m !== month) : [...prev, month]
-    );
+    setSelectedMonths((prev) => {
+      if (prev.includes(month)) {
+        const idx = bulanList.indexOf(month);
+        return prev.filter((m) => bulanList.indexOf(m) < idx);
+      } else {
+        const idx = bulanList.indexOf(month);
+        const bulanSebelumnya = bulanList[idx - 1];
+
+        if (idx === 0 || prev.includes(bulanSebelumnya)) {
+          return [...prev, month];
+        }
+        return prev;
+      }
+    });
   };
 
   // Submit
@@ -168,7 +183,6 @@ const InputPembayaranpage = () => {
     }
   };
 
-  // Hitung total nominal
   const totalNominal =
     selectedKategori === "spp"
       ? 2500000 * selectedMonths.length
@@ -316,25 +330,46 @@ const InputPembayaranpage = () => {
 
               {/* Pilih bulan */}
               <div className="grid grid-cols-3 gap-2">
-                {bulanList.map((bulan) => {
+                {bulanList.map((bulan, idx) => {
                   const sudahBayar = sppPayments?.spp?.some(
                     (s: any) =>
                       s.month === bulan &&
                       s.studentId === siswa?.id &&
                       s.status === "LUNAS"
                   );
+
+                  const bulanSebelumnya = bulanList[idx - 1];
+                  const harusDisable =
+                    sudahBayar ||
+                    (idx > 0 &&
+                      !selectedMonths.includes(bulanSebelumnya) &&
+                      !sppPayments?.spp?.some(
+                        (s: any) =>
+                          s.month === bulanSebelumnya &&
+                          s.studentId === siswa?.id &&
+                          s.status === "LUNAS"
+                      ));
+
                   return (
                     <label
                       key={bulan}
-                      className={`flex items-center gap-2 border p-2 rounded-md ${
-                        sudahBayar ? "opacity-50" : ""
-                      }`}
+                      className={`flex items-center gap-2 border p-2 rounded-md transition-colors ${
+                        sudahBayar
+                          ? "bg-green-100 border-green-400 text-green-700"
+                          : ""
+                      }${harusDisable && !sudahBayar ? "opacity-50" : ""}`}
                     >
                       <Checkbox
-                        disabled={sudahBayar}
-                        checked={selectedMonths.includes(bulan)}
+                        disabled={harusDisable}
+                        checked={sudahBayar || selectedMonths.includes(bulan)}
                         onCheckedChange={() => toggleMonth(bulan)}
+                        className={`${
+                          sudahBayar
+                            ? "data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 data-[state=checked]:text-white"
+                            : ""
+                        }`}
                       />
+
                       {bulan}
                     </label>
                   );
@@ -415,9 +450,9 @@ const InputPembayaranpage = () => {
             <button
               type="submit"
               className="bg-blue-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isPending || getStatusPembayaran() === "LUNAS"}
+              disabled={isSubmitting || getStatusPembayaran() === "LUNAS"}
             >
-              {isPending ? "Menyimpan..." : "Simpan"}
+              {isSubmitting ? "Menyimpan..." : "Simpan"}
             </button>
           </div>
         </form>
