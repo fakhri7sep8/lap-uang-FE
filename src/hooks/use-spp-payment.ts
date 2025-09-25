@@ -21,7 +21,7 @@ export const useSppPaymentModule = () => {
 
   const getRecapSPPPayment = async () => {
     return await axiosClient
-      .get(`/spp-payment/rekap/2025`)
+      .get(`/spp-payment/rekap/${new Date().getFullYear()}}`)
       .then((res) => res.data);
   };
 
