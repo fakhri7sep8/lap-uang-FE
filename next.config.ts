@@ -2,11 +2,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["github.com"], // Tambahkan domain di sini
+    domains: ["github.com", "res.cloudinary.com"], // Tambahkan domain di sini
     remotePatterns: [
       {
         protocol: "https",
         hostname: "github.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
         pathname: "/**",
       },
     ],

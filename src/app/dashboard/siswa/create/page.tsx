@@ -102,7 +102,8 @@ const TambahSiswa = () => {
     const ValueExcel = await readerExcel(event)
     // console.log(ValueExcel?.json);
     for (const i in ValueExcel?.json) {
-      // console.log(ValueExcel?.json[i]);
+
+      // console.log(ValueExcel?.json[i]?.NIS);
       arr.push({
         name: (ValueExcel?.json[i] as any).Name || '',
         InductNumber: (ValueExcel?.json[i] as any).No_Induk || '',
@@ -110,7 +111,7 @@ const TambahSiswa = () => {
         generation: (ValueExcel?.json[i] as any).generasi || '',
         major: (ValueExcel?.json[i] as any).jurusan || '',
         status: (ValueExcel?.json[i] as any).status || '',
-        NIS: (ValueExcel?.json[1] as any).NIS || ''
+        NIS: (ValueExcel?.json[1])?.NIS || ''
       })
       // console.log(i);
     }

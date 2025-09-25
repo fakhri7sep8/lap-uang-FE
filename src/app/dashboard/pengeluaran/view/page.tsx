@@ -18,12 +18,24 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table'
-import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Download, SquarePen } from 'lucide-react'
+import { Download, Eye, SquarePen, XIcon } from 'lucide-react'
 import dayjs from 'dayjs'
 import { useExpenseModule } from '@/hooks/use-expense'
-import currency from 'currency.js'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
+import Swal from 'sweetalert2'
+import Image from 'next/image'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { useCategoryExpense } from '@/hooks/use-expenseCategory'
 
 export default function PengeluaranViewPage () {
   // State untuk search, filter, dan pagination
@@ -32,20 +44,28 @@ export default function PengeluaranViewPage () {
   const [searchTerm, setSearchTerm] = useState('')
   const [filterJenis, setFilterJenis] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [isPopup, setPopup] = useState(false)
+  const [dataDetail, setDataDetail] = useState<any>({})
+  const [filterAmount, setFilterAmount] = useState<number | undefined>(0)
 
   const { useGetExpenses } = useExpenseModule()
 
   const { data: expenses } = useGetExpenses()
 
-  console.log(expenses)
+  // console.log(expenses)
 
   // Logic filter dan search
   const filteredData = expenses
-    ?.filter((item: any) =>
-      item?.description.toLowerCase().includes(searchTerm.toLowerCase())
+    ?.filter(
+      (item: any) =>
+        item?.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item?.pihakPenerima.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((item: any) =>
       filterJenis ? item.jenisPengeluaran === filterJenis : true
+    )
+    .filter((item: any) =>
+      filterAmount ? item.amount === filterAmount : true
     )
 
   // Pagination
@@ -61,6 +81,22 @@ export default function PengeluaranViewPage () {
       currentPage * showCount
     )
   }, [filteredData, currentPage, showCount])
+
+  const handleFilterData = (id: string) => {
+    // console.log(id);
+    const filter = paginated?.find((item: any) => item.id === id)
+    // console.log(filter);
+    setDataDetail(filter)
+  }
+  const { useGetCategories } = useCategoryExpense()
+  const { data: categories } = useGetCategories()
+
+  const handleAlert = () => {
+    Swal.fire({
+      icon: 'info',
+      text: 'fitur dalam proses mengembangan'
+    })
+  }
 
   return (
     <div className='min-h-full bg-gray-100 flex flex-col items-center py-8 '>
@@ -102,7 +138,8 @@ export default function PengeluaranViewPage () {
                 <TableHead>No</TableHead>
                 <TableHead>Keterangan</TableHead>
                 <TableHead>Jenis pengeluaran</TableHead>
-                <TableHead>periode</TableHead>
+                <TableHead>Pihak penerima</TableHead>
+                <TableHead>Jumlah Barang</TableHead>
                 <TableHead>Nominal</TableHead>
                 <TableHead>Tanggal</TableHead>
                 <TableHead>Aksi</TableHead>
@@ -126,7 +163,8 @@ export default function PengeluaranViewPage () {
                       {s.description}
                     </TableCell>
                     <TableCell>{s.category.name}</TableCell>
-                    <TableCell>{s.category.periode}</TableCell>
+                    <TableCell>{s.pihakPenerima}</TableCell>
+                    <TableCell>{s.itemCount}</TableCell>
                     <TableCell>
                       {new Intl.NumberFormat('id-ID', {
                         style: 'currency',
@@ -137,13 +175,21 @@ export default function PengeluaranViewPage () {
                       {dayjs(s.createdAt).format('DD MMM YYYY')}
                     </TableCell>
                     <TableCell className='flex gap-2 justify-center'>
-                      <Link
-                        href={`/dashboard/pengeluaran/category/update/${s.id}`}
+                      <Button
+                        className='bg-purple-400 text-white'
+                        onClick={() => {
+                          setPopup(true)
+                          handleFilterData(s.id)
+                        }}
                       >
-                        <Button className='bg-blue-400 text-white'>
-                          <Download />
-                        </Button>
-                      </Link>
+                        <Eye />
+                      </Button>
+                      <Button
+                        className='bg-blue-400 text-white'
+                        onClick={() => handleAlert()}
+                      >
+                        <Download />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))
@@ -157,6 +203,94 @@ export default function PengeluaranViewPage () {
           />
         </div>
       </div>
+      {isPopup && (
+        <div className='w-full h-screen bg-black/50 absolute top-0 left-0 z-[999] flex justify-center items-center py-8'>
+          <div className='w-2/3 h-full bg-white rounded-2xl flex flex-col gap-4 py-4 px-6 overflow-y-scroll'>
+            <h2 className='text-lg font-semibold'>Detail Pengeluaran</h2>
+            <div className='grid w-full grid-cols-2 gap-4'>
+              <div className='w-full flex flex-col gap-4'>
+                <Label htmlFor='decs'>Jenis Pengeluaran</Label>
+                <Input
+                  id='decs'
+                  name='jenis Pengeluaran'
+                  type='text'
+                  value={dataDetail?.category?.name}
+                  placeholder='Masukan keterangan'
+                  className='border border-slate-300 rounded-md px-3 py-6 focus:outline-none focus:ring-2 '
+                  readOnly
+                />
+              </div>
+              <div className='w-full flex flex-col gap-4'>
+                <Label htmlFor='decs'>Jumlah Barang</Label>
+                <Input
+                  id='decs'
+                  name='description'
+                  type='text'
+                  value={dataDetail?.itemCount}
+                  placeholder='Masukan keterangan'
+                  className='border border-slate-300 rounded-md px-3 py-6 focus:outline-none focus:ring-2 '
+                  readOnly
+                />
+              </div>
+              <div className='w-full flex flex-col gap-4'>
+                <Label htmlFor='decs'>pihak penerima</Label>
+                <Input
+                  id='decs'
+                  name='description'
+                  type='text'
+                  value={dataDetail?.pihakPenerima}
+                  placeholder='Masukan keterangan'
+                  className='border border-slate-300 rounded-md px-3 py-6 focus:outline-none focus:ring-2 '
+                  readOnly
+                />
+              </div>
+              <div className='w-full flex flex-col gap-4'>
+                <Label htmlFor='decs'>total Biaya</Label>
+                <Input
+                  id='decs'
+                  name='description'
+                  type='text'
+                  value={dataDetail?.amount}
+                  placeholder='Masukan keterangan'
+                  className='border border-slate-300 rounded-md px-3 py-6 focus:outline-none focus:ring-2 '
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className='w-full h-full flex flex-col gap-4'>
+              <Label htmlFor='decs'>Keterangan</Label>
+              <textarea
+                id='decs'
+                name='description'
+                value={dataDetail?.description}
+                placeholder='Masukan keterangan'
+                className='border border-slate-300 rounded-md px-3 py-4 h-48 resize-none focus:outline-none focus:ring-2 '
+                readOnly
+              />
+            </div>
+            <div className='w-full h-full flex flex-col gap-4'>
+              <Label htmlFor='decs'>Bukti Kuitansi</Label>
+              <div className='w-full px-6 h-80 overflow-y-scroll'>
+                <Image
+                  src={dataDetail?.kwitansiUrl}
+                  alt='Bukti Kuitansi'
+                  layout='responsive'
+                  width={500}
+                  height={300}
+                />
+              </div>
+            </div>
+            <div className='w-24 h-24 rounded-full absolute top-0 left-0 p-6'>
+              <div
+                className='bg-white rounded-full w-full h-full flex justify-center items-center group hover:scale-110 transition-transform duration-200'
+                onClick={() => setPopup(false)}
+              >
+                <XIcon className='group-hover:rotate-y-[360deg]' />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filter Drawer */}
       <AnimatePresence>
@@ -186,25 +320,56 @@ export default function PengeluaranViewPage () {
                   ✕
                 </button>
               </div>
-              <div className='flex flex-col gap-4'>
-                {/* Tambahkan filter sesuai kebutuhan pengeluaran di sini */}
-                <label className='flex flex-col text-sm'>
-                  Jenis Pengeluaran
-                  <select
-                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
-                    value={filterJenis}
-                    onChange={(e) => setFilterJenis(e.target.value)}
-                  >
-                    <option value=''>Semua</option>
-                    <option value='Operasional'>Operasional</option>
-                    <option value='Kegiatan'>Kegiatan</option>
-                  </select>
-                </label>
+              <div className='w-full flex flex-col gap-4'>
+                <Label>Jenis Pengeluaran</Label>
+                <Select
+                  value={filterJenis}
+                  onValueChange={e => {
+                    setFilterJenis(e)
+                  }}
+                >
+                  <SelectTrigger className='w-full py-6 px-3 border-slate-300 rounded-md text-slate-500'>
+                    <SelectValue placeholder='Kategori Pengeluaran' />
+                  </SelectTrigger>
+                  <SelectContent className='bg-white border-none'>
+                    <SelectGroup>
+                      <SelectLabel>Kategori Pengeluaran</SelectLabel>
+                      {categories?.map((c: any, i: number) => (
+                        <SelectItem value={c.id} key={i}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className='w-full flex flex-col gap-4'>
+                <Label htmlFor='decs'>total Biaya</Label>
+                <Input
+                  id='decs'
+                  name='description'
+                  type='text'
+                  value={filterAmount? Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR',
+                        minimumFractionDigits: 0
+                      }).format(Number(filterAmount))
+                    : 'Rp.0'}
+                  onChange={e => {
+                  // Hapus semua karakter selain angka
+                  const rawValue = e.target.value.replace(/[^0-9]/g, '')
+                  // Simpan sebagai number (atau string angka) ke formik
+                  setFilterAmount(Number(rawValue))
+                }}
+                  placeholder='Masukan keterangan'
+                  className='border border-slate-300 rounded-md px-3 py-6 focus:outline-none focus:ring-2 '
+                />
               </div>
               <div className='mt-auto flex flex-col gap-2'>
                 <button
                   onClick={() => {
                     setFilterJenis('')
+                    setFilterAmount(0)
                   }}
                   className='w-full py-2 px-4 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300'
                 >
