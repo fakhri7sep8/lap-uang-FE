@@ -302,11 +302,15 @@ const DataPembayaran = () => {
                     setTempFilterSemester("");
                     setTempFilterTipeKategori("");
                     setTempFilterNominal("");
+                    setFilterSemester("");
+                    setFilterTipeKategori("");
+                    setFilterNominal("");
                   }}
                   className="w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600"
                 >
                   Reset Filter
                 </button>
+
                 <button
                   onClick={() => {
                     setFilterSemester(tempFilterSemester);

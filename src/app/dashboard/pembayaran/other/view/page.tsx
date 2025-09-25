@@ -161,11 +161,11 @@ const DataSelainSpp = () => {
             >
               <div
                 onClick={() => setSelectedCategory(null)}
-                className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-16 rounded-xl cursor-pointer ${
+                className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-12 rounded-xl cursor-pointer ${
                   !selectedCategory ? "bg-blue-700" : "bg-blue-500"
                 }`}
               >
-                <p className="text-white font-semibold text-xl">Semua</p>
+                <p className="text-white font-semibold text-base">Semua</p>
               </div>
               {categories.map((kat: any, i: any) => (
                 <div
@@ -173,13 +173,13 @@ const DataSelainSpp = () => {
                   onClick={() =>
                     setSelectedCategory({ id: kat.id, name: kat.name })
                   }
-                  className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-16 rounded-xl cursor-pointer ${
+                  className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-12 rounded-xl cursor-pointer ${
                     selectedCategory?.id === kat.id
                       ? "bg-blue-700"
                       : "bg-blue-500"
                   }`}
                 >
-                  <p className="text-white font-semibold text-xl">{kat.name}</p>
+                  <p className="text-white font-semibold text-base">{kat.name}</p>
                 </div>
               ))}
             </div>
