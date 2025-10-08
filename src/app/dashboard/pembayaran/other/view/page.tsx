@@ -47,8 +47,7 @@ const DataSelainSpp = () => {
   } = usePaymentModule();
   const { data: recap = [], isLoading, isError } = useGetRecapPayments() as any;
 
-  const { mutate: getPaymentsByCategory, data: paymentsByCategory } =
-    useGetPaymentsByCategory() as any;
+  const { mutate: getPaymentsByCategory, data: paymentsByCategory } = useGetPaymentsByCategory() as any;
   const { mutate: getCicilanPayments } = useGetCicilanPayments() as any;
 
   const selectedCategoryType: any = categories.find(

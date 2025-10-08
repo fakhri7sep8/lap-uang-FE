@@ -118,15 +118,23 @@ export const useStudentModule = () => {
     return { mutate, mutateAsync: mutate.mutateAsync };
   };
 
-  const useGetStudent = () => {
-    const { isLoading, isError, data } = useQuery({
-      queryKey: ["get-student"],
-      queryFn: () => getStudentData(),
-      select: (res) => res.data.data || [], // langsung array siswa
-    });
+ const useGetStudent = () => {
+  const queryClient = useQueryClient();
 
-    return { isLoading, isError, data };
-  };
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["get-student"],
+    queryFn: getStudentData,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 2, // data dianggap fresh selama 2 menit
+    gcTime: 1000 * 60 * 10,   // data disimpan di cache selama 10 menit
+    select: (res) => res.data.data || [],
+  });
+
+  const refreshStudent = () =>
+    queryClient.invalidateQueries({ queryKey: ["get-student"] });
+
+  return { data, isLoading, isError, refetch, refreshStudent };
+};
 
   return {
     useCreateStudent,

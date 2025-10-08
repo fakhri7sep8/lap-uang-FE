@@ -1,6 +1,6 @@
 import { createCategoryPembayaran } from "@/interface/use-category-pembayaran";
 import { axiosClient } from "@/lib/axiosClient";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 
 export const useCategoryPaymentModule = () => {
@@ -26,15 +26,23 @@ export const useCategoryPaymentModule = () => {
     return await axiosClient.get(`/payment-types/detail/${id}`)
   }
 
-  const useGetCategory = () => {
-    const { data, isLoading, isError } = useQuery({
+   const useGetCategory = () => {
+    const queryClient = useQueryClient();
+
+    const { data, isLoading, isError, refetch } = useQuery({
       queryKey: ["categoryPayment"],
-      queryFn: () => getCategory(),
+      queryFn: getCategory,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      select: (data) => data.data,
+      staleTime: 1000 * 60 * 2, // data dianggap fresh 2 menit
+      gcTime: 1000 * 60 * 10,   // disimpan di cache 10 menit
+      select: (res) => res.data,
     });
-    return { data, isLoading, isError };
+
+    // fungsi manual untuk refresh data
+    const refreshCategory = () => queryClient.invalidateQueries({ queryKey: ["categoryPayment"] });
+
+    return { data, isLoading, isError, refetch, refreshCategory };
   };
 
   const useCreateCategory = () => {

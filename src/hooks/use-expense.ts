@@ -64,13 +64,18 @@ export const useExpenseModule = () => {
   };
   // React Query hooks
   const useGetExpenses = () => {
+    const queryClient = useQueryClient();
     const { data, isLoading, isError } = useQuery({
       queryKey: ["expenses"],
       queryFn: getExpenses,
       refetchOnWindowFocus: false,
-      select: (data) => data.data, // sesuai BaseResponse -> { data: ... }
+      staleTime: 1000 * 60 * 2,
+      gcTime: 1000 * 60 * 10,
+      select: (data) => data.data,
     });
-    return { data, isLoading, isError };
+    const refreshExpense = () =>
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+    return { data, isLoading, isError, refreshExpense };
   };
 
   const useCreateManyExpenses = () => {
@@ -126,6 +131,6 @@ export const useExpenseModule = () => {
     useGetExpenses,
     useCreateManyExpenses,
     useUpdateExpense,
-    useCreateExpense
+    useCreateExpense,
   };
 };
