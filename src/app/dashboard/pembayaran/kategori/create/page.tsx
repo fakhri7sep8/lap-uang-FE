@@ -63,7 +63,11 @@ const CreateKategori = () => {
     validationSchema: createCategorySchema,
     onSubmit: (values) => {
       console.log("Create category:", values);
-      mutate.mutate(values);
+      mutate.mutate(values, {
+        onSuccess: () => {
+          formik.resetForm(); // kosongin form setelah berhasil simpan
+        },
+      });
     },
   });
 

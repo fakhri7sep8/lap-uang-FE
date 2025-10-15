@@ -113,18 +113,21 @@ export const useSppPaymentModule = () => {
   return { data, isLoading, isError, refetch, refreshRecapPayments };
 };
 
-
 const useCreateSPPPayment = () => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (payload: CreateSppPayment) => createPayment(payload),
-    onSuccess: () => {
-      Swal.fire({
-        title: "Berhasil",
-        text: "Pembayaran SPP berhasil dibuat",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
+    mutationFn: async ({ payload, silent }: { payload: CreateSppPayment; silent?: boolean }) => {
+      const res = await createPayment(payload);
+      return { res, silent };
+    },
+    onSuccess: (data) => {
+      if (!data.silent) {
+        Swal.fire({
+          title: "Berhasil",
+          text: "Pembayaran SPP berhasil dibuat",
+          icon: "success",
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
     },
     onError: (error: any) => {
@@ -132,7 +135,6 @@ const useCreateSPPPayment = () => {
         title: "Error",
         text: "Pembayaran gagal dibuat: " + error.message,
         icon: "error",
-        confirmButtonText: "OK",
       });
     },
   });

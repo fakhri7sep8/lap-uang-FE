@@ -34,6 +34,8 @@ const LihatSemuaSiswa = () => {
   const [draftJurusan, setDraftJurusan] = useState("");
   const [draftAsrama, setDraftAsrama] = useState("");
   const [draftAngkatan, setDraftAngkatan] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+
 
   // Ambil data siswa dari API
   const { useGetStudent, useDeleteStudent } = useStudentModule();
@@ -76,28 +78,33 @@ const getStatusBadgeClass = (status: string) => {
 };
 
 
-  const handleDelete = async (id: string) => {
-    try {
-      const result = await Swal.fire({
-        title: "Apakah kamu yakin?",
-        text: "Data yang dihapus tidak bisa dikembalikan!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Ya, hapus!",
-        cancelButtonText: "Batal",
-      });
+ const handleDelete = async (id: string) => {
+  try {
+    const result = await Swal.fire({
+      title: "Apakah kamu yakin?",
+      text: "Data yang dihapus tidak bisa dikembalikan!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Ya, hapus!",
+      cancelButtonText: "Batal",
+    });
 
-      if (result.isConfirmed) {
-        await deleteStudent(id);
-        await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
-      }
-    } catch (error) {
-      console.error(error);
-      Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
+    if (result.isConfirmed) {
+      setIsDeleting(true);
+
+      await deleteStudent(id); // hapus data
+      await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
     }
-  };
+  } catch (error) {
+    console.error(error);
+    Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
+  } finally {
+    setIsDeleting(false); // 🔚 matikan loader
+  }
+};
+
 
   if (isLoading) {
     return (
@@ -106,6 +113,15 @@ const getStatusBadgeClass = (status: string) => {
       </div>
     );
   }
+
+  if (isDeleting) {
+  return (
+    <div className="p-6 w-full h-[89vh] flex justify-center items-center">
+      <Loader />
+    </div>
+  );
+}
+
 
   if (isError) {
     return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
@@ -146,6 +162,7 @@ const getStatusBadgeClass = (status: string) => {
               <TableRow>
                 <TableHead>No</TableHead>
                 <TableHead>Nama</TableHead>
+                <TableHead>NIS</TableHead>
                 <TableHead>No. Induk</TableHead>
                 <TableHead>Asrama</TableHead>
                 <TableHead>Angkatan</TableHead>
@@ -168,6 +185,7 @@ const getStatusBadgeClass = (status: string) => {
                   <TableRow key={s.id}>
                     <TableCell>{(currentPage - 1) * showCount + (idx + 1)}</TableCell>
                     <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell className="font-medium">{s.NIS}</TableCell>
                     <TableCell>{s.InductNumber}</TableCell>
                     <TableCell>{s.dorm}</TableCell>
                     <TableCell>{s.generation}</TableCell>
