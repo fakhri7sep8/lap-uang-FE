@@ -36,7 +36,7 @@ const tambahSiswaSchema = Yup.object().shape({
     .required('Angkatan wajib diisi'),
   major: Yup.string().required('Jurusan wajib diisi'),
   status: Yup.string().required('Status wajib diisi'),
-  NIS: Yup.string().required('NIS wajib diisi'),
+  NIS: Yup.string().required('NIS wajib diisi')
 })
 
 const TambahSiswa = () => {
@@ -47,10 +47,10 @@ const TambahSiswa = () => {
     name: '',
     InductNumber: '',
     dorm: '',
-    generation: "",
+    generation: '',
     major: '',
     status: '',
-    NIS: ""
+    NIS: ''
   }
   const [form, setForm] = useState<typeof initialValue[]>(() => {
     if (typeof window !== 'undefined') {
@@ -102,7 +102,6 @@ const TambahSiswa = () => {
     const ValueExcel = await readerExcel(event)
     // console.log(ValueExcel?.json);
     for (const i in ValueExcel?.json) {
-
       // console.log(ValueExcel?.json[i]?.NIS);
       arr.push({
         name: (ValueExcel?.json[i] as any).Name || '',
@@ -111,11 +110,11 @@ const TambahSiswa = () => {
         generation: (ValueExcel?.json[i] as any).generasi || '',
         major: (ValueExcel?.json[i] as any).jurusan || '',
         status: (ValueExcel?.json[i] as any).status || '',
-        NIS: (ValueExcel?.json[1])?.NIS || ''
+        NIS: ValueExcel?.json[1]?.NIS || ''
       })
       // console.log(i);
     }
-    mutateBulk(arr)
+    await mutateBulk(arr)
     // setForm([...form, ...arr])
     // Swal.fire({
     //   icon: 'success',
@@ -282,16 +281,24 @@ const TambahSiswa = () => {
         <button
           onClick={handleImportClick}
           // onClick={() => handleCreateForm()}
+          disabled={isPendingBulk}
           className='py-5 hover:bg-purple-500 hover:text-white transition-all cursor-pointer border border-purple-500 text-purple-500 text-lg flex items-center justify-center gap-2 rounded-xl'
         >
-          <FileDown size={24} />
-          impor dari excel
+          {isPendingBulk ? (
+            'Memproses data ...'
+          ) : (
+            <>
+              <FileDown size={24} />
+              <span>impor dari excel</span>
+            </>
+          )}
         </button>
         <input
           title='Import Excel'
           type='file'
           id='file'
           className='hidden'
+          disabled={isPendingBulk}
           accept='.xlsx, .xls'
           onChange={handleReadExcel}
         />
@@ -307,9 +314,9 @@ const TambahSiswa = () => {
           className='py-5 hover:bg-green-500 hover:text-white transition-all cursor-pointer border border-green-500 text-green-500 text-lg flex items-center justify-center gap-2 rounded-xl'
         >
           {/* <FileDown size={24} /> */}
-          <Send  size={24}/>
+          <Send size={24} />
 
-          {isPending ? "Proses Menyimpan data siswa ..." : "simpan siswa"}
+          {isPending ? 'Proses Menyimpan data siswa ...' : 'simpan siswa'}
         </button>
       </form>
       {/* <button

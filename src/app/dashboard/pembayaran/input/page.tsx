@@ -488,7 +488,7 @@ const InputPembayaranpage = () => {
 
           {/* Nominal */}
           <div className="flex flex-col">
-            <label className="text-sm font-medium mb-1">Nominal</label>
+            <label className="text-sm font-medium mb-1">{detailCategoryMQ?.data?.type === 'INSTALLMENT'? "total cicilan" : "Nominal"}</label>
             <div className="w-full border rounded-md p-4 border-slate-300">
               <p className="font-semibold text-lg">
                 Rp. {totalNominal.toLocaleString("id-ID")}

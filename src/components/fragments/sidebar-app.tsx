@@ -48,6 +48,7 @@ const poppins = Poppins({
 })
 
 export function AppSidebar () {
+  const [openSub, setOpenSub] = useState<string | null>(null)
   const [openStudents, setOpenStudents] = useState(false)
   const [openSPP, setOpenSPP] = useState(false)
   const [openExpense, setOpenExpense] = useState(false)
@@ -71,13 +72,13 @@ export function AppSidebar () {
   })
 
   return (
-    <Sidebar className={` bg-white transition-all duration-300 ease-in-out border-r border-slate-200 `}>
+    <Sidebar
+      className={` bg-white transition-all duration-300 ease-in-out border-r border-slate-200 `}
+    >
       <>
         <SidebarContent>
           <SidebarGroup>
-            <SidebarMenuButton
-              className='flex items-center text-center justify-center gap-3 py-6 h-full px-2 rounded-md bg-white hover:bg-gray-100 transition-colors mb-5 flex-col'
-            >
+            <SidebarMenuButton className='flex items-center text-center justify-center gap-3 py-6 h-full px-2 rounded-md bg-white hover:bg-gray-100 transition-colors mb-5 flex-col'>
               <Image
                 width={300}
                 height={300}
@@ -108,17 +109,20 @@ export function AppSidebar () {
                 <SidebarMenuItem>
                   <SidebarMenuButton>
                     <LayoutDashboard className='mr-2' size={18} />
-                    <Link href="https://laporan-keuangan-sekolah.vercel.app/dashboard">
-                    <span className={`font-semibold ${poppins.className}`}>
-                      Dashboard Utama
-                    </span>
+                    <Link href='https://laporan-uang-sekolah.vercel.app/dashboard'>
+                      <span className={`font-semibold ${poppins.className}`}>
+                        Dashboard Utama
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 {/* 📌 TUNGGAKAN */}
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
-                    <Link href='/dashboard/tunggakan' className='flex items-center'>
+                    <Link
+                      href='/dashboard/tunggakan'
+                      className='flex items-center'
+                    >
                       <AlertTriangle className='mr-2' size={18} />
                       <span className={`font-semibold ${poppins.className}`}>
                         Tunggakan
@@ -132,27 +136,31 @@ export function AppSidebar () {
                       name: string
                       children: any[]
                       handleOpen: any
-                      open: any
-                      icon: any
+                      open: boolean
+                      icon: React.ReactNode
                     },
                     i: number
                   ) => (
                     <Collapsible
+                      key={i}
                       open={menu.open}
                       onOpenChange={menu.handleOpen}
-                      key={i}
                     >
                       <SidebarMenuItem>
+                        {/* ========== LEVEL 1 (Main Menu) ========== */}
                         <CollapsibleTrigger asChild>
                           <SidebarMenuButton
                             onClick={() => menu.handleOpen(!menu.open)}
+                            className='flex items-center justify-between'
                           >
-                            {menu.icon}
-                            <span
-                              className={`font-semibold ${poppins.className}`}
-                            >
-                              {menu.name}
-                            </span>
+                            <div className='flex items-center'>
+                              {menu.icon}
+                              <span
+                                className={`font-semibold ${poppins.className}`}
+                              >
+                                {menu.name}
+                              </span>
+                            </div>
                             {menu.open ? (
                               <ChevronDown className='ml-auto' size={16} />
                             ) : (
@@ -160,20 +168,81 @@ export function AppSidebar () {
                             )}
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
+
+                        {/* ========== LEVEL 2 (Submenu) ========== */}
                         <CollapsibleContent>
                           <SidebarMenuSub>
-                            <SidebarMenuSubItem>
-                              {menu?.children?.map(
-                                (d: { name: string; icon: any, link:string }, i: number) => (
-                                  <SidebarMenuButton asChild key={i}>
-                                    <Link href={d.link || '#'}>
-                                      {d.icon}
-                                      <span>{d.name}</span>
-                                    </Link>
-                                  </SidebarMenuButton>
-                                )
-                              )}
-                            </SidebarMenuSubItem>
+                            {menu.children?.map((child, j) =>
+                              child.children && child.children.length > 0 ? (
+                                // Submenu yang punya anak lagi (Level 3)
+                                <Collapsible
+                                  key={j}
+                                  open={openSub === child.name}
+                                  onOpenChange={() =>
+                                    setOpenSub(
+                                      openSub === child.name ? null : child.name
+                                    )
+                                  }
+                                >
+                                  <CollapsibleTrigger asChild>
+                                    <SidebarMenuButton
+                                      onClick={() =>
+                                        setOpenSub(
+                                          openSub === child.name
+                                            ? null
+                                            : child.name
+                                        )
+                                      }
+                                      className='pl-6 flex items-center justify-between'
+                                    >
+                                      <div className='flex items-center'>
+                                        {child.icon}
+                                        <span
+                                          className={`${poppins.className}`}
+                                        >
+                                          {child.name}
+                                        </span>
+                                      </div>
+                                      {openSub === child.name ? (
+                                        <ChevronDown size={14} />
+                                      ) : (
+                                        <ChevronRight size={14} />
+                                      )}
+                                    </SidebarMenuButton>
+                                  </CollapsibleTrigger>
+
+                                  {/* ========== LEVEL 3 (Nested Items) ========== */}
+                                  <CollapsibleContent>
+                                    {child.children.map(
+                                      (sub: any, k: number) => (
+                                        <SidebarMenuButton
+                                          asChild
+                                          key={k}
+                                          className='pl-10'
+                                        >
+                                          <Link href={sub.link || '#'}>
+                                            {sub.icon}
+                                            <span>{sub.name}</span>
+                                          </Link>
+                                        </SidebarMenuButton>
+                                      )
+                                    )}
+                                  </CollapsibleContent>
+                                </Collapsible>
+                              ) : (
+                                // Submenu tanpa anak (langsung link)
+                                <SidebarMenuButton
+                                  asChild
+                                  key={j}
+                                  className='pl-6'
+                                >
+                                  <Link href={child.link || '#'}>
+                                    {child.icon}
+                                    <span>{child.name}</span>
+                                  </Link>
+                                </SidebarMenuButton>
+                              )
+                            )}
                           </SidebarMenuSub>
                         </CollapsibleContent>
                       </SidebarMenuItem>

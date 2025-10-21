@@ -112,7 +112,7 @@ const DataPembayaran = () => {
   }
 
   if (isError) {
-    return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
+    return <div className="p-6 text-red-500">Gagal memuat data Kategori</div>;
   }
 
   return (
@@ -302,11 +302,15 @@ const DataPembayaran = () => {
                     setTempFilterSemester("");
                     setTempFilterTipeKategori("");
                     setTempFilterNominal("");
+                    setFilterSemester("");
+                    setFilterTipeKategori("");
+                    setFilterNominal("");
                   }}
                   className="w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600"
                 >
                   Reset Filter
                 </button>
+
                 <button
                   onClick={() => {
                     setFilterSemester(tempFilterSemester);

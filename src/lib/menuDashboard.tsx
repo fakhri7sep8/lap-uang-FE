@@ -20,6 +20,7 @@ import {
   BookText,
   Info
 } from 'lucide-react'
+import { Children } from 'react'
 
 export function generateMenuDashboard ({
   openStudents,
@@ -45,12 +46,14 @@ export function generateMenuDashboard ({
         {
           name: 'Tambah Siswa',
           icon: <UserPlus className='mr-2' size={16} />,
-          link: '/dashboard/siswa/create'
+          link: '/dashboard/siswa/create',
+          children: null
         },
         {
           name: 'Lihat Semua Siswa',
           icon: <Users2 className='mr-2' size={16} />,
-          link: '/dashboard/siswa/view'
+          link: '/dashboard/siswa/view',
+          children: null
         }
       ]
     },
@@ -63,22 +66,26 @@ export function generateMenuDashboard ({
         {
           name: 'Kategori Pembayaran',
           icon: <Banknote className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/kategori'
+          link: '/dashboard/pembayaran/kategori',
+          children: null
         },
         {
           name: 'Input Pembayaran',
           icon: <History className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/input'
+          link: '/dashboard/pembayaran/input',
+          children: null
         },
         {
           name: 'Data SPP',
           icon: <FileText className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/spp'
+          link: '/dashboard/pembayaran/spp',
+          children: null
         },
         {
           name: 'Data Selain SPP',
           icon: <FileText className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/other/view'
+          link: '/dashboard/pembayaran/other/view',
+          children: null
         }
       ]
     },
@@ -89,20 +96,74 @@ export function generateMenuDashboard ({
       open: openExpense,
       children: [
         {
-          name: 'Kategori Pengeluaran',
+          name: 'operasional',
           icon: <Tags className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/category/view'
+          // link: '/dashboard/pengeluaran/operasional/view',
+          open: openExpense,
+          children: [
+            {
+              name: 'bangunan & sarana',
+              icon: <Tags className='mr-2' size={16} />,
+              link: '/dashboard/pengeluaran/operasional/bangunan'
+            },
+            {
+              name: 'pemeliharaan',
+              icon: <Tags className='mr-2' size={16} />,
+              link: '/dashboard/pengeluaran/operasional/pemeliharaan'
+            }
+          ]
         },
         {
-          name: 'Input Pengeluaran',
+          name: 'Upah Kariawan',
           icon: <Banknote className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/input'
+          link: '/dashboard/pengeluaran/upah',
+          open: openExpense,
+          children: [
+            {
+              name: 'guru',
+              icon: <Tags className='mr-2' size={16} />,
+              link: '/dashboard/pengeluaran/upah/guru'
+            },
+            {
+              name: 'Tukang Bangunan',
+              icon: <Tags className='mr-2' size={16} />,
+              link: '/dashboard/pengeluaran/upah/tukangbangunan'
+            },
+            {
+              name: 'Satpam/security',
+              icon: <Tags className='mr-2' size={16} />,
+              link: '/dashboard/pengeluaran/upah/satpam'
+            },
+            {
+              name: 'Dapur/kantin',
+              icon: <Tags className='mr-2' size={16} />,
+              link: '/dashboard/pengeluaran/upah/guru'
+            },
+            {
+              name: 'Laundry',
+              icon: <Tags className='mr-2' size={16} />,
+              link: '/dashboard/pengeluaran/upah/guru'
+            },
+            {
+              name: 'Staff',
+              icon: <Tags className='mr-2' size={16} />,
+              link: '/dashboard/pengeluaran/upah/guru'
+            },
+          ]
         },
         {
-          name: 'Riwayat Pengeluaran',
+          name: 'Biaya Makan',
           icon: <History className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/view'
-        }
+          link: '/dashboard/pengeluaran/biaya_makan',
+          children: null
+        },
+        {
+          name: 'Lain',
+          icon: <History className='mr-2' size={16} />,
+          link: '/dashboard/pengeluaran/biaya_makan',
+          children: null
+        },
+
       ]
     },
     {
@@ -113,19 +174,23 @@ export function generateMenuDashboard ({
       children: [
         {
           name: 'Laporan Arus Kas',
-          icon: <Activity className='mr-2' size={16} />
+          icon: <Activity className='mr-2' size={16} />,
+          children: null
         },
         {
           name: 'Laporan SPP',
-          icon: <CalendarRange className='mr-2' size={16} />
+          icon: <CalendarRange className='mr-2' size={16} />,
+          children: null
         },
         {
           name: 'Laporan',
-          icon: <CalendarRange className='mr-2' size={16} />
+          icon: <CalendarRange className='mr-2' size={16} />,
+          children: null
         },
         {
           name: 'Recap Kwitansi',
-          icon: <FileText className='mr-2' size={16} />
+          icon: <FileText className='mr-2' size={16} />,
+          children: null
         }
       ]
     },
@@ -137,12 +202,14 @@ export function generateMenuDashboard ({
       children: [
         {
           name: 'Profile Sekolah',
-          icon: <School className='mr-2' size={16} />
+          icon: <School className='mr-2' size={16} />,
+          children: null
         },
         {
           name: 'Ganti Password',
           icon: <KeyRound className='mr-2' size={16} />,
-          link: '/dashboard/pengaturan_sistem/ganti_password'
+          link: '/dashboard/pengaturan_sistem/ganti_password',
+          children: null
         }
       ]
     },
@@ -155,11 +222,13 @@ export function generateMenuDashboard ({
         {
           name: 'Tutorial',
           icon: <BookText className='mr-2' size={16} />,
-          link: '/dashboard/tutorial'
+          link: '/dashboard/tutorial',
+          children: null
         },
         {
           name: 'Tentang Aplikasi',
-          icon: <Info className='mr-2' size={16} />
+          icon: <Info className='mr-2' size={16} />,
+          children: null
         }
       ]
     }

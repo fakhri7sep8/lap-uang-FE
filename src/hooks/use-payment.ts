@@ -109,6 +109,9 @@ export const usePaymentModule = () => {
       onSuccess: () => {
         Swal.fire("Berhasil", "Pembayaran berhasil ditambahkan", "success");
         queryClient.invalidateQueries({ queryKey: ["payments"] });
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000)
       },
       onError: (error: any) => {
         Swal.fire("Error", "Gagal menambahkan: " + error.message, "error");

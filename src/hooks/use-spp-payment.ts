@@ -98,6 +98,9 @@ const useCreateSPPPayment = () => {
         confirmButtonText: "OK",
       });
       queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     },
     onError: (error: any) => {
       Swal.fire({

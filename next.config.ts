@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "export",
   images: {
-    domains: ["github.com", "res.cloudinary.com"], // Tambahkan domain di sini
+    unoptimized: true,
+    domains: ["github.com", "res.cloudinary.com"],
     remotePatterns: [
       {
         protocol: "https",
@@ -15,7 +17,6 @@ const nextConfig: NextConfig = {
         pathname: "/**",
       },
     ],
-    unoptimized: false, // default: false
   },
 };
 
