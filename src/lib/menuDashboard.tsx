@@ -100,56 +100,14 @@ export function generateMenuDashboard ({
           icon: <Tags className='mr-2' size={16} />,
           // link: '/dashboard/pengeluaran/operasional/view',
           open: openExpense,
-          children: [
-            {
-              name: 'bangunan & sarana',
-              icon: <Tags className='mr-2' size={16} />,
-              link: '/dashboard/pengeluaran/operasional/bangunan'
-            },
-            {
-              name: 'pemeliharaan',
-              icon: <Tags className='mr-2' size={16} />,
-              link: '/dashboard/pengeluaran/operasional/pemeliharaan'
-            }
-          ]
+          children: null
         },
         {
           name: 'Upah Kariawan',
           icon: <Banknote className='mr-2' size={16} />,
           link: '/dashboard/pengeluaran/upah',
           open: openExpense,
-          children: [
-            {
-              name: 'guru',
-              icon: <Tags className='mr-2' size={16} />,
-              link: '/dashboard/pengeluaran/upah/guru'
-            },
-            {
-              name: 'Tukang Bangunan',
-              icon: <Tags className='mr-2' size={16} />,
-              link: '/dashboard/pengeluaran/upah/tukangbangunan'
-            },
-            {
-              name: 'Satpam/security',
-              icon: <Tags className='mr-2' size={16} />,
-              link: '/dashboard/pengeluaran/upah/satpam'
-            },
-            {
-              name: 'Dapur/kantin',
-              icon: <Tags className='mr-2' size={16} />,
-              link: '/dashboard/pengeluaran/upah/guru'
-            },
-            {
-              name: 'Laundry',
-              icon: <Tags className='mr-2' size={16} />,
-              link: '/dashboard/pengeluaran/upah/guru'
-            },
-            {
-              name: 'Staff',
-              icon: <Tags className='mr-2' size={16} />,
-              link: '/dashboard/pengeluaran/upah/guru'
-            },
-          ]
+          children: null
         },
         {
           name: 'Biaya Makan',
