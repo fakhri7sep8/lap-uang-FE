@@ -21,6 +21,9 @@ import { CustomPagination } from "@/components/fragments/dashboard/custom-pagina
 import Loader from "@/components/ui/loader";
 import dayjs from "dayjs";
 
+// === Tambahan: tombol export ===
+import ExportPreviewButton, { Column } from "@/components/fragments/buttonExcelSiswa";
+
 const LihatSemuaSiswa = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [showCount, setShowCount] = useState(10);
@@ -44,17 +47,13 @@ const LihatSemuaSiswa = () => {
     ?.filter(
       (s: any) =>
         s?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s?.InductNumber?.toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
+        s?.InductNumber?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
         s?.dorm?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
     .filter((s: any) => (filterJurusan ? s.major === filterJurusan : true))
     .filter((s: any) => (filterAsrama ? s.dorm === filterAsrama : true))
-    .filter((s: any) =>
-      filterAngkatan ? String(s.generation) === filterAngkatan : true
-    );
+    .filter((s: any) => (filterAngkatan ? String(s.generation) === filterAngkatan : true));
 
   const totalPages = Math.ceil(filteredData.length / showCount);
   const paginatedData = filteredData.slice(
@@ -62,19 +61,18 @@ const LihatSemuaSiswa = () => {
     currentPage * showCount
   );
 
-const getStatusBadgeClass = (status: string) => {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-green-100 text-green-700";
-    case "GRADUATION":
-      return "bg-yellow-100 text-yellow-700";
-    case "OUT":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
-
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-green-100 text-green-700";
+      case "GRADUATION":
+        return "bg-yellow-100 text-yellow-700";
+      case "OUT":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -111,6 +109,23 @@ const getStatusBadgeClass = (status: string) => {
     return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
   }
 
+  // ===== Kolom Export Excel (sesuai tabel) =====
+  const statusToLabel = (s?: string) =>
+    s === "ACTIVE" ? "Aktif" :
+    s === "GRADUATION" ? "Lulus" :
+    s === "OUT" ? "Keluar" : (s ?? "");
+
+  const columns: Column<any>[] = [
+    { header: "No",        key: "__index__",   value: (_s: any, i: number) => i + 1 },
+    { header: "Nama",      key: "name" },
+    { header: "No. Induk", key: "InductNumber" },
+    { header: "Asrama",    key: "dorm" },
+    { header: "Angkatan",  key: "generation" },
+    { header: "Status",    key: "status",      value: (s: { status: string | undefined; }) => statusToLabel(s.status) },
+    { header: "Jurusan",   key: "major" },
+    { header: "Dibuat",    key: "createdAt",   value: (s: { createdAt: string | number | Date | dayjs.Dayjs | null | undefined; }) => dayjs(s.createdAt).format("DD MMM YYYY") },
+  ];
+
   return (
     <section className="w-full min-h-[90vh] flex flex-col gap-10">
       {/* Kartu informasi */}
@@ -124,7 +139,7 @@ const getStatusBadgeClass = (status: string) => {
         <CardInformation
           color={"green"}
           title={"Total Data"}
-          value={filteredData.slice(0, showCount).length}
+          value={filteredData.length}
           icon={<Users size={32} className="text-green-500" />}
         />
       </section>
@@ -139,6 +154,17 @@ const getStatusBadgeClass = (status: string) => {
           setShowCount={setShowCount}
           type={"normal"}
         />
+
+        {/* Tombol Export */}
+        <div className="flex justify-end">
+          <ExportPreviewButton
+            data={filteredData}      // export semua hasil filter/pencarian
+            columns={columns}
+            filename="data-siswa"
+            buttonText="Export"
+            previewLimit={20}
+          />
+        </div>
 
         <div className="w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
           <Table className="w-full h-full table-auto bg-white text-gray-700">
@@ -159,7 +185,7 @@ const getStatusBadgeClass = (status: string) => {
             <TableBody className="text-sm divide-y divide-gray-200 text-center">
               {paginatedData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-8 text-gray-400">
+                  <TableCell colSpan={9} className="py-8 text-gray-400">
                     Data not found
                   </TableCell>
                 </TableRow>
@@ -254,7 +280,7 @@ const getStatusBadgeClass = (status: string) => {
                   Jurusan
                   <select
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
-                    value={filterJurusan}
+                    value={draftJurusan}  // <- perbaikan konsistensi
                     onChange={(e) => setDraftJurusan(e.target.value)}
                   >
                     <option value="">Semua</option>
