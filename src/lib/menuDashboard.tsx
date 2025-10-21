@@ -98,7 +98,7 @@ export function generateMenuDashboard ({
         {
           name: 'operasional',
           icon: <Tags className='mr-2' size={16} />,
-          // link: '/dashboard/pengeluaran/operasional/view',
+          link: '/dashboard/pengeluaran/operasional/view',
           open: openExpense,
           children: null
         },
