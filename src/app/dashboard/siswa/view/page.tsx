@@ -115,16 +115,17 @@ const LihatSemuaSiswa = () => {
     s === "GRADUATION" ? "Lulus" :
     s === "OUT" ? "Keluar" : (s ?? "");
 
-  const columns: Column<any>[] = [
-    { header: "No",        key: "__index__",   value: (_s: any, i: number) => i + 1 },
-    { header: "Nama",      key: "name" },
-    { header: "No. Induk", key: "InductNumber" },
-    { header: "Asrama",    key: "dorm" },
-    { header: "Angkatan",  key: "generation" },
-    { header: "Status",    key: "status",      value: (s: { status: string | undefined; }) => statusToLabel(s.status) },
-    { header: "Jurusan",   key: "major" },
-    { header: "Dibuat",    key: "createdAt",   value: (s: { createdAt: string | number | Date | dayjs.Dayjs | null | undefined; }) => dayjs(s.createdAt).format("DD MMM YYYY") },
-  ];
+// columns untuk FORMAT IMPOR RESMI
+const columns: Column<any>[] = [
+  { header: "Name",      key: "name" },             // nama
+  { header: "Asrama",    key: "dorm" },             // asrama
+  { header: "No_Induk",  key: "InductNumber" },     // no induk
+  { header: "generasi",  key: "generation" },       // angkatan/generasi
+  { header: "jurusan",   key: "major" },            // jurusan
+  { header: "status",    key: "status" },           // gunakan kode: ACTIVE/GRADUATION/OUT
+  { header: "NIS",       key: "NIS", value: (s) => s?.NIS ?? "" }, // kalau tidak ada di data, kosongkan
+];
+
 
   return (
     <section className="w-full min-h-[90vh] flex flex-col gap-10">
