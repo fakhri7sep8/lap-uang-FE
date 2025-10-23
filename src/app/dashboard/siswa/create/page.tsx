@@ -156,7 +156,6 @@ const TambahSiswa = () => {
       // Klik cancel = tidak melakukan apa-apa
     })
   }
-  // console.log(form)
   const formik = useFormik({
     initialValues: initialValue,
     validationSchema: tambahSiswaSchema,
@@ -311,13 +310,7 @@ const TambahSiswa = () => {
           {isPending ? "Proses Menyimpan data siswa ..." : "simpan siswa"}
         </button>
       </form>
-      {/* <button
-        onClick={() => handleCreateForm()}
-        className='py-5 hover:bg-purple-500 hover:text-white transition-all cursor-pointer border border-purple-500 text-purple-500 text-lg flex items-center justify-center gap-2 rounded-xl'
-        >
-        <CircleFadingPlus size={24} />
-        Tambah Kolom Siswa
-      </button> */}
+
     </section>
   )
 }

@@ -23,6 +23,7 @@ import dayjs from "dayjs";
 
 // === Tambahan: tombol export ===
 import ExportPreviewButton, { Column } from "@/components/fragments/buttonExcelSiswa";
+import DeleteListButton from "@/components/fragments/deleteListButton";
 
 const LihatSemuaSiswa = () => {
   const [showFilter, setShowFilter] = useState(false);
@@ -37,6 +38,7 @@ const LihatSemuaSiswa = () => {
   const [draftJurusan, setDraftJurusan] = useState("");
   const [draftAsrama, setDraftAsrama] = useState("");
   const [draftAngkatan, setDraftAngkatan] = useState("");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   // Ambil data siswa dari API
   const { useGetStudent, useDeleteStudent } = useStudentModule();
@@ -94,6 +96,27 @@ const LihatSemuaSiswa = () => {
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
+    }
+  };
+
+  const handleDeleteList = async (ids: string[]) => {
+    for (const id of ids) {
+      await deleteStudent(id);
+    }
+    setSelectedIds([]);
+  };
+
+  const handleCheckboxChange = (id: string) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(paginatedData.map((s: any) => s.id));
+    } else {
+      setSelectedIds([]);
     }
   };
 
@@ -157,9 +180,14 @@ const columns: Column<any>[] = [
         />
 
         {/* Tombol Export */}
-        <div className="flex justify-end">
+        <div className="flex justify-between gap-2">
+          <DeleteListButton
+            selectedIds={selectedIds}
+            onDelete={handleDeleteList}
+            disabled={isLoading}
+          />
           <ExportPreviewButton
-            data={filteredData}      // export semua hasil filter/pencarian
+            data={filteredData}
             columns={columns}
             filename="data-siswa"
             buttonText="Export"
@@ -171,6 +199,13 @@ const columns: Column<any>[] = [
           <Table className="w-full h-full table-auto bg-white text-gray-700">
             <TableHeader className="text-sm font-semibold text-center">
               <TableRow>
+                <TableHead>
+                  <input
+                    type="checkbox"
+                    checked={paginatedData.length > 0 && selectedIds.length === paginatedData.length}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                  />
+                </TableHead>
                 <TableHead>No</TableHead>
                 <TableHead>Nama</TableHead>
                 <TableHead>No. Induk</TableHead>
@@ -186,13 +221,20 @@ const columns: Column<any>[] = [
             <TableBody className="text-sm divide-y divide-gray-200 text-center">
               {paginatedData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-8 text-gray-400">
+                  <TableCell colSpan={10} className="py-8 text-gray-400">
                     Data not found
                   </TableCell>
                 </TableRow>
               ) : (
                 paginatedData.map((s: any, idx: number) => (
                   <TableRow key={s.id}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(s.id)}
+                        onChange={() => handleCheckboxChange(s.id)}
+                      />
+                    </TableCell>
                     <TableCell>{(currentPage - 1) * showCount + (idx + 1)}</TableCell>
                     <TableCell className="font-medium">{s.name}</TableCell>
                     <TableCell>{s.InductNumber}</TableCell>
