@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { link } from 'fs'
 import {
   GraduationCap,
@@ -18,11 +18,12 @@ import {
   KeyRound,
   HelpCircle,
   BookText,
-  Info
+  Info,
+  Soup
 } from 'lucide-react'
 import { Children } from 'react'
 
-export function generateMenuDashboard ({
+export function generateMenuDashboard({
   openStudents,
   setOpenStudents,
   openSPP,
@@ -96,29 +97,35 @@ export function generateMenuDashboard ({
       open: openExpense,
       children: [
         {
-          name: 'operasional',
+          name: 'Operasional',
           icon: <Tags className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/operasional/view',
+          link: '/dashboard/pengeluaran/operasional',
+          open: openExpense,
+          children: null
+        },
+        {
+          name: 'Pemeliharaan',
+          icon: <Banknote className='mr-2' size={16} />,
+          link: '/dashboard/pengeluaran/pemeliharaan',
           open: openExpense,
           children: null
         },
         {
           name: 'Upah Kariawan',
           icon: <Banknote className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/upah',
-          open: openExpense,
+          link: '/dashboard/pengeluaran/upah_kariawan',
           children: null
         },
         {
           name: 'Biaya Makan',
-          icon: <History className='mr-2' size={16} />,
+          icon: <Soup className='mr-2' size={16} />,
           link: '/dashboard/pengeluaran/biaya_makan',
           children: null
         },
         {
           name: 'Lain',
           icon: <History className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/biaya_makan',
+          link: '/dashboard/pengeluaran/lain_lain',
           children: null
         },
 

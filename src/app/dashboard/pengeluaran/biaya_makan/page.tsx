@@ -4,17 +4,17 @@ import { Button } from "@/components/ui/button";
 import CardInformation from "@/components/fragments/dashboard/card-information";
 import { GraduationCap, SquarePen, Trash2, Users } from "lucide-react";
 import TablePengeluaran from "@/components/fragments/pengeluaran/table";
-import TablePengeluaran2 from "@/components/fragments/pengeluaran/table";
+import TablePengeluaran2 from "@/components/fragments/pengeluaran/table2";
 import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
 
 
 
-const OperasionalPage = () => {
-  const [activeTab, setActiveTab] = useState("Pembangunan");
+const BiayaMakanPage = () => {
+  const [activeTab, setActiveTab] = useState("Semua");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const tabs = ["Pembangunan", "Sarana"];
+  const tabs = ["Semua",];
 const data = [
     {
       id: 1,
@@ -22,7 +22,6 @@ const data = [
       nama: "Bayar Listrik",
       penanggungJawab: "Pak Dimas",
       kategori: "Pemeliharaan",
-      subKategori: "Listrik",
       jumlah: 500000,
       status: "Selesai",
     },
@@ -32,7 +31,6 @@ const data = [
       nama: "Gaji Guru Honorer",
       penanggungJawab: "Pak Hadi",
       kategori: "Upah Karyawan",
-      subKategori: "Guru",
       jumlah: 2500000,
       status: "Selesai",
     },
@@ -42,7 +40,6 @@ const data = [
       nama: "Langganan Internet",
       penanggungJawab: "Bu Sinta",
       kategori: "Pemeliharaan",
-      subKategori: "Internet",
       jumlah: 450000,
       status: "Proses",
     },
@@ -50,8 +47,7 @@ const data = [
 
   const filteredData = data.filter(
     (item) =>
-      item.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.subKategori.toLowerCase().includes(searchTerm.toLowerCase())
+      item.nama.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -121,4 +117,4 @@ const data = [
     </div>
   );
 }
-export default OperasionalPage;
+export default BiayaMakanPage;

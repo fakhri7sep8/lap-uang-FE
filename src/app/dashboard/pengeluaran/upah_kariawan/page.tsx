@@ -9,12 +9,12 @@ import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
 
 
 
-const OperasionalPage = () => {
-  const [activeTab, setActiveTab] = useState("Pembangunan");
+const UpahKariawanPage = () => {
+  const [activeTab, setActiveTab] = useState("Guru");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const tabs = ["Pembangunan", "Sarana"];
+  const tabs = ["Guru", "Staf", "Satpam", "Tukang", "Dapur", "Laundry"];
 const data = [
     {
       id: 1,
@@ -121,4 +121,4 @@ const data = [
     </div>
   );
 }
-export default OperasionalPage;
+export default UpahKariawanPage;
