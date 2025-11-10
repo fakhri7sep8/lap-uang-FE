@@ -22,7 +22,7 @@ import * as Yup from 'yup'
 const updateCategorySchema = Yup.object().shape({
   name: Yup.string(),
   semester: Yup.number()
-    
+
     .min(1, 'Minimal semester 1')
     .max(8, 'Maksimal semester 8'),
   TA: Yup.string(),
@@ -46,14 +46,13 @@ const UpdateKategori = () => {
   const { mutate } = useUpdateCategory(id as string)
   const { data, isLoading } = useDetailCategory(id as string)
 
-
   const formik = useFormik({
     initialValues: {
-      name:  data?.data?.name,
+      name: data?.data?.name,
       semester: data?.data?.semester,
       TA: data?.data?.TA,
-      type:  data?.data?.type,
-      nominal:  data?.data?.nominal
+      type: data?.data?.type,
+      nominal: data?.data?.nominal
     },
     validationSchema: updateCategorySchema,
     onSubmit: values => {
@@ -74,7 +73,7 @@ const UpdateKategori = () => {
 
   return (
     <section className=' pt-16'>
-      <div className=' rounded-xl p-8 w-full mx-auto shadow-md h-full flex flex-col items-center'>
+      <div className=' rounded-xl bg-white p-8 w-full mx-auto shadow-md h-full flex flex-col items-center'>
         <h1 className='w-full h-24 text-2xl font-semibold'>
           Update Kategori Pembayaran
         </h1>
@@ -103,22 +102,28 @@ const UpdateKategori = () => {
             {/* Semester */}
             <div className='w-full flex flex-col gap-4'>
               <Label>Semester</Label>
-              <Input
-                type='number'
-                name='semester'
-                defaultValue={data?.data?.semester}
-                onChange={e =>
-                  formik.setFieldValue('semester', Number(e.target.value))
+              <Select
+                value={formik.values.semester?.toString()}
+                onValueChange={val =>
+                  formik.setFieldValue('semester', Number(val))
                 }
-                placeholder='masukan semester'
-                className='border-slate-300 rounded-md px-3 py-6'
-              />
-              { formik.errors?.semester && (
-                <p className='text-red-500 text-sm'>
-                  {formik.errors.semester as string}
-                </p>
-              )}
+              >
+                <SelectTrigger className='w-full py-6 px-3 border-slate-300 rounded-md text-slate-500'>
+                  <SelectValue placeholder='Pilih Semester' />
+                </SelectTrigger>
+                <SelectContent className='bg-white border-none'>
+                  <SelectGroup>
+                    <SelectLabel>Semester</SelectLabel>
+                    {Array.from({ length: 6 }, (_, i) => i + 1).map(sem => (
+                      <SelectItem key={sem} value={sem.toString()}>
+                        {sem}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
             </div>
+
             <div className='w-full flex flex-col gap-4'>
               <Label>Tahun Ajaran</Label>
               <Select
@@ -143,12 +148,10 @@ const UpdateKategori = () => {
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              {
-                formik.errors.TA &&
-                typeof formik.errors.TA === 'string' && (
-                  <p className='text-red-500 text-sm'>{formik.errors.TA}</p>
-                )}
-              { Array.isArray(formik.errors.TA) && (
+              {formik.errors.TA && typeof formik.errors.TA === 'string' && (
+                <p className='text-red-500 text-sm'>{formik.errors.TA}</p>
+              )}
+              {Array.isArray(formik.errors.TA) && (
                 <p className='text-red-500 text-sm'>
                   {formik.errors.TA.join(', ')}
                 </p>
@@ -175,29 +178,35 @@ const UpdateKategori = () => {
                       value='INSTALLMENT'
                       className='hover:bg-gray-50'
                     >
-                      Installment
+                      Cicilan
                     </SelectItem>
                   </SelectGroup>
                 </SelectContent>
               </Select>
-              { formik.errors.type && (
-                <p className='text-red-500 text-sm'>{formik.errors.type as any}</p>
+              {formik.errors.type && (
+                <p className='text-red-500 text-sm'>
+                  {formik.errors.type as any}
+                </p>
               )}
             </div>
             {/* Nominal - full width */}
             <div className='w-full flex flex-col gap-4 col-span-2'>
               <Label>Nominal</Label>
               <Input
-                type='number'
+                type='text'
                 name='nominal'
-                defaultValue={data?.data?.nominal}
-                onChange={e =>
-                  formik.setFieldValue('nominal', Number(e.target.value))
-                }
+                defaultValue={new Intl.NumberFormat('id-ID', {
+                  style: 'currency',
+                  currency: 'IDR'
+                }).format(formik.values.nominal)}
+                onChange={e => {
+                  const rawValue = e.target.value.replace(/[^0-9]/g, '')
+                  formik.setFieldValue('nominal', Number(rawValue))
+                }}
                 placeholder='masukan nominal'
                 className='border-slate-300 rounded-md px-3 py-6'
               />
-              { formik.errors?.nominal && (
+              {formik.errors?.nominal && (
                 <p className='text-red-500 text-sm'>
                   {formik.errors.nominal as string}
                 </p>

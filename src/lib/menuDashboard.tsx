@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { link } from 'fs'
 import {
   GraduationCap,
@@ -18,10 +18,12 @@ import {
   KeyRound,
   HelpCircle,
   BookText,
-  Info
+  Info,
+  Soup
 } from 'lucide-react'
+import { Children } from 'react'
 
-export function generateMenuDashboard ({
+export function generateMenuDashboard({
   openStudents,
   setOpenStudents,
   openSPP,
@@ -45,12 +47,14 @@ export function generateMenuDashboard ({
         {
           name: 'Tambah Siswa',
           icon: <UserPlus className='mr-2' size={16} />,
-          link: '/dashboard/siswa/create'
+          link: '/dashboard/siswa/create',
+          children: null
         },
         {
           name: 'Lihat Semua Siswa',
           icon: <Users2 className='mr-2' size={16} />,
-          link: '/dashboard/siswa/view'
+          link: '/dashboard/siswa/view',
+          children: null
         }
       ]
     },
@@ -63,22 +67,26 @@ export function generateMenuDashboard ({
         {
           name: 'Kategori Pembayaran',
           icon: <Banknote className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/kategori'
+          link: '/dashboard/pembayaran/kategori',
+          children: null
         },
         {
           name: 'Input Pembayaran',
           icon: <History className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/input'
+          link: '/dashboard/pembayaran/input',
+          children: null
         },
         {
           name: 'Data SPP',
           icon: <FileText className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/spp'
+          link: '/dashboard/pembayaran/spp',
+          children: null
         },
         {
           name: 'Data Selain SPP',
           icon: <FileText className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/other/view'
+          link: '/dashboard/pembayaran/other/view',
+          children: null
         }
       ]
     },
@@ -89,20 +97,38 @@ export function generateMenuDashboard ({
       open: openExpense,
       children: [
         {
-          name: 'Kategori Pengeluaran',
+          name: 'Operasional',
           icon: <Tags className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/category/view'
+          link: '/dashboard/pengeluaran/operasional',
+          open: openExpense,
+          children: null
         },
         {
-          name: 'Input Pengeluaran',
+          name: 'Pemeliharaan',
           icon: <Banknote className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/input'
+          link: '/dashboard/pengeluaran/pemeliharaan',
+          open: openExpense,
+          children: null
         },
         {
-          name: 'Riwayat Pengeluaran',
+          name: 'Upah Kariawan',
+          icon: <Banknote className='mr-2' size={16} />,
+          link: '/dashboard/pengeluaran/upah_kariawan',
+          children: null
+        },
+        {
+          name: 'Biaya Makan',
+          icon: <Soup className='mr-2' size={16} />,
+          link: '/dashboard/pengeluaran/biaya_makan',
+          children: null
+        },
+        {
+          name: 'Lain',
           icon: <History className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/view'
-        }
+          link: '/dashboard/pengeluaran/lain_lain',
+          children: null
+        },
+
       ]
     },
     {
@@ -113,19 +139,23 @@ export function generateMenuDashboard ({
       children: [
         {
           name: 'Laporan Arus Kas',
-          icon: <Activity className='mr-2' size={16} />
+          icon: <Activity className='mr-2' size={16} />,
+          children: null
         },
         {
           name: 'Laporan SPP',
-          icon: <CalendarRange className='mr-2' size={16} />
+          icon: <CalendarRange className='mr-2' size={16} />,
+          children: null
         },
         {
           name: 'Laporan',
-          icon: <CalendarRange className='mr-2' size={16} />
+          icon: <CalendarRange className='mr-2' size={16} />,
+          children: null
         },
         {
           name: 'Recap Kwitansi',
-          icon: <FileText className='mr-2' size={16} />
+          icon: <FileText className='mr-2' size={16} />,
+          children: null
         }
       ]
     },
@@ -137,12 +167,14 @@ export function generateMenuDashboard ({
       children: [
         {
           name: 'Profile Sekolah',
-          icon: <School className='mr-2' size={16} />
+          icon: <School className='mr-2' size={16} />,
+          children: null
         },
         {
           name: 'Ganti Password',
           icon: <KeyRound className='mr-2' size={16} />,
-          link: '/dashboard/pengaturan_sistem/ganti_password'
+          link: '/dashboard/pengaturan_sistem/ganti_password',
+          children: null
         }
       ]
     },
@@ -155,11 +187,13 @@ export function generateMenuDashboard ({
         {
           name: 'Tutorial',
           icon: <BookText className='mr-2' size={16} />,
-          link: '/dashboard/tutorial'
+          link: '/dashboard/tutorial',
+          children: null
         },
         {
           name: 'Tentang Aplikasi',
-          icon: <Info className='mr-2' size={16} />
+          icon: <Info className='mr-2' size={16} />,
+          children: null
         }
       ]
     }

@@ -34,7 +34,6 @@ export const useStudentModule = () => {
           title: "Berhasil",
         })
       },
-      
       onError: (error) => { 
         if (axios.isAxiosError(error)) {
           Swal.fire({
@@ -50,57 +49,75 @@ export const useStudentModule = () => {
     return mutate;
   }
 
-  const useCreateStudent = () => {
-    const router = useRouter();
-    const {mutate, isPending} = useMutation({
-      mutationFn: (data: any) => createStudent(data),
-      onSuccess: (data) => {
-        Swal.fire({
-          icon: "success",
-          title: "Berhasil",
-          text: "Data siswa berhasil ditambahkan",
-          confirmButtonColor: "#3085d6",
-        })
+const useCreateStudent = () => {
+  const router = useRouter();
+  const queryClient = useQueryClient(); // 🧠 tambahkan ini
 
-        console.log("Student data created successfully:", data);
-      },
-      onError: (error) => {
-        Swal.fire({
-          icon: "error",
-          title: "Gagal",
-          text: "Terjadi kesalahan saat menambahkan data siswa",
-          confirmButtonColor: "#d33",
-        });
-        console.log("Error creating student data:", error);
-      },
-    });
-    return {mutate, isPending}; // return object lengkap mutation
-  };
+  const { mutate, isPending } = useMutation({
+    mutationFn: (data: any) => createStudent(data),
+    onSuccess: async (data) => {
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Data siswa berhasil ditambahkan",
+        confirmButtonColor: "#3085d6",
+      });
 
-  const useUpdateStudent = (id: string) => {
-    const router = useRouter();
-    const mutate = useMutation({
-      mutationFn: (data: any) => updateStudent(data, id),
-      onSuccess: (data) => {
-        Swal.fire({
-          icon: "success",
-          title: "Berhasil",
-          text: "Data siswa berhasil diperbarui",
-          timer: 2000,
-          showConfirmButton: false,
-        });
+      console.log("Student data created successfully:", data);
+
+      // 🔄 Refresh data student biar langsung muncul di view
+      await queryClient.invalidateQueries({ queryKey: ["get-student"] });
+    },
+    onError: (error) => {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Terjadi kesalahan saat menambahkan data siswa",
+        confirmButtonColor: "#d33",
+      });
+      console.log("Error creating student data:", error);
+    },
+  });
+
+  return { mutate, isPending };
+};
+
+
+ const useUpdateStudent = (id: string) => {
+  const router = useRouter();
+  const queryClient = useQueryClient(); // 🧠 tambahkan ini
+
+  const mutate = useMutation({
+    mutationFn: (data: any) => updateStudent(data, id),
+    onSuccess: async (data) => {
+      Swal.fire({
+        icon: "success",
+        title: "Berhasil",
+        text: "Data siswa berhasil diperbarui",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+
+      // 🔄 refresh cache data siswa
+      await queryClient.invalidateQueries({ queryKey: ["get-student"] });
+
+      // 🔁 beri sedikit delay agar cache sempat di-refresh sebelum pindah halaman
+      setTimeout(() => {
         router.push("/dashboard/siswa/view");
-      },
-      onError: (error) => {
-        Swal.fire({
-          icon: "error",
-          title: "Gagal",
-          text: "Gagal memperbarui data siswa",
-        });
-      },
-    });
-    return { mutate };
-  };
+      }, 300);
+    },
+    onError: () => {
+      Swal.fire({
+        icon: "error",
+        title: "Gagal",
+        text: "Gagal memperbarui data siswa",
+      });
+    },
+  });
+
+  return { mutate };
+};
+
 
   const useDeleteStudent = () => {
     const queryClient = useQueryClient();
@@ -115,18 +132,26 @@ export const useStudentModule = () => {
         console.error("Gagal menghapus data siswa:", error);
       },
     });
-    return { mutate, mutateAsync: mutate.mutateAsync };
+    return { mutate, mutateAsync: mutate.mutateAsync , isPending: mutate.isPending };
   };
 
-  const useGetStudent = () => {
-    const { isLoading, isError, data } = useQuery({
-      queryKey: ["get-student"],
-      queryFn: () => getStudentData(),
-      select: (res) => res.data.data || [], // langsung array siswa
-    });
+ const useGetStudent = () => {
+  const queryClient = useQueryClient();
 
-    return { isLoading, isError, data };
-  };
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["get-student"],
+    queryFn: getStudentData,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 2, // data dianggap fresh selama 2 menit
+    gcTime: 1000 * 60 * 10,   // data disimpan di cache selama 10 menit
+    select: (res) => res.data.data || [],
+  });
+
+  const refreshStudent = () =>
+    queryClient.invalidateQueries({ queryKey: ["get-student"] });
+
+  return { data, isLoading, isError, refetch, refreshStudent };
+};
 
   return {
     useCreateStudent,
