@@ -36,7 +36,7 @@ export const usePaymentModule = () => {
 
   const getRecapPayments = async () => {
     return await axiosClient
-      .get("/payments/rekap/2025")
+      .get(`/payments/rekap/${new Date().getFullYear()}`)
       .then((res) => res.data);
   };
 

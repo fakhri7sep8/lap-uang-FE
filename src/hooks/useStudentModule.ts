@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 
 export const useStudentModule = () => {
   const getStudentData = async () => {
-    return await axiosClient.get("/student");
+    return await axiosClient.get("/student/all");
   };
 
   const createStudent = async (data: any) => {

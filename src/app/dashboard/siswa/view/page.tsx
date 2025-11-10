@@ -36,7 +36,6 @@ const LihatSemuaSiswa = () => {
   const [draftAngkatan, setDraftAngkatan] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
-
   // Ambil data siswa dari API
   const { useGetStudent, useDeleteStudent } = useStudentModule();
   const { data: siswa = [], isLoading, isError } = useGetStudent();
@@ -64,47 +63,45 @@ const LihatSemuaSiswa = () => {
     currentPage * showCount
   );
 
-const getStatusBadgeClass = (status: string) => {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-green-100 text-green-700";
-    case "GRADUATION":
-      return "bg-yellow-100 text-yellow-700";
-    case "OUT":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
-
-
- const handleDelete = async (id: string) => {
-  try {
-    const result = await Swal.fire({
-      title: "Apakah kamu yakin?",
-      text: "Data yang dihapus tidak bisa dikembalikan!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Ya, hapus!",
-      cancelButtonText: "Batal",
-    });
-
-    if (result.isConfirmed) {
-      setIsDeleting(true);
-
-      await deleteStudent(id); // hapus data
-      await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-green-100 text-green-700";
+      case "GRADUATION":
+        return "bg-yellow-100 text-yellow-700";
+      case "OUT":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
-  } catch (error) {
-    console.error(error);
-    Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
-  } finally {
-    setIsDeleting(false); // 🔚 matikan loader
-  }
-};
+  };
 
+  const handleDelete = async (id: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "Apakah kamu yakin?",
+        text: "Data yang dihapus tidak bisa dikembalikan!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Ya, hapus!",
+        cancelButtonText: "Batal",
+      });
+
+      if (result.isConfirmed) {
+        setIsDeleting(true);
+
+        await deleteStudent(id); // hapus data
+        await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
+      }
+    } catch (error) {
+      console.error(error);
+      Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
+    } finally {
+      setIsDeleting(false); // 🔚 matikan loader
+    }
+  };
 
   if (isLoading) {
     return (
@@ -115,13 +112,12 @@ const getStatusBadgeClass = (status: string) => {
   }
 
   if (isDeleting) {
-  return (
-    <div className="p-6 w-full h-[89vh] flex justify-center items-center">
-      <Loader />
-    </div>
-  );
-}
-
+    return (
+      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
 
   if (isError) {
     return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
@@ -168,6 +164,7 @@ const getStatusBadgeClass = (status: string) => {
                 <TableHead>Angkatan</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Jurusan</TableHead>
+                <TableHead>Tipe Program</TableHead>
                 <TableHead>Dibuat</TableHead>
                 <TableHead>Aksi</TableHead>
               </TableRow>
@@ -183,7 +180,9 @@ const getStatusBadgeClass = (status: string) => {
               ) : (
                 paginatedData.map((s: any, idx: number) => (
                   <TableRow key={s.id}>
-                    <TableCell>{(currentPage - 1) * showCount + (idx + 1)}</TableCell>
+                    <TableCell>
+                      {(currentPage - 1) * showCount + (idx + 1)}
+                    </TableCell>
                     <TableCell className="font-medium">{s.name}</TableCell>
                     <TableCell className="font-medium">{s.NIS}</TableCell>
                     <TableCell>{s.InductNumber}</TableCell>
@@ -199,7 +198,25 @@ const getStatusBadgeClass = (status: string) => {
                       </span>
                     </TableCell>
                     <TableCell>{s.major}</TableCell>
-                    <TableCell>{dayjs(s.createdAt).format("DD MMM YYYY")}</TableCell>
+                    <TableCell>
+                      {/* 👇 tambahan kolom baru */}
+                      {s.tipeProgram ? (
+                        <span
+                          className={`${
+                            s.tipeProgram === "FULLDAY"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-purple-100 text-purple-700"
+                          } px-3 py-1 rounded-full text-xs font-medium`}
+                        >
+                          {s.tipeProgram}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {dayjs(s.createdAt).format("DD MMM YYYY")}
+                    </TableCell>
                     <TableCell className="flex gap-2 justify-center">
                       <Link href={`/dashboard/siswa/update/${s.id}`}>
                         <Button className="bg-blue-400 text-white">

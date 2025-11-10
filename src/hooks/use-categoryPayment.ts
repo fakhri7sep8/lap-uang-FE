@@ -129,15 +129,16 @@ export const useCategoryPaymentModule = () => {
 
     return { mutate };
   };
-  const useDetailCategory = (id: string) => {
-    const { data, isLoading } = useQuery({
-      queryFn: () => detailCategory(id),
-      queryKey: ["categoryPaymentDetail", id],
-      select: (data) => data.data,
-    });
+  const useDetailCategory = (id?: string) => {
+  const { data, isLoading } = useQuery({
+    queryFn: () => detailCategory(id!),
+    queryKey: ["categoryPaymentDetail", id],
+    enabled: !!id, // ✅ hanya jalan kalau id ada (tidak undefined/null/empty)
+    select: (data) => data.data,
+  });
 
-    return { data, isLoading };
-  };
+  return { data, isLoading };
+};
 
   return {
     useGetCategory,

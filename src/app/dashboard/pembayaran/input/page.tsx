@@ -65,9 +65,8 @@ const bulanListTable = [
 const InputPembayaranpage = () => {
   const [selectedSiswa, setSelectedSiswa] = useState<string>("");
   const [selectedKategori, setSelectedKategori] = useState<string>("spp");
-  const [selectIDCateogry, setIDCategory] = useState<string>(
-    "13dd5ec7-3c5b-4afb-b430-1ac1f1745c6d"
-  );
+  const [selectIDCateogry, setIDCategory] = useState<string>();
+  // "13dd5ec7-3c5b-4afb-b430-1ac1f1745c6d"
 
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
   const [methodPayments, setMethodPayments] = useState<string>("NORMAL");
@@ -83,6 +82,12 @@ const InputPembayaranpage = () => {
   const { mutate: createSPPPayment, isPending: isPendingSpp } =
     useCreateSPPPayment();
   const [dataSPP, setDataSPP] = useState<any[]>([]);
+  // 💰 Tentukan nominal SPP berdasarkan tipe program
+  const getNominalSPP = () => {
+    if (!siswa?.tipeProgram) return 2500000; // default
+    return siswa?.tipeProgram === "FULLDAY" ? 1000000 : 2500000;
+  };
+
   const {
     data: sppPayments,
     refetch: refetchSppPayments,
@@ -118,7 +123,7 @@ const InputPembayaranpage = () => {
       {
         Nama: "",
         Bulan: "",
-        Nominal: 2500000,
+        Nominal: "",
         Status: "",
       },
     ]);
@@ -138,9 +143,9 @@ const InputPembayaranpage = () => {
 
       console.log("📘 [STEP 1] Data Excel Diterima:", result.json);
 
-      const siswaList = siswaMQ?.map((s: any) => s.name.toLowerCase());
+      const siswaList = siswaMQ?.map((s: any) => s.name.toLowerCase().trim());
       const invalidRows = result.json.filter(
-        (row: any) => !siswaList.includes((row.Nama || "").toLowerCase())
+        (row: any) => !siswaList.includes((row.Nama || "").toLowerCase().trim())
       );
 
       if (invalidRows.length > 0) {
@@ -175,9 +180,9 @@ const InputPembayaranpage = () => {
         "juni",
       ];
 
-      let skippedRows: string[] = [];
-      let blockedRows: string[] = [];
-      let successRows: string[] = [];
+      const skippedRows: string[] = [];
+      const blockedRows: string[] = [];
+      const successRows: string[] = [];
 
       console.log("📆 [STEP 2] Mulai proses import...");
 
@@ -402,7 +407,7 @@ const InputPembayaranpage = () => {
               studentId: siswa.id,
               month,
               year: yearSPP,
-              nominal: 2500000,
+              nominal: getNominalSPP(),
               status: "LUNAS",
             },
           });
@@ -415,6 +420,7 @@ const InputPembayaranpage = () => {
         method: methodPayments,
         year: new Date().getFullYear(),
         typeId: selectIDCateogry || "",
+        status: "LUNAS",
       };
 
       if (detailCategoryMQ?.data?.type === "NORMAL") {
@@ -438,10 +444,10 @@ const InputPembayaranpage = () => {
       ? (detailCategoryMQ?.data?.nominal || 0) -
         (existingPayment?.reduce((acc: any, p: any) => acc + p.amount, 0) || 0)
       : selectedKategori === "spp"
-      ? 2500000 * selectedMonths.length
+      ? getNominalSPP() * selectedMonths.length
       : detailCategoryMQ?.data?.nominal || 0;
 
-  // === Helper Status Pembayaran ===
+  // Fungsi helper
   const getStatusPembayaran = () => {
     if (selectedKategori === "spp") {
       const totalBulan = bulanList.length;
@@ -465,6 +471,10 @@ const InputPembayaranpage = () => {
 
     return existingPayment?.length > 0 ? "LUNAS" : "BELUM BAYAR";
   };
+
+  // === Hitung apakah semua lunas ===
+  const statusPembayaran = getStatusPembayaran();
+  const isAllLunas = statusPembayaran === "LUNAS";
 
   return (
     <div className="w-full flex justify-center items-center p-8">
@@ -806,16 +816,20 @@ const InputPembayaranpage = () => {
           <div className="flex flex-col items-end gap-4 mt-4">
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isAllLunas}
               className={`w-full py-5 border text-lg flex items-center justify-center gap-2 rounded-xl transition-all
     ${
-      isSubmitting
-        ? "cursor-not-allowed bg-gray-300 text-gray-500 border-gray-300"
+      isSubmitting || isAllLunas
+        ? "cursor-not-allowed bg-gray-200 text-gray-600 border-gray-300"
         : "cursor-pointer border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
     }`}
             >
               <Send size={24} />
-              {isSubmitting ? "Proses menyimpan data siswa..." : "Simpan"}
+              {isSubmitting
+                ? "Proses menyimpan data siswa..."
+                : isAllLunas
+                ? "Semua sudah lunas"
+                : "Simpan"}
             </button>
 
             <button

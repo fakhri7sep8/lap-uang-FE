@@ -41,7 +41,7 @@ export const readerExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
           return obj;
         });
 
-        console.log("📘 [readerExcel] Hasil parsing full:", json);
+        // console.log("📘 [readerExcel] Hasil parsing full:", json);
 
         resolve({ json, oop: worksheet });
       } catch (error) {

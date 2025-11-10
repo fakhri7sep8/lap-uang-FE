@@ -16,6 +16,10 @@ import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import currency from "currency.js";
+import { useStudentModule } from "@/hooks/useStudentModule";
+import { useState } from "react";
+import { Combobox } from "@/components/ui/combobox";
+import MultipleSelector, { Option } from "@/components/ui/multiple-selector";
 
 const createCategorySchema = Yup.object().shape({
   name: Yup.string().required("Nama kategori wajib diisi"),
@@ -28,6 +32,9 @@ const createCategorySchema = Yup.object().shape({
   nominal: Yup.number()
     .required("Nominal wajib diisi")
     .min(0, "Nominal minimal 0"),
+  status: Yup.string()
+    .oneOf(["ACTIVE", "NONACTIVE"], "Status tidak valid")
+    .required("Status wajib diisi"),
 });
 
 const getAcademicYears = (count = 5) => {
@@ -51,6 +58,17 @@ const formatRupiah = (value: number | string) =>
 const CreateKategori = () => {
   const { useCreateCategory } = useCategoryPaymentModule();
   const { mutate } = useCreateCategory();
+  const { useGetStudent } = useStudentModule();
+  const { data: siswaMQ } = useGetStudent();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedSiswa, setSelectedSiswa] = useState<Option[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
+
+  const siswaOptions: Option[] =
+    siswaMQ?.map((s: any) => ({
+      label: s.name,
+      value: s.id,
+    })) || [];
 
   const formik = useFormik({
     initialValues: {
@@ -59,14 +77,28 @@ const CreateKategori = () => {
       TA: "",
       type: "",
       nominal: "",
+      status: "",
     },
     validationSchema: createCategorySchema,
     onSubmit: (values) => {
-      console.log("Create category:", values);
-      mutate.mutate(values, {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
+
+      const payload: any = {
+        ...values,
+        ...(selectedSiswa.length > 0 && !selectAll
+          ? { studentIds: selectedSiswa.map((s) => s.value) }
+          : {}),
+      };
+
+      mutate.mutate(payload, {
         onSuccess: () => {
-          formik.resetForm(); // kosongin form setelah berhasil simpan
+          formik.resetForm();
+          setSelectedSiswa([]);
+          setSelectAll(false);
+          setIsSubmitting(false);
         },
+        onError: () => setIsSubmitting(false),
       });
     },
   });
@@ -96,6 +128,19 @@ const CreateKategori = () => {
               {formik.touched.name && formik.errors.name && (
                 <p className="text-red-500 text-sm">{formik.errors.name}</p>
               )}
+            </div>
+            <div className="w-full flex flex-col gap-4">
+              <Label>Pilih Siswa</Label>
+              <MultipleSelector
+                defaultOptions={siswaOptions}
+                value={selectedSiswa}
+                onChange={(val) => {
+                  setSelectedSiswa(val);
+                  // kalau val kosong tapi user pilih semua
+                  setSelectAll(val.length === 0 && selectAll);
+                }}
+                placeholder="Pilih siswa..."
+              />
             </div>
 
             {/* Semester */}
@@ -187,8 +232,36 @@ const CreateKategori = () => {
               )}
             </div>
 
+            {/* Status Kategori */}
+            <div className="w-full flex flex-col gap-4">
+              <Label>Status</Label>
+              <Select
+                value={formik.values.status}
+                onValueChange={(val) => formik.setFieldValue("status", val)}
+              >
+                <SelectTrigger className="w-full py-6 px-3 border-slate-300 rounded-md text-slate-500">
+                  <SelectValue placeholder="Pilih Status" />
+                </SelectTrigger>
+                <SelectContent className="border-none bg-white">
+                  <SelectGroup className="flex flex-col gap-1">
+                    <SelectLabel>Status</SelectLabel>
+                    <SelectItem value="ACTIVE" className="hover:bg-gray-50">
+                      Active
+                    </SelectItem>
+                    <SelectItem value="NONACTIVE" className="hover:bg-gray-50">
+                      Nonactive
+                    </SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+
+              {formik.touched.status && formik.errors.status && (
+                <p className="text-red-500 text-sm">{formik.errors.status}</p>
+              )}
+            </div>
+
             {/* Nominal */}
-            <div className="w-full flex flex-col gap-4 ">
+            <div className="w-full flex flex-col gap-4 col-span-2">
               <Label>Nominal</Label>
               <Input
                 type="text"
@@ -210,17 +283,19 @@ const CreateKategori = () => {
                 <p className="text-red-500 text-sm">{formik.errors.nominal}</p>
               )}
             </div>
+          
           </div>
 
           {/* Buttons */}
           <div className="w-full mt-6 flex gap-4 justify-end items-end">
             <Button
               type="submit"
+              disabled={isSubmitting || mutate.isPending}
               className="px-8 text-white bg-blue-500"
-              disabled={mutate.isPending} // disable saat loading
             >
               {mutate.isPending ? "Loading..." : "Simpan"}
             </Button>
+
             <Button
               type="button"
               onClick={() => formik.resetForm()}
