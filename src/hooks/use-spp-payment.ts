@@ -21,7 +21,7 @@ export const useSppPaymentModule = () => {
 
   const getRecapSPPPayment = async () => {
     return await axiosClient
-      .get(`/spp-payment/rekap/2025`)
+      .get(`/spp-payment/rekap/${new Date().getFullYear()}/${new Date().getFullYear() + 1}`)
       .then((res) => res.data);
   };
 
@@ -33,7 +33,7 @@ export const useSppPaymentModule = () => {
 
   const createPayment = async (payload: CreateSppPayment) => {
     return await axiosClient
-      .post("/spp-payment", payload)
+      .post("/spp-payment/tambah", payload)
       .then((res) => res.data);
   };
 

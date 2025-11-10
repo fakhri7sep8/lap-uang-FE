@@ -1,71 +1,71 @@
-"use client";
+'use client'
 
-import React from "react";
-import { Pencil, Eye, Download } from "lucide-react";
+import React from 'react'
+import { Pencil, Eye, Download } from 'lucide-react'
 
-export default function TablePengeluaran({
+export default function TablePengeluaran ({
   title,
-  data: propData,
+  data: propData
 }: {
-  title: string;
-  data?: any[];
+  title: string
+  data?: any[]
 }) {
   // Default internal data (kept for backward compatibility)
   const internalData = [
     {
       id: 1,
-      tanggal: "2025-10-29",
-      nama: "Bayar Listrik",
-      penanggungJawab: "Pak Dimas",
-      kategori: "Pemeliharaan",
-      subKategori: "Listrik",
+      tanggal: '2025-10-29',
+      nama: 'Bayar Listrik',
+      penanggungJawab: 'Pak Dimas',
+      kategori: 'Pemeliharaan',
+      subKategori: 'Listrik',
       jumlah: 500000,
-      status: "Selesai",
+      status: 'Selesai'
     },
     {
       id: 2,
-      tanggal: "2025-10-29",
-      nama: "Gaji Guru Honorer",
-      penanggungJawab: "Pak Hadi",
-      kategori: "Upah Karyawan",
-      subKategori: "Guru",
+      tanggal: '2025-10-29',
+      nama: 'Gaji Guru Honorer',
+      penanggungJawab: 'Pak Hadi',
+      kategori: 'Upah Karyawan',
+      subKategori: 'Guru',
       jumlah: 2500000,
-      status: "Selesai",
+      status: 'Selesai'
     },
     {
       id: 3,
-      tanggal: "2025-10-29",
-      nama: "Langganan Internet",
-      penanggungJawab: "Bu Sinta",
-      kategori: "Pemeliharaan",
-      subKategori: "Internet",
+      tanggal: '2025-10-29',
+      nama: 'Langganan Internet',
+      penanggungJawab: 'Bu Sinta',
+      kategori: 'Pemeliharaan',
+      subKategori: 'Internet',
       jumlah: 450000,
-      status: "Proses",
-    },
-  ];
+      status: 'Proses'
+    }
+  ]
 
   // If parent passed data, use it; otherwise fall back to internalData
-  const data = propData ?? internalData;
+  const data = propData ?? internalData
 
   return (
-    <div className="p-5 bg-white rounded-xl shadow-sm">
-      <h2 className="text-base font-semibold mb-4 text-gray-800 flex items-center gap-2">
-       Data {title}
+    <div className='p-5 bg-white rounded-xl shadow-sm'>
+      <h2 className='text-base font-semibold mb-4 text-gray-800 flex items-center gap-2'>
+        Data {title}
       </h2>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-[12px] text-gray-700">
+      <div className='overflow-x-auto'>
+        <table className='w-full text-[12px] text-gray-700'>
           <thead>
-            <tr className="bg-gray-100 text-gray-600 text-left font-medium">
-              <th className="py-2 px-2 text-center w-[3%]">No</th>
-              <th className="py-2 px-2 w-[10%]">Tanggal Pengeluaran</th>
-              <th className="py-2 px-2 w-[12%]">Nama</th>
-              <th className="py-2 px-2 w-[12%]">Penanggung Jawab</th>
-              <th className="py-2 px-2 w-[10%]">Kategori</th>
-              <th className="py-2 px-2 w-[12%]">Nama Sub Kategori</th>
-              <th className="py-2 px-2 w-[10%] text-right">Jumlah (Rp)</th>
-              <th className="py-2 px-2 w-[8%] text-center">Status</th>
-              <th className="py-2 px-2 w-[15%] text-center">Aksi</th>
+            <tr className='bg-gray-100 text-gray-600 text-left font-medium'>
+              <th className='py-2 px-2 text-center w-[3%]'>No</th>
+              <th className='py-2 px-2 w-[10%]'>Tanggal Pengeluaran</th>
+              <th className='py-2 px-2 w-[12%]'>Nama</th>
+              <th className='py-2 px-2 w-[12%]'>Penanggung Jawab</th>
+              <th className='py-2 px-2 w-[10%]'>Kategori</th>
+              <th className='py-2 px-2 w-[12%]'>Nama Sub Kategori</th>
+              <th className='py-2 px-2 w-[10%] text-right'>Jumlah (Rp)</th>
+              <th className='py-2 px-2 w-[8%] text-center'>Status</th>
+              <th className='py-2 px-2 w-[15%] text-center'>Aksi</th>
             </tr>
           </thead>
 
@@ -73,54 +73,63 @@ export default function TablePengeluaran({
             {data.map((item, index) => (
               <tr
                 key={item.id}
-                className="hover:bg-gray-50 transition-all text-[12px]"
+                className='hover:bg-gray-50 transition-all text-[12px]'
               >
-                <td className="py-2 px-2 text-center text-gray-600">
+                <td className='py-2 px-2 text-center text-gray-600'>
                   {index + 1}
                 </td>
-                <td className="py-2 px-2">{item.tanggal}</td>
-                <td className="py-2 px-2 font-medium text-gray-800">
-                  {item.nama}
+                <td className='py-2 px-2'>{item.PayDate}</td>
+                <td className='py-2 px-2 font-medium text-gray-800'>
+                  {item.description}
                 </td>
-                <td className="py-2 px-2">{item.penanggungJawab}</td>
-                <td className="py-2 px-2">{item.kategori}</td>
-                <td className="py-2 px-2">{item.subKategori}</td>
-                <td className="py-2 px-2 text-right">
-                  Rp {item.jumlah.toLocaleString("id-ID")}
+                <td className='py-2 px-2'>{item.PenanggungJawab}</td>
+                <td className='py-2 px-2'>{item.category.name}</td>
+                <td className='py-2 px-2'>{item.subKategori}</td>
+                <td className='py-2 px-2 text-right'>
+                  Rp {item?.amount?.toLocaleString('id-ID')}
                 </td>
-                <td className="py-2 px-2 text-center">
+                <td className='py-2 px-2 text-center'>
                   <span
                     className={`inline-block px-3 py-0.5 text-[11px] font-semibold rounded-full ${
-                      item.status === "Selesai"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-yellow-100 text-yellow-800"
+                      item.status === 'Selesai'
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-yellow-100 text-yellow-800'
                     }`}
                   >
                     {item.status}
                   </span>
                 </td>
-                <td className="py-2 px-2">
-                  <div className="flex justify-center">
-                    <div className="flex items-center gap-2">
+                <td className='py-2 px-2'>
+                  <div className='flex justify-center'>
+                    <div className='flex items-center gap-2'>
                       <button
-                        title="Edit"
-                        className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group"
+                        title='Edit'
+                        className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
                       >
-                        <Pencil size={14} className="text-blue-600 group-hover:text-blue-700 transition-colors" />
+                        <Pencil
+                          size={14}
+                          className='text-blue-600 group-hover:text-blue-700 transition-colors'
+                        />
                       </button>
 
                       <button
-                        title="Detail"
-                        className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group"
+                        title='Detail'
+                        className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
                       >
-                        <Eye size={14} className="text-green-600 group-hover:text-green-700 transition-colors" />
+                        <Eye
+                          size={14}
+                          className='text-green-600 group-hover:text-green-700 transition-colors'
+                        />
                       </button>
 
                       <button
-                        title="Download Kwitansi"
-                        className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group"
+                        title='Download Kwitansi'
+                        className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
                       >
-                        <Download size={14} className="text-orange-600 group-hover:text-orange-700 transition-colors" />
+                        <Download
+                          size={14}
+                          className='text-orange-600 group-hover:text-orange-700 transition-colors'
+                        />
                       </button>
                     </div>
                   </div>
@@ -137,5 +146,5 @@ export default function TablePengeluaran({
         {data.reduce((sum, i) => sum + i.jumlah, 0).toLocaleString("id-ID")}
       </div> */}
     </div>
-  );
+  )
 }

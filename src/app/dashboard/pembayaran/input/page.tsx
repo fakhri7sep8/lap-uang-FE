@@ -62,7 +62,7 @@ const InputPembayaranpage = () => {
   const [selectedSiswa, setSelectedSiswa] = useState<string>("");
   const [selectedKategori, setSelectedKategori] = useState<string>("spp");
   const [selectIDCateogry, setIDCategory] = useState<string>(
-    "13dd5ec7-3c5b-4afb-b430-1ac1f1745c6d"
+    "61c6b4d5-61e0-44d0-9319-f797d8df0dd6"
   );
 
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
