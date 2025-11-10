@@ -172,11 +172,11 @@ const columns: Column<any>[] = [
 
         {/* Tombol Export */}
         <div className="flex justify-between gap-2">
-          <DeleteListButton
+          {/* <DeleteListButton
             selectedIds={selectedIds}
             onDelete={handleDeleteList}
             disabled={isLoading}
-          />
+          /> */}
           <ExportPreviewButton
             data={filteredData}
             columns={columns}
@@ -190,14 +190,14 @@ const columns: Column<any>[] = [
           <Table className="w-full h-full table-auto bg-white text-gray-700">
             <TableHeader className="text-sm font-semibold text-center">
               <TableRow>
-                <TableHead>
+                {/* <TableHead>
                   <input
                     title="Select All"
                     type="checkbox"
-                    checked={paginatedData.length > 0 && selectedIds.length === paginatedData.length}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    // checked={paginatedData.length > 0 && selectedIds.length === paginatedData.length}
+                    // onChange={(e) => handleSelectAll(e.target.checked)}
                   />
-                </TableHead>
+                </TableHead> */}
                 <TableHead>No</TableHead>
                 <TableHead>Nama</TableHead>
                 <TableHead>NIS</TableHead>
