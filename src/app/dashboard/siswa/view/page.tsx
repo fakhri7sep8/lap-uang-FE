@@ -38,7 +38,7 @@ const LihatSemuaSiswa = () => {
   const [draftJurusan, setDraftJurusan] = useState("");
   const [draftAsrama, setDraftAsrama] = useState("");
   const [draftAngkatan, setDraftAngkatan] = useState("");
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Ambil data siswa dari API
   const { useGetStudent, useDeleteStudent } = useStudentModule();
@@ -90,37 +90,28 @@ const LihatSemuaSiswa = () => {
       });
 
       if (result.isConfirmed) {
-        await deleteStudent(id);
+        setIsDeleting(true);
+
+        await deleteStudent(id); // hapus data
         await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
       }
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
-    }
-  };
-
-  const handleDeleteList = async (ids: string[]) => {
-    for (const id of ids) {
-      await deleteStudent(id);
-    }
-    setSelectedIds([]);
-  };
-
-  const handleCheckboxChange = (id: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((sid) => sid !== id) : [...prev, id]
-    );
-  };
-
-  const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedIds(paginatedData.map((s: any) => s.id));
-    } else {
-      setSelectedIds([]);
+    } finally {
+      setIsDeleting(false); // 🔚 matikan loader
     }
   };
 
   if (isLoading) {
+    return (
+      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (isDeleting) {
     return (
       <div className="p-6 w-full h-[89vh] flex justify-center items-center">
         <Loader />
@@ -209,11 +200,13 @@ const columns: Column<any>[] = [
                 </TableHead>
                 <TableHead>No</TableHead>
                 <TableHead>Nama</TableHead>
+                <TableHead>NIS</TableHead>
                 <TableHead>No. Induk</TableHead>
                 <TableHead>Asrama</TableHead>
                 <TableHead>Angkatan</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Jurusan</TableHead>
+                <TableHead>Tipe Program</TableHead>
                 <TableHead>Dibuat</TableHead>
                 <TableHead>Aksi</TableHead>
               </TableRow>
@@ -230,15 +223,10 @@ const columns: Column<any>[] = [
                 paginatedData.map((s: any, idx: number) => (
                   <TableRow key={s.id}>
                     <TableCell>
-                      <input
-                        title="select All"
-                        type="checkbox"
-                        checked={selectedIds.includes(s.id)}
-                        onChange={() => handleCheckboxChange(s.id)}
-                      />
+                      {(currentPage - 1) * showCount + (idx + 1)}
                     </TableCell>
-                    <TableCell>{(currentPage - 1) * showCount + (idx + 1)}</TableCell>
                     <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell className="font-medium">{s.NIS}</TableCell>
                     <TableCell>{s.InductNumber}</TableCell>
                     <TableCell>{s.dorm}</TableCell>
                     <TableCell>{s.generation}</TableCell>
@@ -252,7 +240,25 @@ const columns: Column<any>[] = [
                       </span>
                     </TableCell>
                     <TableCell>{s.major}</TableCell>
-                    <TableCell>{dayjs(s.createdAt).format("DD MMM YYYY")}</TableCell>
+                    <TableCell>
+                      {/* 👇 tambahan kolom baru */}
+                      {s.tipeProgram ? (
+                        <span
+                          className={`${
+                            s.tipeProgram === "FULLDAY"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-purple-100 text-purple-700"
+                          } px-3 py-1 rounded-full text-xs font-medium`}
+                        >
+                          {s.tipeProgram}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {dayjs(s.createdAt).format("DD MMM YYYY")}
+                    </TableCell>
                     <TableCell className="flex gap-2 justify-center">
                       <Link href={`/dashboard/siswa/update/${s.id}`}>
                         <Button className="bg-blue-400 text-white">

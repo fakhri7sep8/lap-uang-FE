@@ -16,7 +16,7 @@ export interface CreateSppPayment {
 export const useSppPaymentModule = () => {
   // API calls
   const getPayments = async () => {
-    return await axiosClient.get("/spp-payment").then((res) => res.data);
+    return await axiosClient.get("/spp-payment/all").then((res) => res.data);
   };
 
   const getRecapSPPPayment = async () => {
@@ -53,50 +53,81 @@ export const useSppPaymentModule = () => {
     return await axiosClient.get(`/spp-payment/${id}`).then((res) => res.data);
   };
 
-  const useGetByStudentID = (studentID: string, year: string) => {
-    const { data, isLoading, isError, refetch } = useQuery({
-      queryKey: ["sppPayments", studentID],
-      queryFn: () => getByStudentID(studentID , year),
-      enabled: !!studentID,
-      select: (data) => data.data, // sesuai response BaseResponse -> { data: ... }
-    });
-    return { data, isLoading, isError,refetch };
-  };
+ const useGetByStudentID = (studentID: string, year: string) => {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["sppPayments", studentID, year],
+    queryFn: () => getByStudentID(studentID, year),
+    enabled: !!studentID && !!year, // hanya fetch kalau dua-duanya ada
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 1000 * 60 * 2, // data dianggap fresh selama 2 menit
+    gcTime: 1000 * 60 * 10,   // data disimpan di cache selama 10 menit
+    select: (res) => res.data,
+  });
+
+  const refreshByStudentID = () =>
+    queryClient.invalidateQueries({ queryKey: ["sppPayments", studentID, year] });
+
+  return { data, isLoading, isError, refetch, refreshByStudentID };
+};
+
 
   // React Query hooks
-  const useGetPayments = () => {
-    const { data, isLoading, isError } = useQuery({
-      queryKey: ["sppPayments"],
-      queryFn: getPayments,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      select: (data) => data.data, // sesuai response BaseResponse -> { data: ... }
-    });
-    return { data, isLoading, isError };
-  };
+ const useGetPayments = () => {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["sppPayments"],
+    queryFn: getPayments,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 1000 * 60 * 2, // data dianggap fresh 2 menit
+    gcTime: 1000 * 60 * 10,   // disimpan di cache 10 menit
+    select: (res) => res.data, // sesuai BaseResponse { data: ... }
+  });
+
+  const refreshPayments = () =>
+    queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
+
+  return { data, isLoading, isError, refetch, refreshPayments };
+};
 
   const useGetRecapPayments = () => {
-    const { data, isLoading, isError } = useQuery({
-      queryKey: ["RecapSPP-Payments"],
-      queryFn: getRecapSPPPayment,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      select: (data) => data.data, // sesuai response BaseResponse -> { data: ... }
-    });
-    return { data, isLoading, isError };
-  };
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["RecapSPP-Payments"],
+    queryFn: getRecapSPPPayment,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    staleTime: 1000 * 60 * 2, // data fresh selama 2 menit
+    gcTime: 1000 * 60 * 10,   // cache disimpan selama 10 menit
+    select: (res) => res.data,
+  });
+
+  const refreshRecapPayments = () =>
+    queryClient.invalidateQueries({ queryKey: ["RecapSPP-Payments"] });
+
+  return { data, isLoading, isError, refetch, refreshRecapPayments };
+};
 
 const useCreateSPPPayment = () => {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: (payload: CreateSppPayment) => createPayment(payload),
-    onSuccess: () => {
-      Swal.fire({
-        title: "Berhasil",
-        text: "Pembayaran SPP berhasil dibuat",
-        icon: "success",
-        confirmButtonText: "OK",
-      });
+    mutationFn: async ({ payload, silent }: { payload: CreateSppPayment; silent?: boolean }) => {
+      const res = await createPayment(payload);
+      return { res, silent };
+    },
+    onSuccess: (data) => {
+      if (!data.silent) {
+        Swal.fire({
+          title: "Berhasil",
+          text: "Pembayaran SPP berhasil dibuat",
+          icon: "success",
+        });
+      }
       queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
       setTimeout(() => {
         window.location.reload();
@@ -107,7 +138,6 @@ const useCreateSPPPayment = () => {
         title: "Error",
         text: "Pembayaran gagal dibuat: " + error.message,
         icon: "error",
-        confirmButtonText: "OK",
       });
     },
   });

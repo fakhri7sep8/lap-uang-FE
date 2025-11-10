@@ -27,6 +27,10 @@ import { usePaymentModule } from "@/hooks/use-payment";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatRupiah } from "@/lib/format-rupiah";
 import { Label } from "@/components/ui/label";
+import * as XLSX from "xlsx";
+import { readerExcel } from "@/helper/excelReader";
+import { FileDown, Send, Trash, Trash2Icon } from "lucide-react";
+import Swal from "sweetalert2";
 
 const bulanList = [
   "Juli",
@@ -61,9 +65,8 @@ const bulanListTable = [
 const InputPembayaranpage = () => {
   const [selectedSiswa, setSelectedSiswa] = useState<string>("");
   const [selectedKategori, setSelectedKategori] = useState<string>("spp");
-  const [selectIDCateogry, setIDCategory] = useState<string>(
-    "61c6b4d5-61e0-44d0-9319-f797d8df0dd6"
-  );
+  const [selectIDCateogry, setIDCategory] = useState<string>();
+  // "13dd5ec7-3c5b-4afb-b430-1ac1f1745c6d"
 
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
   const [methodPayments, setMethodPayments] = useState<string>("NORMAL");
@@ -78,7 +81,18 @@ const InputPembayaranpage = () => {
   const { useCreateSPPPayment, useGetByStudentID } = useSppPaymentModule();
   const { mutate: createSPPPayment, isPending: isPendingSpp } =
     useCreateSPPPayment();
-  const { data: sppPayments, refetch: refetchSppPayments } = useGetByStudentID(
+  const [dataSPP, setDataSPP] = useState<any[]>([]);
+  // 💰 Tentukan nominal SPP berdasarkan tipe program
+  const getNominalSPP = () => {
+    if (!siswa?.tipeProgram) return 2500000; // default
+    return siswa?.tipeProgram === "FULLDAY" ? 1000000 : 2500000;
+  };
+
+  const {
+    data: sppPayments,
+    refetch: refetchSppPayments,
+    isLoading: isLoadingSpp,
+  } = useGetByStudentID(
     siswaMQ?.find(
       (s: any) => s?.InductNumber === selectedSiswa || s?.name === selectedSiswa
     )?.id,
@@ -104,8 +118,212 @@ const InputPembayaranpage = () => {
     siswa?.id || "",
     selectIDCateogry || ""
   );
+  const downloadTemplateSPP = () => {
+    const ws = XLSX.utils.json_to_sheet([
+      {
+        Nama: "",
+        Bulan: "",
+        Nominal: "",
+        Status: "",
+      },
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template SPP");
+    XLSX.writeFile(wb, "Template-SPP.xlsx");
+  };
 
   const yearSelect = new Date().getFullYear();
+
+  const handleReadExcel = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    try {
+      const result = await readerExcel(event);
+      if (!result) return;
+
+      console.log("📘 [STEP 1] Data Excel Diterima:", result.json);
+
+      const siswaList = siswaMQ?.map((s: any) => s.name.toLowerCase().trim());
+      const invalidRows = result.json.filter(
+        (row: any) => !siswaList.includes((row.Nama || "").toLowerCase().trim())
+      );
+
+      if (invalidRows.length > 0) {
+        console.warn("❌ [STEP 1.5] Nama siswa tidak ditemukan:", invalidRows);
+        Swal.fire({
+          icon: "error",
+          title: "Nama siswa tidak ditemukan",
+          text: invalidRows.map((r: any) => r.Nama).join(", "),
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: "Mengimpor data...",
+        text: "Mohon tunggu, sedang memproses file Excel kamu",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const bulanOrder = [
+        "juli",
+        "agustus",
+        "september",
+        "oktober",
+        "november",
+        "desember",
+        "januari",
+        "februari",
+        "maret",
+        "april",
+        "mei",
+        "juni",
+      ];
+
+      const skippedRows: string[] = [];
+      const blockedRows: string[] = [];
+      const successRows: string[] = [];
+
+      console.log("📆 [STEP 2] Mulai proses import...");
+
+      // cache lunas sementara
+      const tempPaid = new Set<string>();
+
+      for (const row of result.json) {
+        const namaExcel = (row.Nama || "").trim().toLowerCase();
+        const bulanExcel = (row.Bulan || "").trim().toLowerCase();
+        const nominalExcel = Number(row.Nominal);
+        const statusExcel = (row.Status || "LUNAS").trim().toLowerCase();
+
+        const siswaMatch = siswaMQ.find(
+          (s: any) => s.name.toLowerCase() === namaExcel
+        );
+        if (!siswaMatch) continue;
+
+        const bulanIdx = bulanOrder.indexOf(bulanExcel);
+        if (bulanIdx === -1) continue;
+
+        const paymentsForStudent = sppPayments?.spp?.filter(
+          (p: any) => p.studentId === siswaMatch.id
+        );
+
+        // --- CEK BULAN SUDAH LUNAS (DB + TEMP) ---
+        const sudahLunas =
+          paymentsForStudent?.some(
+            (p: any) =>
+              p.month.toLowerCase() === bulanExcel && p.status === "LUNAS"
+          ) || tempPaid.has(`${siswaMatch.id}-${bulanExcel}`);
+
+        if (sudahLunas) {
+          skippedRows.push(`${row.Nama} - ${row.Bulan} (Sudah Lunas)`);
+          continue;
+        }
+
+        // --- CEK BULAN SEBELUMNYA ---
+        const bulanSebelumnya = bulanOrder.slice(0, bulanIdx);
+        const belumLunasSebelumnya = bulanSebelumnya.filter((bulan) => {
+          const paidInDB = paymentsForStudent?.some(
+            (p: any) => p.month.toLowerCase() === bulan && p.status === "LUNAS"
+          );
+          const paidInTemp = tempPaid.has(`${siswaMatch.id}-${bulan}`);
+          return !(paidInDB || paidInTemp);
+        });
+
+        if (belumLunasSebelumnya.length > 0) {
+          blockedRows.push(
+            `${row.Nama} - ${
+              row.Bulan
+            } (Belum bayar ${belumLunasSebelumnya.join(", ")})`
+          );
+          continue;
+        }
+
+        // --- ✅ SUDAH VALID, KIRIM ---
+        await createSPPPayment({
+          payload: {
+            studentId: siswaMatch.id,
+            month: capitalize(bulanExcel),
+            year: yearSPP,
+            nominal: nominalExcel,
+            status: statusExcel.toUpperCase(),
+          },
+          silent: true,
+        });
+
+        // simpan ke cache
+        tempPaid.add(`${siswaMatch.id}-${bulanExcel}`);
+        successRows.push(`${row.Nama} - ${row.Bulan}`);
+      }
+
+      console.log("📊 [STEP 3] Hasil akhir import:", {
+        successRows,
+        skippedRows,
+        blockedRows,
+      });
+
+      await refetchSppPayments();
+      Swal.close();
+
+      if (blockedRows.length > 0 || skippedRows.length > 0) {
+        let message = "";
+        if (skippedRows.length > 0) {
+          message += `❗ Dilewati karena sudah lunas:\n${skippedRows.join(
+            "\n"
+          )}\n\n`;
+        }
+        if (blockedRows.length > 0) {
+          message += `🚫 Tidak bisa diimpor karena bulan sebelumnya belum lunas:\n${blockedRows.join(
+            "\n"
+          )}`;
+        }
+
+        Swal.fire({
+          icon: "warning",
+          title: "Sebagian Data Tidak Diimpor",
+          text: message,
+          customClass: { popup: "text-left whitespace-pre-wrap" },
+        });
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Semua data pembayaran berhasil diimpor.",
+        });
+      }
+
+      event.target.value = "";
+    } catch (error) {
+      console.error("❌ [ERROR] Import Excel gagal:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Membaca File",
+        text: "Pastikan format Excel sesuai template (Nama, Bulan, Nominal, Status)!",
+      });
+    }
+  };
+
+  // ✨ Helper buat kapitalisasi bulan biar tampil rapi
+  function capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+
+  const handleImportClick = () => {
+    Swal.fire({
+      title: "Apakah anda sudah mengetahui cara menggunakan fitur ini?",
+      icon: "warning",
+      showCancelButton: true,
+      showDenyButton: true,
+      confirmButtonText: "Lanjut pilih file",
+      denyButtonText: "Download Format",
+      cancelButtonText: "Batal",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        document.getElementById("file")?.click();
+      } else if (result.isDenied) {
+        downloadTemplateSPP();
+      }
+    });
+  };
 
   // Cicilan input
   const handleCicilanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -135,16 +353,37 @@ const InputPembayaranpage = () => {
     }
   }, [siswa?.id, sppPayments, selectedKategori]);
 
+  useEffect(() => {
+    setSelectedMonths([]);
+    setTimeout(() => {
+      refetchSppPayments();
+    }, 50);
+  }, [siswa, yearSPP]);
+
   const toggleMonth = (month: string) => {
     setSelectedMonths((prev) => {
-      if (prev.includes(month)) {
-        const idx = bulanList.indexOf(month);
-        return prev.filter((m) => bulanList.indexOf(m) < idx);
-      } else {
-        const idx = bulanList.indexOf(month);
-        const bulanSebelumnya = bulanList[idx - 1];
+      const isSelected = prev.includes(month);
+      const idx = bulanList.indexOf(month);
+      const prevMonth = bulanList[idx - 1];
 
-        if (idx === 0 || prev.includes(bulanSebelumnya)) {
+      const prevPaid =
+        sppPayments?.spp?.some(
+          (p: any) =>
+            p.month === prevMonth &&
+            p.studentId === siswa?.id &&
+            p.status === "LUNAS"
+        ) || false;
+
+      // 🔒 Jika bulan ini auto dari prevPaid → gak bisa di-uncheck
+      if (isSelected && prevPaid) {
+        return prev;
+      }
+
+      // 🔁 toggle normal
+      if (isSelected) {
+        return prev.filter((m) => m !== month);
+      } else {
+        if (idx === 0 || prev.includes(prevMonth) || prevPaid) {
           return [...prev, month];
         }
         return prev;
@@ -164,11 +403,13 @@ const InputPembayaranpage = () => {
         );
         if (!existingSPP) {
           createSPPPayment({
-            studentId: siswa.id,
-            month,
-            year: yearSPP,
-            nominal: 2500000,
-            status: "LUNAS",
+            payload: {
+              studentId: siswa.id,
+              month,
+              year: yearSPP,
+              nominal: getNominalSPP(),
+              status: "LUNAS",
+            },
           });
         }
       });
@@ -179,6 +420,7 @@ const InputPembayaranpage = () => {
         method: methodPayments,
         year: new Date().getFullYear(),
         typeId: selectIDCateogry || "",
+        status: "LUNAS",
       };
 
       if (detailCategoryMQ?.data?.type === "NORMAL") {
@@ -202,10 +444,10 @@ const InputPembayaranpage = () => {
       ? (detailCategoryMQ?.data?.nominal || 0) -
         (existingPayment?.reduce((acc: any, p: any) => acc + p.amount, 0) || 0)
       : selectedKategori === "spp"
-      ? 2500000 * selectedMonths.length
+      ? getNominalSPP() * selectedMonths.length
       : detailCategoryMQ?.data?.nominal || 0;
 
-  // === Helper Status Pembayaran ===
+  // Fungsi helper
   const getStatusPembayaran = () => {
     if (selectedKategori === "spp") {
       const totalBulan = bulanList.length;
@@ -229,6 +471,10 @@ const InputPembayaranpage = () => {
 
     return existingPayment?.length > 0 ? "LUNAS" : "BELUM BAYAR";
   };
+
+  // === Hitung apakah semua lunas ===
+  const statusPembayaran = getStatusPembayaran();
+  const isAllLunas = statusPembayaran === "LUNAS";
 
   return (
     <div className="w-full flex justify-center items-center p-8">
@@ -299,6 +545,7 @@ const InputPembayaranpage = () => {
           {/* SPP */}
           {selectedKategori === "spp" && (
             <div className="flex flex-col gap-4">
+              {/* Tahun Ajaran */}
               <div className="flex w-full flex-col gap-2 mb-4">
                 <label className="text-sm font-medium">Tahun Ajaran</label>
                 <Select
@@ -316,118 +563,187 @@ const InputPembayaranpage = () => {
                   <SelectContent className="bg-gray-50 border-slate-300">
                     <SelectGroup>
                       <SelectLabel>Kategori</SelectLabel>
-                      <SelectItem
-                        value={`${yearSelect}/${yearSelect + 1}`}
-                      >{`${yearSelect}/${yearSelect + 1}`}</SelectItem>
-                      <SelectItem
-                        value={`${yearSelect + 1}/${yearSelect + 2}`}
-                      >{`${yearSelect + 1}/${yearSelect + 2}`}</SelectItem>
-                      <SelectItem
-                        value={`${yearSelect + 2}/${yearSelect + 3}`}
-                      >{`${yearSelect + 2}/${yearSelect + 3}`}</SelectItem>
-                      <SelectItem
-                        value={`${yearSelect + 3}/${yearSelect + 4}`}
-                      >{`${yearSelect + 3}/${yearSelect + 4}`}</SelectItem>
-                      <SelectItem
-                        value={`${yearSelect + 4}/${yearSelect + 5}`}
-                      >{`${yearSelect + 4}/${yearSelect + 5}`}</SelectItem>
-                      <SelectItem
-                        value={`${yearSelect + 5}/${yearSelect + 6}`}
-                      >{`${yearSelect + 5}/${yearSelect + 6}`}</SelectItem>
+                      {[0, 1, 2, 3, 4, 5].map((i) => (
+                        <SelectItem
+                          key={i}
+                          value={`${yearSelect + i}/${yearSelect + i + 1}`}
+                        >{`${yearSelect + i}/${
+                          yearSelect + i + 1
+                        }`}</SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
+
               {/* History SPP */}
-              <Table className="w-full border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <TableHeader>
-                  <TableRow className="bg-slate-50">
-                    <TableHead className="text-center font-semibold text-slate-700">
-                      Bulan
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-slate-700">
-                      Nominal
-                    </TableHead>
-                    <TableHead className="text-center font-semibold text-slate-700">
-                      Status
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sppPayments?.spp
-                    ?.slice()
-                    ?.sort(
-                      (a: any, b: any) =>
-                        bulanListTable.indexOf(a.month) -
-                        bulanListTable.indexOf(b.month)
-                    )
-                    ?.map((item: any, i: number) => (
-                      <TableRow
+              <div className="w-full border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white">
+                {isLoadingSpp ? (
+                  <div className="p-5 space-y-4">
+                    {/* Skeleton Header */}
+                    <div className="flex justify-between mb-2">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className="h-5 w-24 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded-md animate-pulse"
+                        ></div>
+                      ))}
+                    </div>
+
+                    {/* Skeleton Rows */}
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div
                         key={i}
-                        className="hover:bg-slate-50 transition-colors"
+                        className="flex justify-between items-center py-3 border-t border-slate-100"
                       >
-                        <TableCell className="text-center">
-                          {item.month}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          Rp {item.nominal.toLocaleString("id-ID")}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <span className="px-3 py-1 rounded-full text-sm font-medium text-green-700">
-                            {item.status}
-                          </span>
-                        </TableCell>
-                      </TableRow>
+                        {Array.from({ length: 3 }).map((_, j) => (
+                          <div
+                            key={j}
+                            className="h-4 w-24 bg-gradient-to-r from-slate-200 via-slate-100 to-slate-200 rounded-md animate-pulse"
+                          ></div>
+                        ))}
+                      </div>
                     ))}
-                </TableBody>
-              </Table>
+                  </div>
+                ) : (
+                  <Table className="w-full">
+                    <TableHeader>
+                      <TableRow className="bg-slate-50">
+                        <TableHead className="text-center font-semibold text-slate-700">
+                          Bulan
+                        </TableHead>
+                        <TableHead className="text-center font-semibold text-slate-700">
+                          Nominal
+                        </TableHead>
+                        <TableHead className="text-center font-semibold text-slate-700">
+                          Status
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {sppPayments?.spp
+                        ?.slice()
+                        ?.sort(
+                          (a: any, b: any) =>
+                            bulanListTable.indexOf(a.month) -
+                            bulanListTable.indexOf(b.month)
+                        )
+                        ?.map((item: any, i: number) => (
+                          <TableRow
+                            key={i}
+                            className="hover:bg-slate-50 transition-colors"
+                          >
+                            <TableCell className="text-center">
+                              {item.month}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              Rp {item.nominal.toLocaleString("id-ID")}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <span
+                                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                                  item.status === "LUNAS"
+                                    ? "bg-green-100 text-green-700"
+                                    : "bg-yellow-100 text-yellow-700"
+                                }`}
+                              >
+                                {item.status}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </div>
 
               {/* Pilih bulan */}
-              <div className="grid grid-cols-3 gap-2">
-                {bulanList.map((bulan, idx) => {
-                  const sudahBayar = sppPayments?.spp?.some(
-                    (s: any) =>
-                      s.month === bulan &&
-                      s.studentId === siswa?.id &&
-                      s.status === "LUNAS"
-                  );
+              <div className="flex flex-col gap-3">
+                {/* Tombol Select All */}
+                <div className="flex items-center gap-2 mb-2">
+                  <Checkbox
+                    checked={
+                      selectedMonths.length ===
+                      bulanList.filter(
+                        (bulan) =>
+                          !sppPayments?.spp?.some(
+                            (s: any) =>
+                              s.month === bulan &&
+                              s.studentId === siswa?.id &&
+                              s.status === "LUNAS"
+                          )
+                      ).length
+                    }
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        // Pilih semua bulan yang belum lunas
+                        const belumLunas = bulanList.filter(
+                          (bulan) =>
+                            !sppPayments?.spp?.some(
+                              (s: any) =>
+                                s.month === bulan &&
+                                s.studentId === siswa?.id &&
+                                s.status === "LUNAS"
+                            )
+                        );
+                        setSelectedMonths(belumLunas);
+                      } else {
+                        // Kosongkan semua pilihan
+                        setSelectedMonths([]);
+                      }
+                    }}
+                  />
+                  <Label className="text-sm font-medium">
+                    Pilih Semua Bulan
+                  </Label>
+                </div>
 
-                  const bulanSebelumnya = bulanList[idx - 1];
-                  const harusDisable =
-                    sudahBayar ||
-                    (idx > 0 &&
-                      !selectedMonths.includes(bulanSebelumnya) &&
-                      !sppPayments?.spp?.some(
-                        (s: any) =>
-                          s.month === bulanSebelumnya &&
-                          s.studentId === siswa?.id &&
-                          s.status === "LUNAS"
-                      ));
+                {/* Daftar bulan */}
+                <div className="grid grid-cols-3 gap-2">
+                  {bulanList.map((bulan, idx) => {
+                    const sudahBayar = sppPayments?.spp?.some(
+                      (s: any) =>
+                        s.month === bulan &&
+                        s.studentId === siswa?.id &&
+                        s.status === "LUNAS"
+                    );
 
-                  return (
-                    <label
-                      key={bulan}
-                      className={`flex items-center gap-2 border p-2 rounded-md transition-colors ${
-                        sudahBayar
-                          ? "bg-green-100 border-green-400 text-green-700"
-                          : ""
-                      }${harusDisable && !sudahBayar ? "opacity-50" : ""}`}
-                    >
-                      <Checkbox
-                        disabled={harusDisable}
-                        checked={sudahBayar || selectedMonths.includes(bulan)}
-                        onCheckedChange={() => toggleMonth(bulan)}
-                        className={`${
+                    const bulanSebelumnya = bulanList[idx - 1];
+                    const harusDisable =
+                      sudahBayar ||
+                      (idx > 0 &&
+                        !selectedMonths.includes(bulanSebelumnya) &&
+                        !sppPayments?.spp?.some(
+                          (s: any) =>
+                            s.month === bulanSebelumnya &&
+                            s.studentId === siswa?.id &&
+                            s.status === "LUNAS"
+                        ));
+
+                    return (
+                      <label
+                        key={bulan}
+                        className={`flex items-center gap-2 border p-2 rounded-md transition-colors ${
                           sudahBayar
-                            ? "data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 data-[state=checked]:text-white"
+                            ? "bg-green-100 border-green-400 text-green-700"
                             : ""
-                        }`}
-                      />
-
-                      {bulan}
-                    </label>
-                  );
-                })}
+                        }${harusDisable && !sudahBayar ? "opacity-50" : ""}`}
+                      >
+                        <Checkbox
+                          disabled={harusDisable}
+                          checked={sudahBayar || selectedMonths.includes(bulan)}
+                          onCheckedChange={() => toggleMonth(bulan)}
+                          className={`${
+                            sudahBayar
+                              ? "data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 data-[state=checked]:text-white"
+                              : ""
+                          }`}
+                        />
+                        {bulan}
+                      </label>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -497,17 +813,54 @@ const InputPembayaranpage = () => {
           </div>
 
           {/* Button */}
-          <div className="flex justify-end gap-4 mt-4">
-            <button className="bg-red-600 text-white px-4 py-2 rounded-md">
-              Remove
-            </button>
+          <div className="flex flex-col items-end gap-4 mt-4">
             <button
               type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={isSubmitting || getStatusPembayaran() === "LUNAS"}
+              disabled={isSubmitting || isAllLunas}
+              className={`w-full py-5 border text-lg flex items-center justify-center gap-2 rounded-xl transition-all
+    ${
+      isSubmitting || isAllLunas
+        ? "cursor-not-allowed bg-gray-200 text-gray-600 border-gray-300"
+        : "cursor-pointer border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
+    }`}
             >
-              {isSubmitting ? "Menyimpan..." : "Simpan"}
+              <Send size={24} />
+              {isSubmitting
+                ? "Proses menyimpan data siswa..."
+                : isAllLunas
+                ? "Semua sudah lunas"
+                : "Simpan"}
             </button>
+
+            <button
+              type="button"
+              onClick={downloadTemplateSPP}
+              className="w-full py-5 hover:bg-blue-500 hover:text-white transition-all cursor-pointer border border-blue-500 text-blue-500 text-lg flex items-center justify-center gap-2 rounded-xl"
+            >
+              <FileDown size={24} />
+              Download format excel
+            </button>
+
+            {/* Tombol Impor dari Excel */}
+            {/* Tombol Impor dari Excel */}
+            <button
+              type="button"
+              onClick={handleImportClick}
+              className="w-full py-5 hover:bg-purple-500 hover:text-white transition-all cursor-pointer border border-purple-500 text-purple-500 text-lg flex items-center justify-center gap-2 rounded-xl"
+            >
+              <FileDown size={24} />
+              Impor dari Excel
+            </button>
+
+            {/* Input file yang hidden */}
+            <input
+              title="ok"
+              id="file"
+              type="file"
+              accept=".xlsx, .xls"
+              className="hidden"
+              onChange={handleReadExcel}
+            />
           </div>
         </form>
       </section>
