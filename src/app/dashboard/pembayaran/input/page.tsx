@@ -132,7 +132,10 @@ const InputPembayaranpage = () => {
     XLSX.writeFile(wb, "Template-SPP.xlsx");
   };
 
-  const yearSelect = new Date().getFullYear();
+  const startYear = siswa?.InductYear || new Date().getFullYear(); // misal siswa masuk 2024
+  const yearOptions = [0, 1, 2].map(
+    (i) => `${startYear + i}/${startYear + i + 1}`
+  );
 
   const handleReadExcel = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -461,15 +464,30 @@ const InputPembayaranpage = () => {
 
     if (detailCategoryMQ?.data?.type === "INSTALLMENT") {
       const sudahDibayar =
-        existingPayment?.reduce((acc: number, p: any) => acc + p.amount, 0) ||
-        0;
+        existingPayment && Array.isArray(existingPayment)
+          ? existingPayment.reduce((acc: number, p: any) => acc + p.amount, 0)
+          : existingPayment?.amount || 0;
+
       if (sudahDibayar >= (detailCategoryMQ?.data?.nominal || 0))
         return "LUNAS";
       if (sudahDibayar > 0) return "BELUM LUNAS";
       return "BELUM BAYAR";
     }
 
-    return existingPayment?.length > 0 ? "LUNAS" : "BELUM BAYAR";
+    // 🟢 NORMAL
+    if (detailCategoryMQ?.data?.type === "NORMAL") {
+      const payments = Array.isArray(existingPayment)
+        ? existingPayment
+        : existingPayment
+        ? [existingPayment]
+        : [];
+
+      if (payments.some((p: any) => p.status === "LUNAS")) return "LUNAS";
+      if (payments.length > 0) return "BELUM LUNAS";
+      return "BELUM BAYAR";
+    }
+
+    return "BELUM BAYAR";
   };
 
   // === Hitung apakah semua lunas ===
@@ -518,10 +536,18 @@ const InputPembayaranpage = () => {
               Kategori Pembayaran
             </label>
             <Select
-              defaultValue="spp"
+              value={
+                selectedKategori === "spp" ? "spp" : selectIDCateogry || ""
+              }
               onValueChange={(val) => {
-                setSelectedKategori(val !== "spp" ? "" : "spp");
-                setIDCategory(val === "spp" ? "" : val);
+                // Reset kategori kalau pilih siswa baru
+                if (val === "spp") {
+                  setSelectedKategori("spp");
+                  setIDCategory(undefined);
+                } else {
+                  setSelectedKategori("");
+                  setIDCategory(val);
+                }
                 setSelectedMonths([]);
               }}
             >
@@ -532,11 +558,17 @@ const InputPembayaranpage = () => {
                 <SelectGroup>
                   <SelectLabel>Kategori</SelectLabel>
                   <SelectItem value="spp">SPP</SelectItem>
-                  {categoryMQ?.map((c: any) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
+                  {categoryMQ
+                    ?.filter((c: any) =>
+                      siswa
+                        ? c.students.some((s: any) => s.id === siswa.id)
+                        : true
+                    )
+                    .map((c: any) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
                 </SelectGroup>
               </SelectContent>
             </Select>
@@ -549,7 +581,7 @@ const InputPembayaranpage = () => {
               <div className="flex w-full flex-col gap-2 mb-4">
                 <label className="text-sm font-medium">Tahun Ajaran</label>
                 <Select
-                  defaultValue={`${yearSelect}/${yearSelect + 1}`}
+                  defaultValue={yearOptions[0]}
                   onValueChange={(val) => {
                     setYearSPP(val);
                     setTimeout(() => {
@@ -558,18 +590,15 @@ const InputPembayaranpage = () => {
                   }}
                 >
                   <SelectTrigger className="w-full py-6">
-                    <SelectValue placeholder="Pilih kategori" />
+                    <SelectValue placeholder="Pilih tahun ajaran" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-50 border-slate-300">
                     <SelectGroup>
-                      <SelectLabel>Kategori</SelectLabel>
-                      {[0, 1, 2, 3, 4, 5].map((i) => (
-                        <SelectItem
-                          key={i}
-                          value={`${yearSelect + i}/${yearSelect + i + 1}`}
-                        >{`${yearSelect + i}/${
-                          yearSelect + i + 1
-                        }`}</SelectItem>
+                      <SelectLabel>Tahun Ajaran</SelectLabel>
+                      {yearOptions.map((val, idx) => (
+                        <SelectItem key={idx} value={val}>
+                          {val}
+                        </SelectItem>
                       ))}
                     </SelectGroup>
                   </SelectContent>

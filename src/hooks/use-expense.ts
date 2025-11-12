@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 // type interface untuk create / update expense
 export interface CreateExpense {
   categoryId: string;
-  date: string; // format ISO string "2025-09-10T00:00:00Z"
+  date: string; 
   amount: number;
   description: string;
 }

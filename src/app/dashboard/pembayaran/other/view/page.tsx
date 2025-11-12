@@ -23,6 +23,7 @@ import { CustomPagination } from "@/components/fragments/dashboard/custom-pagina
 import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
 import { usePaymentModule } from "@/hooks/use-payment";
 import SearchDataTable from "@/components/fragments/dashboard/search-data-table";
+import { AnimatePresence } from "framer-motion";
 
 const DataSelainSpp = () => {
   const [showCount, setShowCount] = useState<any>(10);
@@ -54,12 +55,6 @@ const DataSelainSpp = () => {
   const selectedCategoryType: any = categories.find(
     (c: any) => c.id === selectedCategory?.id
   )?.type;
-
-  // const getPaymentStatus = (amount: any, nominal: any) => {
-  //   if (amount >= nominal) return "LUNAS";
-  //   if (amount === 0) return "BELUM BAYAR";
-  //   return "BELUM LUNAS";
-  // };
 
   const filteredData: any[] = recap.filter((p: any) =>
     searchTerm ? p.name.toLowerCase().includes(searchTerm.toLowerCase()) : true
@@ -348,20 +343,21 @@ const DataSelainSpp = () => {
                             .toLowerCase()
                             .replace(/[\s_]+/g, "");
 
-                        const payment = p.payments?.find(
-                          (pmt: any) =>
-                            normalize(pmt.category) === normalize(c.name)
+                        const studentInCategory = c.students?.find(
+                          (s: any) => normalize(s.name) === normalize(p.name)
                         );
+
+                        const status = studentInCategory?.paymentStatus || null;
 
                         return (
                           <TableCell key={c.id}>
-                            {payment ? (
+                            {status ? (
                               <span
                                 className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                                  payment.status
+                                  status
                                 )}`}
                               >
-                                {payment.status}
+                                {status}
                               </span>
                             ) : (
                               <span className="inline-flex items-center justify-center w-28 px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 shadow-inner hover:scale-105 transition-all duration-150">
