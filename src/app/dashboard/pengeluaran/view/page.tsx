@@ -20,9 +20,47 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Download } from 'lucide-react'
 import dayjs from 'dayjs'
-import { useExpenseModule } from '@/hooks/use-expense'
+
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+// import { useExpenseModule } from '@/hooks/expense/useExpense'
+
+const dummyExpenses = {
+  data: [
+    {
+      id: 1,
+      description: 'Pembelian ATK untuk kantor',
+      jenisPengeluaran: 'operasional',
+      category: { name: 'Operasional', periode: '2025' },
+      amount: 1500000,
+      createdAt: '2025-01-10T08:30:00Z'
+    },
+    {
+      id: 2,
+      description: 'Pembangunan ruang kelas baru',
+      jenisPengeluaran: 'pembangunan',
+      category: { name: 'Pembangunan', periode: '2024/2025' },
+      amount: 25000000,
+      createdAt: '2024-11-05T10:00:00Z'
+    },
+    {
+      id: 3,
+      description: 'Perbaikan sarana olahraga',
+      jenisPengeluaran: 'sarana',
+      category: { name: 'Sarana', periode: '2025' },
+      amount: 5000000,
+      createdAt: '2025-03-18T14:15:00Z'
+    },
+    {
+      id: 4,
+      description: 'Biaya listrik dan air',
+      jenisPengeluaran: 'operasional',
+      category: { name: 'Operasional', periode: '2025' },
+      amount: 1200000,
+      createdAt: '2025-02-02T09:00:00Z'
+    }
+  ]
+}
 
 export default function PengeluaranViewPage () {
   const [showFilter, setShowFilter] = useState(false)
@@ -35,8 +73,10 @@ export default function PengeluaranViewPage () {
   const [previewURL, setPreviewURL] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
 
-  const { useGetExpenses } = useExpenseModule()
-  const { data: expenses } = useGetExpenses()
+  // pakai dummy data sementara
+  // const { useGetExpense } = useExpenseModule()
+  // const { data: expenses } = useGetExpense()
+  const expenses = dummyExpenses.data
 
   // Filter & Search
   const filteredData = expenses

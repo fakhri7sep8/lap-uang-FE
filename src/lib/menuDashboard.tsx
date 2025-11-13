@@ -125,7 +125,7 @@ export function generateMenuDashboard({
         {
           name: 'Lain',
           icon: <History className='mr-2' size={16} />,
-          link: '/dashboard/pengeluaran/lain_lain',
+          link: '/dashboard/pengeluaran/view',
           children: null
         },
 

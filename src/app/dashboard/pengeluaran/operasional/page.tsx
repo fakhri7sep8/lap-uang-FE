@@ -3,139 +3,348 @@
 import { useState, useMemo } from 'react'
 import { GraduationCap, Users } from 'lucide-react'
 import CardInformation from '@/components/fragments/dashboard/card-information'
-import TablePengeluaran from '@/components/fragments/pengeluaran/table'
-import SearchInput from '@/components/fragments/pengeluaran/seraach_andinput'
-import { useExpenseModule } from '@/hooks/expense/useExpense'
+import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
+import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
+import { AnimatePresence, motion } from 'framer-motion'
+import ExportPDFButton from '@/components/fragments/ExportPDFButton'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Download } from 'lucide-react'
+import dayjs from 'dayjs'
 
-const OperasionalPage = () => {
-  const [activeTab, setActiveTab] = useState('Pembangunan')
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
+
+const dummyExpenses = {
+  data: [
+    {
+      id: 1,
+      description: 'Pembelian ATK untuk kantor',
+      jenisPengeluaran: 'operasional',
+      PenanggungJawab: 'Bapak Andi',
+      category: { name: 'Operasional', periode: '2025' },
+      amount: 1500000,
+      createdAt: '2025-01-10T08:30:00Z'
+    },
+    {
+      id: 2,
+      description: 'Pembangunan ruang kelas baru',
+      jenisPengeluaran: 'pembangunan',
+      PenanggungJawab: 'Ibu Sari',
+      category: { name: 'Pembangunan', periode: '2024/2025' },
+      amount: 25000000,
+      createdAt: '2024-11-05T10:00:00Z'
+    },
+    {
+      id: 3,
+      description: 'Perbaikan sarana olahraga',
+      jenisPengeluaran: 'sarana',
+      PenanggungJawab: 'Pak Budi',
+      category: { name: 'Sarana', periode: '2025' },
+      amount: 5000000,
+      createdAt: '2025-03-18T14:15:00Z'
+    },
+    {
+      id: 4,
+      description: 'Biaya listrik dan air',
+      jenisPengeluaran: 'operasional',
+      PenanggungJawab: 'Bapak Andi',
+      category: { name: 'Operasional', periode: '2025' },
+      amount: 1200000,
+      createdAt: '2025-02-02T09:00:00Z'
+    }
+  ]
+}
+
+export default function OperasionalPage () {
+  const [showFilter, setShowFilter] = useState(false)
+  const [showCount, setShowCount] = useState(10)
   const [searchTerm, setSearchTerm] = useState('')
+  const [activeTab, setActiveTab] = useState('Pembangunan')
   const [currentPage, setCurrentPage] = useState(1)
+
+  // preview state for PDF
+  const [previewURL, setPreviewURL] = useState<string | null>(null)
+  const [showPreview, setShowPreview] = useState(false)
 
   const tabs = ['Pembangunan', 'Sarana']
 
-  // ✅ Ambil data dari API pakai TanStack Query
-  const { useGetExpense } = useExpenseModule()
-  const { data: expenses, isLoading, isError } = useGetExpense()
-console.log(expenses);
-  // ✅ Fallback kalau belum ada data
+  // pakai dummy data sementara (sama struktur seperti view page)
+  const expenses = dummyExpenses.data
 
-
-  // ✅ Filter data berdasarkan pencarian dan tab aktif
-  const filteredData = useMemo(() => {
-    const filtered = expenses?.data?.filter((item: any) => {
-      const nama = item?.description?.toLowerCase() || ''
-      const penanggung = item?.PenanggungJawab?.toLowerCase() || ''
-      const kategori = item?.category?.name?.toLowerCase() || ''
-      const search = searchTerm?.toLowerCase()
-
-      const matchSearch =
-        nama.includes(search) ||
-        penanggung.includes(search) ||
-        kategori.includes(search)
-
-      const matchTab =
-        activeTab === 'Pembangunan'
-          ? kategori === 'operasional' || kategori === 'pembangunan'
-          : kategori === 'sarana' || kategori === 'operasional'
-
-      return matchSearch && matchTab
+  // Filter & Search (sesuai tab aktif & search)
+  const filteredData = expenses
+    ?.filter((item: any) => {
+      const q = searchTerm?.toLowerCase() || ''
+      return (
+        (item.description || '').toLowerCase().includes(q) ||
+        (item.PenanggungJawab || '').toLowerCase().includes(q) ||
+        (item.category?.name || '').toLowerCase().includes(q)
+      )
+    })
+    .filter((item: any) => {
+      const kategori = (item.category?.name || '').toLowerCase()
+      if (activeTab === 'Pembangunan') {
+        return kategori === 'operasional' || kategori === 'pembangunan' || kategori === 'operasional'
+      }
+      // Sarana tab
+      return kategori === 'sarana' || kategori === 'operasional'
     })
 
-    return filtered
-  }, [expenses, searchTerm, activeTab])
+  const totalData = filteredData?.length ?? 0
+  const totalJumlah =
+    filteredData?.reduce((acc: number, curr: any) => acc + (curr.amount || 0), 0) ?? 0
+
+  const totalPages = Math.max(1, Math.ceil(totalData / showCount))
+  const paginated = useMemo(() => {
+    return filteredData?.slice(
+      (currentPage - 1) * showCount,
+      currentPage * showCount
+    )
+  }, [filteredData, currentPage, showCount])
+
+  const generatePDFPreview = (data: any[], summary: any) => {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+
+    doc.setFontSize(16)
+    doc.text('LAPORAN PENGELUARAN', 105, 15, { align: 'center' })
+    doc.setFontSize(11)
+    doc.text(`Tanggal Export: ${summary.tanggalExport}`, 14, 25)
+    doc.text(`Total Data: ${summary.totalData}`, 14, 31)
+    doc.text(
+      `Total Jumlah: Rp ${summary.totalJumlah.toLocaleString('id-ID')}`,
+      14,
+      37
+    )
+
+    doc.line(14, 40, 196, 40)
+
+    const tableColumn = [
+      'No',
+      'Keterangan',
+      'Jenis',
+      'Periode',
+      'Nominal (Rp)',
+      'Tanggal'
+    ]
+
+    const tableRows = data.map((item, index) => [
+      index + 1,
+      item.description,
+      item.category?.name || '-',
+      item.category?.periode || '-',
+      new Intl.NumberFormat('id-ID').format(item.amount || 0),
+      dayjs(item.createdAt).format('DD/MM/YYYY')
+    ])
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 45,
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: {
+        fillColor: [66, 139, 202],
+        textColor: 255,
+        halign: 'center'
+      },
+      alternateRowStyles: { fillColor: [240, 240, 240] }
+    })
+
+    const finalY = (doc as any).lastAutoTable.finalY + 10
+    doc.setFontSize(10)
+    doc.text('Mengetahui,', 14, finalY + 8)
+    doc.text('_____________________', 14, finalY + 25)
+    doc.text('Bendahara', 14, finalY + 32)
+
+    const pdfBlob = doc.output('blob')
+    const url = URL.createObjectURL(pdfBlob)
+    return { doc, url }
+  }
+
+  const handleExportPDF = () => {
+    const data = filteredData || []
+    const summary = {
+      totalData,
+      totalJumlah,
+      tanggalExport: dayjs().format('DD MMMM YYYY HH:mm')
+    }
+
+    if (!data.length) {
+      alert('Tidak ada data untuk diexport.')
+      return
+    }
+
+    const { url } = generatePDFPreview(data, summary)
+    setPreviewURL(url)
+    setShowPreview(true)
+  }
+
+  const handleDownloadPDF = () => {
+    const data = filteredData || []
+    const summary = {
+      totalData,
+      totalJumlah,
+      tanggalExport: dayjs().format('DD MMMM YYYY HH:mm')
+    }
+    const { doc } = generatePDFPreview(data, summary)
+    doc.save(`laporan-pengeluaran-${dayjs().format('YYYY-MM-DD')}.pdf`)
+    setShowPreview(false)
+  }
 
   return (
-    <div className='min-h-screen flex flex-col gap-10 items-center py-7'>
-      {/* ====== INFO CARD ====== */}
-      <section className='w-full grid grid-cols-2 gap-4'>
+    <div className='min-h-full bg-gray-100 flex flex-col items-center py-8 w-full'>
+      {/* Info Cards */}
+      <div className='w-full grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
         <CardInformation
           color='blue'
           title='Total Data'
-          value={expenses?.length}
-          icon={<GraduationCap size={32} className='text-blue-500' />}
+          value={totalData}
+          icon={<GraduationCap size={40} className='text-blue-400' />}
         />
         <CardInformation
           color='green'
-          title='Data Terfilter'
-          value={filteredData?.length}
-          icon={<Users size={32} className='text-green-500' />}
+          title='Total Jumlah'
+          value={'Rp. ' + totalJumlah.toLocaleString('id-ID')}
+          icon={<Users size={40} className='text-green-400' />}
         />
-      </section>
+      </div>
 
-      {/* ====== TABEL DATA ====== */}
-      <div className='w-full max-w-6xl rounded-3xl'>
-        <div className='px-3'>
-          <h1 className='text-2xl font-semibold text-gray-800 mb-2'>
-            Data Pengeluaran Sekolah
-          </h1>
-          <p className='text-gray-500 mb-6'>
-            Data pengeluaran operasional dan sarana sekolah.
-          </p>
-        </div>
+      {/* Search & Filter (sama seperti view page) */}
+      <div className='w-full mb-4'>
+        <SearchDataTable
+          title='Managemet Pengeluaran'
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          setShowFilter={setShowFilter}
+          setShowCount={setShowCount}
+          type='normal'
+        />
+      </div>
 
-        {/* ====== Tabs ====== */}
-        <div className='flex flex-col gap-2 p-2'>
-          <div className='flex gap-2 mb-[-7]'>
-            {tabs.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-3 font-medium rounded-t-xl transition-all duration-300 shadow-sm ${
-                  activeTab === tab
-                    ? 'bg-white text-gray-800 shadow-md'
-                    : 'bg-[#dfe6f4] text-gray-600 hover:bg-[#e6ebf7]'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
+      {/* Tombol Export */}
+      <div className='w-full flex justify-end mb-4 px-2'>
+        <ExportPDFButton onExport={handleExportPDF} />
+      </div>
 
-          {/* ====== Main Table Card ====== */}
-          <div className='bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl'>
-            {/* Search */}
-            <SearchInput
-              onChange={(e: any) => setSearchTerm(e.target.value)}
-              searchTerm={searchTerm}
-            />
+      {/* Table */}
+      <div className='w-full'>
+        <div className='rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4'>
+          <Table className='w-full text-gray-700'>
+            <TableHeader className='text-sm font-semibold text-center'>
+              <TableRow>
+                <TableHead>No</TableHead>
+                <TableHead>Keterangan</TableHead>
+                <TableHead>Jenis Pengeluaran</TableHead>
+                <TableHead>Periode</TableHead>
+                <TableHead>Nominal</TableHead>
+                <TableHead>Tanggal</TableHead>
+                <TableHead>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className='text-sm divide-y divide-gray-200 text-center'>
+              {paginated?.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className='py-8 text-gray-400'>
+                    Tidak ada data yang terbaca
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginated?.map((s: any, idx: number) => (
+                  <TableRow key={s.id}>
+                    <TableCell>{(currentPage - 1) * showCount + (idx + 1)}</TableCell>
+                    <TableCell className='font-medium'>{s.description}</TableCell>
+                    <TableCell>{s.category?.name}</TableCell>
+                    <TableCell>{s.category?.periode}</TableCell>
+                    <TableCell>
+                      {new Intl.NumberFormat('id-ID', {
+                        style: 'currency',
+                        currency: 'IDR'
+                      }).format(s.amount)}
+                    </TableCell>
+                    <TableCell>{dayjs(s.createdAt).format('DD MMM YYYY')}</TableCell>
+                    <TableCell className='flex gap-2 justify-center'>
+                      <Link href={`/dashboard/pengeluaran/category/update/${s.id}`}>
+                        <Button className='bg-blue-400 text-white'>
+                          <Download />
+                        </Button>
+                      </Link>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
 
-            {/* Table */}
-            {isLoading ? (
-              <p className='text-center text-gray-500 py-6'>Memuat data...</p>
-            ) : isError ? (
-              <p className='text-center text-red-500 py-6'>
-                Gagal memuat data pengeluaran.
-              </p>
-            ) : filteredData.length === 0 ? (
-              <p className='text-center text-gray-400 py-6'>
-                Tidak ada data ditemukan.
-              </p>
-            ) : (
-              <TablePengeluaran title='Operasional' data={filteredData} />
-            )}
-
-            {/* Pagination */}
-            <div className='flex justify-center items-center gap-2 mt-6'>
-              {[1, 2, 3, 4, 5, 6].map(num => (
-                <button
-                  key={num}
-                  onClick={() => setCurrentPage(num)}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium ${
-                    currentPage === num
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white border-gray-300 text-gray-600 hover:bg-blue-50'
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
+          {totalPages > 1 && (
+            <div className='px-3 mt-4'>
+              <CustomPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
             </div>
-          </div>
+          )}
         </div>
       </div>
+
+      {/* Preview modal sama seperti view page */}
+      <AnimatePresence>
+        {showPreview && previewURL && (
+          <motion.div
+            className='fixed inset-0 bg-black/60 z-50 flex justify-center items-center'
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className='bg-white rounded-xl shadow-lg w-[90%] md:w-[80%] lg:w-[70%] h-[85%] flex flex-col overflow-hidden'
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 200, damping: 20 }}
+            >
+              <div className='flex justify-between items-center px-6 py-4 border-b'>
+                <h2 className='text-lg font-semibold'>Preview Laporan Pengeluaran</h2>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className='text-gray-500 hover:text-gray-700 text-2xl leading-none'
+                  title='Tutup preview'
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className='flex-1 bg-gray-50'>
+                <iframe
+                  src={previewURL}
+                  className='w-full h-full border-none rounded-b-xl'
+                  title='PDF Preview'
+                />
+              </div>
+
+              <div className='flex justify-end gap-3 px-6 py-4 border-t bg-white'>
+                <Button variant='outline' onClick={() => setShowPreview(false)}>
+                  Batal
+                </Button>
+                <Button
+                  className='bg-red-500 hover:bg-red-600 text-white'
+                  onClick={handleDownloadPDF}
+                >
+                  Download PDF
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
-
-export default OperasionalPage
