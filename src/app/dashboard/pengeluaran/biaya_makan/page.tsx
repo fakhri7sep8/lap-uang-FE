@@ -6,6 +6,7 @@ import { GraduationCap, SquarePen, Trash2, Users } from "lucide-react";
 import TablePengeluaran from "@/components/fragments/pengeluaran/table";
 import TablePengeluaran2 from "@/components/fragments/pengeluaran/table2";
 import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
+import SearchInput2 from "@/components/fragments/pengeluaran/seraach_andinput2";
 
 
 
@@ -92,7 +93,7 @@ const data = [
 
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
             {/* Search */}
-            <SearchInput onChange={(e:any)=> setSearchTerm(e.target.value)} searchTerm={searchTerm}/>
+            <SearchInput2 onChange={(e:any)=> setSearchTerm(e.target.value)} searchTerm={searchTerm}/>
             <TablePengeluaran2 title={"Oprasional"} data={filteredData} />
 
             {/* Pagination */}

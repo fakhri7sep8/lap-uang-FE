@@ -29,19 +29,17 @@ type Props = {
   showNama?: boolean;
   showPenanggungJawab?: boolean;
   showKategori?: boolean;
-  showSubKategori?: boolean;
   showJumlah?: boolean;
   showDeskripsi?: boolean;
   showFilePdf?: boolean;
   showStatus?: boolean;
 };
 
-export default function SubmitRequestForm(props: Props = {}) {
+export default function SubmitRequestForm2(props: Props = {}) {
   const {
     showNama = true,
     showPenanggungJawab = true,
     showKategori = true,
-    showSubKategori = true,
     showJumlah = true,
     showDeskripsi = true,
     showFilePdf = true,
@@ -66,7 +64,7 @@ export default function SubmitRequestForm(props: Props = {}) {
         ? Yup.string().required("Penanggung jawab wajib diisi")
         : Yup.string(),
       kategori: showKategori ? Yup.string().required("Kategori wajib diisi") : Yup.string(),
-      subKategori: showSubKategori ? Yup.string().required("Sub kategori wajib diisi") : Yup.string(),
+  // subKategori field removed from form inputs — keep as optional string in values
       jumlah: showJumlah
         ? Yup.number().typeError("Jumlah harus berupa angka").positive("Jumlah harus lebih dari 0").required("Jumlah wajib diisi")
         : Yup.mixed(),
@@ -104,7 +102,7 @@ export default function SubmitRequestForm(props: Props = {}) {
         nama: showNama ? values.nama : "",
         penanggungJawab: showPenanggungJawab ? values.penanggungJawab : "",
         kategori: showKategori ? values.kategori : "",
-        subKategori: showSubKategori ? values.subKategori : "",
+  subKategori: "",
         jumlah: showJumlah ? jumlahNumber : 0,
         status: showStatus ? values.status : "",
         deskripsi: showDeskripsi ? values.deskripsi : "",
@@ -187,7 +185,7 @@ export default function SubmitRequestForm(props: Props = {}) {
 
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           {showKategori && (
-            <div>
+            <div className="sm:col-span-2">
               <label className="block text-gray-700 mb-1">Kategori</label>
               <input
                 name="kategori"
@@ -199,23 +197,6 @@ export default function SubmitRequestForm(props: Props = {}) {
               />
               {formik.touched.kategori && formik.errors.kategori && (
                 <p className="text-red-500 text-sm">{formik.errors.kategori}</p>
-              )}
-            </div>
-          )}
-
-          {showSubKategori && (
-            <div>
-              <label className="block text-gray-700 mb-1">Sub Kategori</label>
-              <input
-                name="subKategori"
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                value={formik.values.subKategori}
-                className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-400"
-                placeholder="Masukkan sub kategori"
-              />
-              {formik.touched.subKategori && formik.errors.subKategori && (
-                <p className="text-red-500 text-sm">{formik.errors.subKategori}</p>
               )}
             </div>
           )}
