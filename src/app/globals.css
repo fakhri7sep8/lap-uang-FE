@@ -236,6 +236,12 @@ input[type='date']::-moz-calendar-picker-indicator {
   }
 }
 
+.pdf-safe * {
+  box-shadow: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+}
+
 @keyframes text-animation76 {
   0% {
     clip-path: inset(0 100% 0 0);
