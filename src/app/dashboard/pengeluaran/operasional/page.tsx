@@ -16,34 +16,33 @@ const OperasionalPage = () => {
 
   // ✅ Ambil data dari API pakai TanStack Query
   const { useGetExpense } = useExpenseModule()
-  const { data: expenses, isLoading, isError } = useGetExpense()
-console.log(expenses);
+  const { data: expenses, isLoading, isError } = useGetExpense('operasional')
+  console.log(expenses)
   // ✅ Fallback kalau belum ada data
-
 
   // ✅ Filter data berdasarkan pencarian dan tab aktif
   const filteredData = useMemo(() => {
-    const filtered = expenses?.data?.filter((item: any) => {
-      const nama = item?.description?.toLowerCase() || ''
-      const penanggung = item?.PenanggungJawab?.toLowerCase() || ''
-      const kategori = item?.category?.name?.toLowerCase() || ''
-      const search = searchTerm?.toLowerCase()
+  if (!expenses?.data) return []
 
-      const matchSearch =
-        nama.includes(search) ||
-        penanggung.includes(search) ||
-        kategori.includes(search)
+  return expenses.data.filter((item: any) => {
+    const search = searchTerm.toLowerCase()
 
-      const matchTab =
-        activeTab === 'Pembangunan'
-          ? kategori === 'operasional' || kategori === 'pembangunan'
-          : kategori === 'sarana' || kategori === 'operasional'
+    // Search matching
+    const matchSearch =
+      item?.description?.toLowerCase().includes(search) ||
+      item?.PenanggungJawab?.toLowerCase().includes(search) ||
+      item?.category?.name?.toLowerCase().includes(search)
 
-      return matchSearch && matchTab
-    })
+    // Subcategory filter berdasarkan tab
+    const matchTab =
+      activeTab === 'Pembangunan'
+        ? item?.subCategoryId === 1
+        : item?.subCategoryId === 2
 
-    return filtered
-  }, [expenses, searchTerm, activeTab])
+    return matchSearch && matchTab
+  })
+}, [expenses, searchTerm, activeTab])
+
 
   return (
     <div className='min-h-screen flex flex-col gap-10 items-center py-7'>

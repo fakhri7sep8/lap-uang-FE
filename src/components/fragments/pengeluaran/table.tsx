@@ -62,7 +62,7 @@ export default function TablePengeluaran ({
               <th className='py-2 px-2 w-[12%]'>Nama</th>
               <th className='py-2 px-2 w-[12%]'>Penanggung Jawab</th>
               <th className='py-2 px-2 w-[10%]'>Kategori</th>
-              <th className='py-2 px-2 w-[12%]'>Nama Sub Kategori</th>
+              <th className='py-2 px-2 w-[12%]'>Prioritas</th>
               <th className='py-2 px-2 w-[10%] text-right'>Jumlah (Rp)</th>
               <th className='py-2 px-2 w-[8%] text-center'>Status</th>
               <th className='py-2 px-2 w-[15%] text-center'>Aksi</th>
@@ -70,7 +70,7 @@ export default function TablePengeluaran ({
           </thead>
 
           <tbody>
-            {data.map((item, index) => (
+            {data?.map((item, index) => (
               <tr
                 key={item.id}
                 className='hover:bg-gray-50 transition-all text-[12px]'
@@ -78,13 +78,13 @@ export default function TablePengeluaran ({
                 <td className='py-2 px-2 text-center text-gray-600'>
                   {index + 1}
                 </td>
-                <td className='py-2 px-2'>{item.PayDate}</td>
+                <td className='py-2 px-2'>{item?.PayDate}</td>
                 <td className='py-2 px-2 font-medium text-gray-800'>
-                  {item.description}
+                  {item?.description}
                 </td>
-                <td className='py-2 px-2'>{item.PenanggungJawab}</td>
-                <td className='py-2 px-2'>{item.category.name}</td>
-                <td className='py-2 px-2'>{item.subKategori}</td>
+                <td className='py-2 px-2'>{item?.PenanggungJawab}</td>
+                <td className='py-2 px-2'>{item?.category?.name}</td>
+                <td className='py-2 px-2'>{item?.Prioritas}</td>
                 <td className='py-2 px-2 text-right'>
                   Rp {item?.amount?.toLocaleString('id-ID')}
                 </td>
