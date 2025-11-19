@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, Download } from "lucide-react";
 
 type ExportPDFButtonProps = {
   label?: string;
@@ -10,7 +10,7 @@ type ExportPDFButtonProps = {
 };
 
 export default function ExportPDFButton({
-  label = "Export PDF",
+  label = "Export",
   onExport,
   className = "",
 }: ExportPDFButtonProps) {
@@ -18,23 +18,15 @@ export default function ExportPDFButton({
 
   const handleClick = async () => {
     try {
-      // === 1. CEK DULU Apakah siap export ===
       const isReady = await onExport("check");
       if (!isReady) {
         console.warn("Data tidak siap untuk export");
-        return; // ❗ kalau tidak siap: JANGAN loading
+        return;
       }
 
-      // === 2. Baru mulai loading ===
       setStatus("loading");
-
-      // === 3. Jalankan proses export PDF sesungguhnya ===
       await onExport("export");
-
-      // === 4. Set success ===
       setStatus("success");
-
-      // === 5. Reset tombol ===
       setTimeout(() => setStatus("idle"), 1200);
     } catch (err) {
       console.error("Export error:", err);
@@ -47,43 +39,54 @@ export default function ExportPDFButton({
       onClick={handleClick}
       disabled={status === "loading"}
       className={`
-        relative px-5 py-3 rounded-xl font-semibold text-white 
-        transition-all duration-300 shadow-md
-        bg-gradient-to-r from-blue-600 to-blue-500
-        hover:from-blue-500 hover:to-blue-400
-        active:scale-[0.97]
+        relative flex items-center justify-between gap-2
+        px-6 py-3 rounded-md font-bold text-white
+        transition-all duration-200 shadow-md
+        bg-rose-600 hover:bg-rose-400 active:scale-[0.98]
         disabled:opacity-70 disabled:cursor-not-allowed
-        flex items-center gap-2
         ${className}
       `}
+      style={{ minWidth: 120 }}
     >
       {status === "loading" && (
         <>
-          <Loader2 className="animate-spin w-5 h-5 text-white" />
-          <span>Menggenerasi...</span>
+          <span
+            className="flex items-center gap-2"
+            style={{ width: "100%", justifyContent: "center" }}
+          >
+            <Loader2 className="animate-spin w-5 h-5 text-white" />
+            <span style={{ fontWeight: 700 }}>Menggenerasi...</span>
+          </span>
         </>
       )}
 
       {status === "success" && (
         <>
-          <Check className="w-5 h-5 text-white animate-scaleIn" />
-          <span>Berhasil!</span>
+          <span
+            className="flex items-center gap-2"
+            style={{ width: "100%", justifyContent: "center" }}
+          >
+            <Check className="w-5 h-5 text-white animate-scaleIn" />
+            <span>Berhasil!</span>
+          </span>
         </>
       )}
 
       {status === "idle" && (
         <>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            viewBox="0 0 24 24"
+          {/* label kiri */}
+          <span
+            style={{
+              textTransform: "uppercase",
+              letterSpacing: "2px",
+              fontSize: "13px",
+            }}
           >
-            <path d="M12 3v12m0 0l-4-4m4 4l4-4M6 21h12" />
-          </svg>
-          <span>{label}</span>
+            {label}
+          </span>
+
+          {/* icon unduh kanan */}
+          <Download className="w-4 h-4 text-white" />
         </>
       )}
 
