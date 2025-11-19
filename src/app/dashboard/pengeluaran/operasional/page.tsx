@@ -111,7 +111,7 @@ const OperasionalPage = () => {
                 Tidak ada data ditemukan.
               </p>
             ) : (
-              <TablePengeluaran title='Operasional' data={filteredData} />
+              <TablePengeluaran title='Operasional' data={filteredData} menu={'operasional'} />
             )}
 
             {/* Pagination */}

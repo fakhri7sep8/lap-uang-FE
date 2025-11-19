@@ -1,4 +1,4 @@
-'use client'
+ 'use client'
 import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import CardInformation from '@/components/fragments/dashboard/card-information'
@@ -94,7 +94,7 @@ const UpahKariawanPage = () => {
               onChange={(e: any) => setSearchTerm(e.target.value)}
               searchTerm={searchTerm}
             />
-            <TablePengeluaran2 title={'Oprasional'} data={filteredData} />
+            <TablePengeluaran2 title={'Oprasional'} data={filteredData} menu={'upah_kariawan'} />
 
             {/* Pagination */}
             <div className='flex justify-center items-center gap-2 mt-6'>

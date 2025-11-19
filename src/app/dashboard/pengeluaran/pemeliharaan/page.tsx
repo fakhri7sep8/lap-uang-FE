@@ -97,7 +97,7 @@ const subCategoryMap: Record<string, number> = {
               onChange={(e: any) => setSearchTerm(e.target.value)}
               searchTerm={searchTerm}
             />
-            <TablePengeluaran2 title={'Oprasional'} data={filteredData} />
+            <TablePengeluaran2 title={'Oprasional'} data={filteredData} menu={'pemeliharaan'} />
 
             {/* Pagination */}
             <div className='flex justify-center items-center gap-2 mt-6'>

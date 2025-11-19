@@ -2,14 +2,18 @@
 
 import React from 'react'
 import { Pencil, Eye, Download } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 export default function TablePengeluaran ({
   title,
-  data: propData
+  data: propData,
+  menu
 }: {
-  title: string
+    title: string,
+  menu:string,
   data?: any[]
-}) {
+  }) {
+  const router = useRouter()
   // Default internal data (kept for backward compatibility)
   const internalData = [
     {
@@ -103,6 +107,7 @@ export default function TablePengeluaran ({
                   <div className='flex justify-center'>
                     <div className='flex items-center gap-2'>
                       <button
+                        onClick={() =>router.push(`update/${item?.id}`)}
                         title='Edit'
                         className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
                       >
