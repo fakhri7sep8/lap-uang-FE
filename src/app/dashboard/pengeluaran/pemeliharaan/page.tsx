@@ -147,7 +147,7 @@ const PemeliharaanPage = () => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-gray-800">
-                Data Pemeliharaan Sekolah
+                Data Pengeluaran Pemeliharaan Sekolah
               </h1>
               <p className="text-gray-500 mb-6">
                 Data seluruh aktivitas pemeliharaan di lingkungan sekolah.

@@ -1,9 +1,16 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 'use client';
-import { useState } from "react";
+
+import { useState, useCallback } from "react";
 import CardInformation from "@/components/fragments/dashboard/card-information";
 import { GraduationCap, Users } from "lucide-react";
 import TablePengeluaran2 from "@/components/fragments/pengeluaran/table2";
 import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
+
+import ExportPDFButton from "@/components/fragments/ExportPDFButton";
+import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTemplate";
+import { getAcademicMonths } from "@/lib/expense-months";
 
 const BiayaMakanPage = () => {
   const [activeTab, setActiveTab] = useState("Semua");
@@ -12,74 +19,173 @@ const BiayaMakanPage = () => {
 
   const tabs = ["Semua"];
 
+  /* ==========================
+        DUMMY DATA BIAYA MAKAN
+  ========================== */
   const data = [
     {
       id: 1,
-      tanggal: "2025-10-29",
-      nama: "Bayar Listrik",
-      penanggungJawab: "Pak Dimas",
-      kategori: "Pemeliharaan",
-      jumlah: 500000,
+      tanggal: "2025-11-01",
+      nama: "Belanja Sayur Mingguan",
+      penanggungJawab: "Bu Sinta",
+      kategori: "Biaya Makan",
+      jumlah: 350000,
       status: "Selesai",
     },
     {
       id: 2,
-      tanggal: "2025-10-29",
-      nama: "Gaji Guru Honorer",
-      penanggungJawab: "Pak Hadi",
-      kategori: "Upah Karyawan",
-      jumlah: 2500000,
+      tanggal: "2025-11-01",
+      nama: "Pembelian Beras 50kg",
+      penanggungJawab: "Pak Dimas",
+      kategori: "Biaya Makan",
+      jumlah: 700000,
       status: "Selesai",
     },
     {
       id: 3,
-      tanggal: "2025-10-29",
-      nama: "Langganan Internet",
-      penanggungJawab: "Bu Sinta",
-      kategori: "Pemeliharaan",
-      jumlah: 450000,
+      tanggal: "2025-11-02",
+      nama: "Pembelian Gas Dapur",
+      penanggungJawab: "Pak Budi",
+      kategori: "Biaya Makan",
+      jumlah: 240000,
+      status: "Proses",
+    },
+    {
+      id: 4,
+      tanggal: "2025-11-03",
+      nama: "Belanja Lauk Harian",
+      penanggungJawab: "Bu Rina",
+      kategori: "Biaya Makan",
+      jumlah: 420000,
+      status: "Selesai",
+    },
+    {
+      id: 5,
+      tanggal: "2025-11-03",
+      nama: "Pembelian Bumbu Dapur",
+      penanggungJawab: "Bu Maya",
+      kategori: "Biaya Makan",
+      jumlah: 150000,
+      status: "Selesai",
+    },
+    {
+      id: 6,
+      tanggal: "2025-11-04",
+      nama: "Air Minum Galon 10 Buah",
+      penanggungJawab: "Pak Dedi",
+      kategori: "Biaya Makan",
+      jumlah: 65000,
       status: "Proses",
     },
   ];
 
+  /* FILTER */
   const filteredData = data.filter((item) =>
     item.nama.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  /* ==========================
+        GROUP PER BULAN
+  ========================== */
+  const tahunAjaranMulai = 2025;
+  const months = getAcademicMonths(tahunAjaranMulai);
+
+  const dataPerBulan: Record<string, any> = {};
+
+  filteredData.forEach((item) => {
+    const d = new Date(item.tanggal);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+
+    dataPerBulan[key] = {
+      tanggal: item.tanggal,
+      nominal: (dataPerBulan[key]?.nominal || 0) + item.jumlah,
+      jenis: item.kategori,
+    };
+  });
+
+  const totalPengeluaran = Object.values(dataPerBulan).reduce(
+    (sum: number, row: any) => sum + (row.nominal || 0),
+    0
+  );
+
+  /* ==========================
+        EXPORT PDF
+  ========================== */
+  const handleExport = useCallback(async () => {
+    const element = document.getElementById("report-pdf");
+    if (!element) return;
+
+    const html2pdf = (await import("html2pdf.js")).default;
+
+    const opt = {
+      margin: [10, 10, 10, 10],
+      filename: `laporan-biaya-makan.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+    };
+
+    // @ts-ignore
+    html2pdf().set(opt).from(element).save();
+  }, [filteredData]);
+
   return (
-    <div className="min-h-screen flex flex-col gap-10 py-7 w-full bg-[#eef3fa] px-3">
-
-      {/* CARDS */}
-      <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
-        <CardInformation
-          color={"blue"}
-          title={"Total Data"}
-          value={data.length}
-          icon={<GraduationCap size={32} className="text-blue-500" />}
+    <>
+      {/* TEMPLATE PDF */}
+      <div className="hidden">
+        <ReportPdfTemplate
+          title="LAPORAN BIAYA MAKAN"
+          sectionLabel="Detail Biaya Makan"
+          headerLogoUrl="/img/Logo.png"
+          sekolah={{
+            nama: "SMK MADINATUL QURAN",
+            alamat: "KP KEBON KELAPA, JAWA BARAT",
+          }}
+          tahunAjaranMulai={tahunAjaranMulai}
+          dataPerBulan={dataPerBulan}
+          totalPengeluaran={totalPengeluaran}
+          tanggalCetak="23 Juli 2026"
         />
-        <CardInformation
-          color={"green"}
-          title={"Data Terfilter"}
-          value={filteredData.length}
-          icon={<Users size={32} className="text-green-500" />}
-        />
-      </section>
+      </div>
 
-      {/* MAIN CONTENT */}
-      <div className="w-full rounded-3xl">
+      {/* ==========================
+            PAGE WRAPPER
+      ========================== */}
+      <div className="min-h-screen flex flex-col py-7 w-full bg-[#eef3fa] px-3">
 
-        <div className="">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-2">
-            Data Pengeluaran Sekolah
-          </h1>
-          <p className="text-gray-500 mb-6">
-            Data Pengeluaran Sekolah Management.
-          </p>
+        {/* CARDS */}
+        <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardInformation
+            color="blue"
+            title="Total Data"
+            value={data.length}
+            icon={<GraduationCap size={32} className="text-blue-500" />}
+          />
+          <CardInformation
+            color="green"
+            title="Data Terfilter"
+            value={filteredData.length}
+            icon={<Users size={32} className="text-green-500" />}
+          />
+        </section>
+
+        {/* ⭐⭐⭐ HEADER — MATCHED EXACTLY ⭐⭐⭐ */}
+        <div className="flex items-center justify-between mt-10">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800 ">
+              Data Pengeluaran Biaya Makan Sekolah
+            </h1>
+            <p className="text-gray-500 mb-6">
+              Data Pengeluaran Sekolah Management.
+            </p>
+          </div>
+
+          <ExportPDFButton label="Export PDF" onExport={handleExport} />
         </div>
 
-        {/* Tabs */}
+        {/* TABS */}
         <div className="flex flex-col gap-2">
-          <div className="flex gap-2 -mb-[6px]">
+          <div className="flex gap-2 -mb-[7px]">
             {tabs.map((tab) => (
               <button
                 key={tab}
@@ -95,8 +201,8 @@ const BiayaMakanPage = () => {
             ))}
           </div>
 
-          {/* WHITE CONTENT */}
-          <div className="bg-white w-full px-3 py-5 rounded-b-2xl rounded-e-2xl border border-gray-200 shadow-sm">
+          {/* WHITE WRAPPER LIKE OPERASIONAL */}
+          <div className="bg-white w-full px-3 py-5 rounded-b-2xl border border-gray-200 shadow-sm">
 
             {/* SEARCH */}
             <SearchInput
@@ -105,28 +211,12 @@ const BiayaMakanPage = () => {
             />
 
             {/* TABLE */}
-            <TablePengeluaran2 title={"Oprasional"} data={filteredData} />
+            <TablePengeluaran2 title="Biaya Makan" data={filteredData} />
 
-            {/* PAGINATION */}
-            <div className="flex justify-center items-center gap-2 mt-6">
-              {[1, 2, 3, 4, 5, 6].map((num) => (
-                <button
-                  key={num}
-                  onClick={() => setCurrentPage(num)}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium ${
-                    currentPage === num
-                      ? "bg-blue-500 text-white border-blue-500"
-                      : "bg-white border-gray-300 text-gray-600 hover:bg-blue-50"
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
