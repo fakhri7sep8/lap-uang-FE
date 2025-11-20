@@ -4,15 +4,15 @@ import React from 'react'
 import { Pencil, Eye, Download } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
-export default function TablePengeluaran ({
+export default function TablePengeluaran({
   title,
   data: propData,
   menu
 }: {
-    title: string,
-  menu:string,
+  title: string,
+  menu: string,
   data?: any[]
-  }) {
+}) {
   const router = useRouter()
   // Default internal data (kept for backward compatibility)
   const internalData = [
@@ -63,7 +63,7 @@ export default function TablePengeluaran ({
             <tr className='bg-gray-100 text-gray-600 text-left font-medium'>
               <th className='py-2 px-2 text-center w-[3%]'>No</th>
               <th className='py-2 px-2 w-[10%]'>Tanggal Pengeluaran</th>
-              <th className='py-2 px-2 w-[12%]'>Nama</th>
+              <th className='py-2 px-2 w-[12%]'>Deskripsi</th>
               <th className='py-2 px-2 w-[12%]'>Penanggung Jawab</th>
               <th className='py-2 px-2 w-[10%]'>Kategori</th>
               <th className='py-2 px-2 w-[12%]'>Prioritas</th>
@@ -94,11 +94,10 @@ export default function TablePengeluaran ({
                 </td>
                 <td className='py-2 px-2 text-center'>
                   <span
-                    className={`inline-block px-3 py-0.5 text-[11px] font-semibold rounded-full ${
-                      item.status === 'Selesai'
+                    className={`inline-block px-3 py-0.5 text-[11px] font-semibold rounded-full ${item.status === "Selesai"
                         ? 'bg-green-100 text-green-800'
                         : 'bg-yellow-100 text-yellow-800'
-                    }`}
+                      }`}
                   >
                     {item.status}
                   </span>
@@ -107,23 +106,13 @@ export default function TablePengeluaran ({
                   <div className='flex justify-center'>
                     <div className='flex items-center gap-2'>
                       <button
-                        onClick={() =>router.push(`update/${item?.id}`)}
+                        onClick={() => router.push(`update/${item?.id}`)}
                         title='Edit'
                         className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
                       >
                         <Pencil
                           size={14}
                           className='text-blue-600 group-hover:text-blue-700 transition-colors'
-                        />
-                      </button>
-
-                      <button
-                        title='Detail'
-                        className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
-                      >
-                        <Eye
-                          size={14}
-                          className='text-green-600 group-hover:text-green-700 transition-colors'
                         />
                       </button>
 

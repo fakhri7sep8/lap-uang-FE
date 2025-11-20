@@ -1,9 +1,10 @@
 'use client'
 
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 import { useStudentModule } from '@/hooks/useStudentModule'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
@@ -26,17 +27,36 @@ const formatRupiah = (value: string) => {
 }
 
 const updateSchema = Yup.object().shape({
-  nama: Yup.string().required('Wajib di isi'),
+  deskripsi: Yup.string().required('Wajib di isi'),
   penanggungJawab: Yup.string().required('Wajib di isi'),
   kategori: Yup.string().required('Wajib di isi'),
-  subKategori: Yup.string().required('Wajib di isi'),
-  jumlah: Yup.number().required('Wajib di isi'),
-  status: Yup.string().required('Wajib di isi')
+  prioritas: Yup.string().required('Wajib di isi'),
+  jumlahItem: Yup.number().nullable(),
+  nominal: Yup.string().required('Wajib di isi'),
+  tanggalPembayaran: Yup.string().nullable()
 })
 
 const UpdateSiswa = () => {
   const { id } = useParams()
-  const [dataSiswa, setDataSiswa] = useState<any>(null)
+  const router = useRouter()
+  // Dummy data sementara untuk mengisi kolom input
+  const dummyData = {
+    deskripsi: 'Buku Tulis',
+    penanggungJawab: 'Bendahara',
+    kategori: 'Operasional',
+    prioritas: 'BIASA',
+    jumlahItem: 10,
+    ukuran: 25,
+    satuanUkuran: 'Unit',
+    nominal: 1500000,
+    tanggalPembayaran: '',
+    pihakPenerima: 'CV Bangun Jaya',
+    metodePembayaran: '',
+    sumberDana: '',
+    subKategori: ''
+  }
+
+  const [dataSiswa, setDataSiswa] = useState<any>(dummyData)
 
   const { useGetStudent, useUpdateStudent } = useStudentModule()
   const { data: siswa } = useGetStudent()
@@ -44,24 +64,33 @@ const UpdateSiswa = () => {
 
   useEffect(() => {
     const found = siswa?.find((s: any) => s.id.toString() === id)
-    setDataSiswa(found)
+    if (found) setDataSiswa(found)
   }, [id, siswa])
 
   const formik = useFormik({
     initialValues: {
-      nama: dataSiswa?.nama || '',
+      deskripsi: dataSiswa?.deskripsi || '',
       penanggungJawab: dataSiswa?.penanggungJawab || '',
       kategori: dataSiswa?.kategori || '',
-      subKategori: dataSiswa?.subKategori || '',
-      jumlah: dataSiswa?.jumlah ? formatRupiah(dataSiswa.jumlah.toString()) : '',
-      status: dataSiswa?.status || ''
+      prioritas: dataSiswa?.prioritas || '',
+      jumlahItem: dataSiswa?.jumlahItem || '',
+      ukuran: dataSiswa?.ukuran || '',
+      satuanUkuran: dataSiswa?.satuanUkuran || '',
+      nominal: dataSiswa?.nominal ? formatRupiah(dataSiswa.nominal.toString()) : '',
+      tanggalPembayaran: dataSiswa?.tanggalPembayaran || '',
+      pihakPenerima: dataSiswa?.pihakPenerima || '',
+      metodePembayaran: dataSiswa?.metodePembayaran || '',
+      sumberDana: dataSiswa?.sumberDana || '',
+      subKategori: dataSiswa?.subKategori || ''
     },
     validationSchema: updateSchema,
     enableReinitialize: true,
     onSubmit: values => {
       const sendToBackend = {
         ...values,
-        jumlah: Number(values.jumlah.replace(/\D/g, '')) // kirim angka murni
+        jumlahItem: values.jumlahItem ? Number(values.jumlahItem) : undefined,
+        ukuran: values.ukuran ? Number(values.ukuran) : undefined,
+        nominal: Number(values.nominal.replace(/\D/g, '')) // kirim angka murni
       }
 
       Swal.fire({
@@ -76,8 +105,7 @@ const UpdateSiswa = () => {
       })
     }
   })
-
-  if (!dataSiswa) return <div className='p-10'>Data tidak ditemukan</div>
+  // Form akan tetap ditampilkan menggunakan `dummyData` bila data asli belum tersedia
 
   return (
     <section className='w-full bg-white rounded-2xl h-full p-8 shadow-sm border border-slate-200'>
@@ -87,80 +115,183 @@ const UpdateSiswa = () => {
 
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
 
-          {/* NAMA */}
           <div>
-            <label className='text-sm font-medium text-gray-600'>Nama</label>
+            <label className='text-sm font-medium text-gray-600'>Kategori</label>
+            <Select
+              value={formik.values.kategori}
+              onValueChange={val => formik.setFieldValue('kategori', val)}
+            >
+              <SelectTrigger className='mt-1 w-full py-6 border-slate-300 bg-white'>
+                <SelectValue placeholder='Pilih Kategori' />
+              </SelectTrigger>
+
+              <SelectContent className='bg-white border border-slate-300'>
+                <SelectGroup>
+                  <SelectLabel>Kategori</SelectLabel>
+                  <SelectItem value='Operasional'>Operasional</SelectItem>
+                  <SelectItem value='Pembangunan'>Pembangunan</SelectItem>
+                  <SelectItem value='Lainnya'>Lainnya</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className='text-sm font-medium text-gray-600'>Tanggal Pembayaran</label>
             <Input
-              value={formik.values.nama}
-              onChange={e => formik.setFieldValue('nama', e.target.value)}
-              className='mt-1 py-6 border-slate-300'
+              type='date'
+              value={formik.values.tanggalPembayaran}
+                onChange={e => formik.setFieldValue('tanggalPembayaran', e.target.value)}
+                className='mt-1 py-6 border-slate-300'
             />
           </div>
 
-          {/* PENANGGUNG JAWAB */}
+          <div>
+            <label className='text-sm font-medium text-gray-600'>Pihak Penerima</label>
+            <Input
+              value={formik.values.pihakPenerima}
+              onChange={e => formik.setFieldValue('pihakPenerima', e.target.value)}
+                placeholder='Contoh: CV Bangun Jaya'
+                className='mt-1 py-6 border-slate-300'
+            />
+          </div>
+
           <div>
             <label className='text-sm font-medium text-gray-600'>Penanggung Jawab</label>
             <Input
               value={formik.values.penanggungJawab}
               onChange={e => formik.setFieldValue('penanggungJawab', e.target.value)}
-              className='mt-1 py-6 border-slate-300'
+                placeholder='Contoh: Pak Arif'
+                className='mt-1 py-6 border-slate-300'
             />
           </div>
 
-          {/* KATEGORI */}
           <div>
-            <label className='text-sm font-medium text-gray-600'>Kategori</label>
+            <label className='text-sm font-medium text-gray-600'>Jumlah Item</label>
             <Input
-              value={formik.values.kategori}
-              onChange={e => formik.setFieldValue('kategori', e.target.value)}
-              className='mt-1 py-6 border-slate-300'
+              type='number'
+              value={formik.values.jumlahItem}
+              onChange={e => formik.setFieldValue('jumlahItem', e.target.value)}
+                placeholder='Contoh: 10'
+                className='mt-1 py-6 border-slate-300'
             />
           </div>
 
-          {/* SUB KATEGORI */}
           <div>
-            <label className='text-sm font-medium text-gray-600'>Sub Kategori</label>
-            <Input
-              value={formik.values.subKategori}
-              onChange={e => formik.setFieldValue('subKategori', e.target.value)}
-              className='mt-1 py-6 border-slate-300'
-            />
-          </div>
-
-          {/* JUMLAH (RUPIAH OTOMATIS) */}
-          <div>
-            <label className='text-sm font-medium text-gray-600'>
-              Jumlah (Rp)
-            </label>
-            <Input
-              value={formik.values.jumlah}
-              onChange={e => {
-                const formatted = formatRupiah(e.target.value)
-                formik.setFieldValue('jumlah', formatted)
-              }}
-              className='mt-1 py-6 border-slate-300'
-            />
-          </div>
-
-          {/* STATUS DROPDOWN */}
-          <div>
-            <label className='text-sm font-medium text-gray-600'>Status</label>
+            <label className='text-sm font-medium text-gray-600'>Metode Pembayaran</label>
             <Select
-              value={formik.values.status}
-              onValueChange={val => formik.setFieldValue('status', val)}
+              value={formik.values.metodePembayaran}
+              onValueChange={val => formik.setFieldValue('metodePembayaran', val)}
             >
-              <SelectTrigger className='mt-1 py-6 border-slate-300'>
-                <SelectValue placeholder='Pilih status' />
+              <SelectTrigger className='mt-1 w-full py-6 border-slate-300 bg-white'>
+                <SelectValue placeholder='Pilih Metode Pembayaran' />
               </SelectTrigger>
 
-              <SelectContent>
+              <SelectContent className='bg-white border border-slate-300'>
                 <SelectGroup>
-                  <SelectLabel>Status</SelectLabel>
-                  <SelectItem value='ACTIVE'>ACTIVE</SelectItem>
-                  <SelectItem value='NON-ACTIVE'>NON-ACTIVE</SelectItem>
+                  <SelectLabel>Metode</SelectLabel>
+                  <SelectItem value='Cash'>Cash</SelectItem>
+                  <SelectItem value='Credit'>Credit</SelectItem>
+                  <SelectItem value='Transfer'>Transfer</SelectItem>
                 </SelectGroup>
               </SelectContent>
             </Select>
+          </div>
+
+          <div>
+            <label className='text-sm font-medium text-gray-600'>Prioritas</label>
+            <Select
+              value={formik.values.prioritas}
+              onValueChange={val => formik.setFieldValue('prioritas', val)}
+            >
+              <SelectTrigger className='mt-1 w-full py-6 border-slate-300 bg-white'>
+                <SelectValue placeholder='Pilih Prioritas' />
+              </SelectTrigger>
+
+              <SelectContent className='bg-white border border-slate-300'>
+                <SelectGroup>
+                  <SelectLabel>Prioritas</SelectLabel>
+                  <SelectItem value='BIASA'>BIASA</SelectItem>
+                  <SelectItem value='PENTING'>PENTING</SelectItem>
+                  <SelectItem value='GENTING'>GENTING</SelectItem>
+                  <SelectItem value='SANGAT GENTING'>SANGAT GENTING</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <label className='text-sm font-medium text-gray-600'>Sumber Dana</label>
+            <Input
+              value={formik.values.sumberDana}
+              onChange={e => formik.setFieldValue('sumberDana', e.target.value)}
+                placeholder='Dana BOS / Kas Operasional'
+                className='mt-1 py-6 border-slate-300'
+            />
+          </div>
+
+          <div>
+            <label className='text-sm font-medium text-gray-600'>Ukuran</label>
+            <Input
+              type='number'
+              value={formik.values.ukuran}
+              onChange={e => formik.setFieldValue('ukuran', e.target.value)}
+                placeholder='Contoh: 25'
+                className='mt-1 py-6 border-slate-300'
+            />
+          </div>
+
+          <div>
+            <label className='text-sm font-medium text-gray-600'>Satuan Ukuran</label>
+            <Input
+              value={formik.values.satuanUkuran}
+              onChange={e => formik.setFieldValue('satuanUkuran', e.target.value)}
+                placeholder='Unit / Meter / Lembar'
+                className='mt-1 py-6 border-slate-300'
+            />
+          </div>
+
+          <div>
+            <label className='text-sm font-medium text-gray-600'>Nominal (Rp)</label>
+            <Input
+              value={formik.values.nominal}
+              onChange={e => {
+                const formatted = formatRupiah(e.target.value)
+                formik.setFieldValue('nominal', formatted)
+              }}
+                placeholder='1500000'
+                className='mt-1 py-6 border-slate-300'
+            />
+          </div>
+
+          <div>
+            <label className='text-sm font-medium text-gray-600'>Sub Kategori</label>
+            <Select
+              value={formik.values.subKategori}
+              onValueChange={val => formik.setFieldValue('subKategori', val)}
+            >
+              <SelectTrigger className='mt-1 w-full py-6 border-slate-300 bg-white'>
+                <SelectValue placeholder='Pilih Sub Kategori' />
+              </SelectTrigger>
+
+              <SelectContent className='bg-white border border-slate-300'>
+                <SelectGroup>
+                  <SelectLabel>Sub Kategori</SelectLabel>
+                  <SelectItem value='ATK'>ATK</SelectItem>
+                  <SelectItem value='Konstruksi'>Konstruksi</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className='md:col-span-2'>
+            <label className='text-sm font-medium text-gray-600'>Deskripsi</label>
+            <Textarea
+              value={formik.values.deskripsi}
+              onChange={e => formik.setFieldValue('deskripsi', e.target.value)}
+              placeholder='Isi deskripsi pengeluaran...'
+              className='mt-1 py-6 border-slate-300'
+            />
           </div>
 
         </div>
@@ -171,7 +302,7 @@ const UpdateSiswa = () => {
             Simpan
           </Button>
 
-          <Button type='button' className='bg-red-500 hover:bg-red-600 text-white shadow-md px-8'>
+          <Button type='button' onClick={() => router.back()} className='bg-red-500 hover:bg-red-600 text-white shadow-md px-8'>
             Batal
           </Button>
         </div>

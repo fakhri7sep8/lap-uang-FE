@@ -87,7 +87,7 @@ const useCreateStudent = () => {
   const router = useRouter();
   const queryClient = useQueryClient(); // 🧠 tambahkan ini
 
-  const mutate = useMutation({
+  const { mutate } = useMutation({
     mutationFn: (data: any) => updateStudent(data, id),
     onSuccess: async (data) => {
       Swal.fire({
