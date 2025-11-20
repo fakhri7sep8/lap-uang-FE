@@ -176,7 +176,6 @@ const UpahKaryawanPage = () => {
             </p>
           </div>
 
-          <ExportPDFButton label="Export PDF" onExport={handleExport} />
         </div>
 
         {/* TABS */}
@@ -192,8 +191,8 @@ const UpahKaryawanPage = () => {
                 activeTab === tab
                   ? "bg-white text-gray-800 shadow-md"
                   : "bg-[#dfe6f4] text-gray-600 hover:bg-[#e6ebf7]"
-              }`}
-            >
+                }`}
+                >
               {tab}
             </button>
           ))}
@@ -202,10 +201,17 @@ const UpahKaryawanPage = () => {
         {/* WHITE WRAPPER */}
         <div className="bg-white w-full px-3 py-5 rounded-b-2xl border border-gray-200 shadow-sm">
 
+          <div className="flex w-full justify-between items-center mb-4">
+            <div className="w-full">
+
           <SearchInput
             onChange={(e: any) => setSearchTerm(e.target.value)}
             searchTerm={searchTerm}
           />
+            </div>
+          <ExportPDFButton label="Export PDF" onExport={handleExport} />
+            
+          </div>
 
           <TablePengeluaran2
             title={`Upah ${activeTab}`}

@@ -194,11 +194,7 @@ const OperasionalPage = () => {
             </p>
           </div>
 
-          <ExportPDFButton
-            label="Export PDF"
-            onExport={handleExport}
-            className="h-12"
-          />
+
         </div>
 
         {/* TABS */}
@@ -223,10 +219,17 @@ const OperasionalPage = () => {
           <div className="bg-white w-full px-3 py-5 rounded-b-2xl rounded-e-2xl border border-gray-200 shadow-sm">
 
             {/* SEARCH */}
-            <SearchInput
-              onChange={(e: any) => setSearchTerm(e.target.value)}
-              searchTerm={searchTerm}
-            />
+          <div className="flex w-full justify-between items-center mb-4">
+            <div className="w-full">
+
+          <SearchInput
+            onChange={(e: any) => setSearchTerm(e.target.value)}
+            searchTerm={searchTerm}
+          />
+            </div>
+          <ExportPDFButton label="Export PDF" onExport={handleExport} />
+            
+          </div>
 
             {/* TABLE — PAGINATION FIXED */}
             <TablePengeluaran2 title={"Operasional"} data={paginatedData} />

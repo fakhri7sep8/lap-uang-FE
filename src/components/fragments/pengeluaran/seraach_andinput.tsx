@@ -28,12 +28,7 @@ const SearchInput = ({ onChange, searchTerm }: { onChange: any, searchTerm: any 
                         Tambah Data
                     </span>
                 </Button>
-                <Button
-                    variant="outline"
-                    className="border-blue-500 text-blue-500 hover:bg-blue-50 rounded-xl transition-transform duration-200 transform hover:scale-105 hover:shadow-md active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-200"
-                >
-                    Export
-                </Button>
+
             </div>
         </div>
     )

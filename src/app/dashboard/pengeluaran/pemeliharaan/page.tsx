@@ -154,7 +154,6 @@ const PemeliharaanPage = () => {
               </p>
             </div>
 
-            <ExportPDFButton label="Export PDF" onExport={handleExport} />
           </div>
 
           <div className="flex flex-col gap-2">
@@ -176,10 +175,17 @@ const PemeliharaanPage = () => {
 
             <div className="bg-white w-full px-3 py-5 rounded-b-2xl border border-gray-200 shadow-sm">
 
-              <SearchInput
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                searchTerm={searchTerm}
-              />
+          <div className="flex w-full justify-between items-center mb-4">
+            <div className="w-full">
+
+          <SearchInput
+            onChange={(e: any) => setSearchTerm(e.target.value)}
+            searchTerm={searchTerm}
+          />
+            </div>
+          <ExportPDFButton label="Export PDF" onExport={handleExport} />
+            
+          </div>
 
               <TablePengeluaran2 title={"Pemeliharaan"} data={paginatedData} />
 
