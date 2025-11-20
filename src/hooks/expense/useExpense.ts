@@ -17,7 +17,7 @@ export const useExpenseModule = () => {
   const remove = async (id: string) => axiosClient.delete(`/expense/${id}`);
   const detail = async (id: string) => axiosClient.get(`/expense/${id}`);
 
-  const useGetExpense = () =>
+  const useGetExpense = (p0?: string) =>
     useQuery({
       queryKey: ["get-expense"],
       queryFn: getAll,
