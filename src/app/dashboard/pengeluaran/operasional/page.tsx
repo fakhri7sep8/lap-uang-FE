@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { GraduationCap, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { GraduationCap, Users, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import CardInformation from "@/components/fragments/dashboard/card-information";
 import TablePengeluaran from "@/components/fragments/pengeluaran/table";
 import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
@@ -16,7 +16,7 @@ const OperasionalPage = () => {
   const [activeTab, setActiveTab] = useState("Pembangunan");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(10); // <-- Tambah state
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const [showPreview, setShowPreview] = useState(false);
 
@@ -203,13 +203,24 @@ const OperasionalPage = () => {
 
       {/* TABEL + SEARCH + EXPORT */}
       <div className="w-full rounded-3xl">
-        <div className="px-3">
-          <h1 className="text-2xl font-semibold text-gray-800 mb-2">
-            Data Pengeluaran Sekolah
-          </h1>
-          <p className="text-gray-500 mb-6">
-            Data pengeluaran operasional dan sarana sekolah.
-          </p>
+        {/* HEADER dengan EXPORT BUTTON di sebelah */}
+        <div className="pl-2 flex justify-between items-center mb-4">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-800">
+              Data Pengeluaran Operasional Sekolah
+            </h1>
+            <p className="text-gray-500 mb-2">
+              Data Pengeluaran Sekolah Management.
+            </p>
+          </div>
+
+          <ExportPDFButton
+            label="Export PDF"
+            onExport={async () => {
+              setShowPreview(true);
+              return true;
+            }}
+          />
         </div>
 
         <div className="flex flex-col gap-2 p-2">
@@ -220,7 +231,7 @@ const OperasionalPage = () => {
                 key={tab}
                 onClick={() => {
                   setActiveTab(tab);
-                  setCurrentPage(1); // Reset pagination saat ganti tab
+                  setCurrentPage(1);
                 }}
                 className={`px-5 py-3 font-medium rounded-t-xl transition-all duration-300 shadow-sm ${
                   activeTab === tab
@@ -241,24 +252,19 @@ const OperasionalPage = () => {
                 <SearchInput
                   onChange={(e: any) => {
                     setSearchTerm(e.target.value);
-                    setCurrentPage(1); // Reset pagination saat search
+                    setCurrentPage(1);
                   }}
                   searchTerm={searchTerm}
                 />
               </div>
-
-              <ExportPDFButton
-                label="Export PDF"
-                onExport={async () => {
-                  setShowPreview(true);
-                  return true;
-                }}
-              />
             </div>
 
             {/* TABLE */}
             {isLoading ? (
-              <p className="text-center text-gray-500 py-6">Memuat data...</p>
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="animate-spin w-6 h-6 text-gray-500 mr-3" />
+                <span className="text-gray-500">Memuat data...</span>
+              </div>
             ) : isError ? (
               <p className="text-center text-red-500 py-6">
                 Gagal memuat data pengeluaran.
