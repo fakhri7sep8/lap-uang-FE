@@ -78,7 +78,7 @@ export const useStudentModule = () => {
 
   const useUpdateStudent = (id: string) => {
     const router = useRouter();
-    const mutate = useMutation({
+    const { mutate } = useMutation({
       mutationFn: (data: any) => updateStudent(data, id),
       onSuccess: (data) => {
         Swal.fire({

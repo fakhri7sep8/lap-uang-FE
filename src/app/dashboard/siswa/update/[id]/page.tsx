@@ -58,7 +58,7 @@ const UpdateSiswa = () => {
         cancelButtonText: 'Batal'
       }).then(result => {
         if (result.isConfirmed) {
-          updateSiswa.mutate(value) // Panggil di sini
+          updateSiswa(value)
         }
       })
     },
