@@ -279,67 +279,8 @@ export const MainDashboard = () => {
                 <BarChart/>
             </div>
           </div>
-          <div className="w-full flex gap-4 h-full flex-row-reverse">
-            <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
-              <DynamicPieChart
-                data={[
-                  { name: "Tagihan total", value: 120750000 },
-                  { name: "Tercapai", value: 23200000 },
-                  { name: "Sisa", value: 97550000 },
-                  { name: "Biaya Operasional", value: 11250000 },
-                ]}
-              />
-            </div>
-            <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
-              <HorizontalProgressChart
-              modalTitle="Detail Pemasukan"
-                fullData={[
-                  { name: "Akhi...", total: 20000000, tercapai: 13000000 },
-                  { name: "Rajab", total: 18000000, tercapai: 17000000 },
-                  { name: "HSN", total: 15000000, tercapai: 9000000 },
-                  { name: "Haol", total: 25000000, tercapai: 14000000 },
-                  { name: "Syaban", total: 17000000, tercapai: 15000000 },
-                  { name: "Ramadhan", total: 20000000, tercapai: 19000000 },
-                  { name: "Syawal", total: 16000000, tercapai: 12000000 },
-                  { name: "Dzulqaidah", total: 21000000, tercapai: 18000000 },
-                  { name: "Dzulhijjah", total: 22000000, tercapai: 19000000 },
-                  { name: "Muharram", total: 20000000, tercapai: 15000000 },
-                  { name: "Safar", total: 18000000, tercapai: 14000000 },
-                  { name: "Rabiul Awal", total: 19000000, tercapai: 17000000 },
-                ]}
-              />
-            </div>
-          </div>
-          <div className="w-full flex gap-4 h-full flex-row">
-            <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
-              <DynamicPieChart
-                data={[
-                  { name: "Tagihan total", value: 120750000 },
-                  { name: "Tercapai", value: 23200000 },
-                  { name: "Sisa", value: 97550000 },
-                  { name: "Biaya Operasional", value: 11250000 },
-                ]}
-              />
-            </div>
-            <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
-              <HorizontalProgressChart modalTitle="Detail Pengeluaran"
-                fullData={[
-                  { name: "Akhi...", total: 20000000, tercapai: 13000000 },
-                  { name: "Rajab", total: 18000000, tercapai: 17000000 },
-                  { name: "HSN", total: 15000000, tercapai: 9000000 },
-                  { name: "Haol", total: 25000000, tercapai: 14000000 },
-                  { name: "Syaban", total: 17000000, tercapai: 15000000 },
-                  { name: "Ramadhan", total: 20000000, tercapai: 19000000 },
-                  { name: "Syawal", total: 16000000, tercapai: 12000000 },
-                  { name: "Dzulqaidah", total: 21000000, tercapai: 18000000 },
-                  { name: "Dzulhijjah", total: 22000000, tercapai: 19000000 },
-                  { name: "Muharram", total: 20000000, tercapai: 15000000 },
-                  { name: "Safar", total: 18000000, tercapai: 14000000 },
-                  { name: "Rabiul Awal", total: 19000000, tercapai: 17000000 },
-                ]}
-              />
-            </div>
-          </div>
+          
+         
         </div>
       </div>
       <div className=""></div>

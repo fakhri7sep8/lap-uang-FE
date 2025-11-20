@@ -13,9 +13,9 @@ import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTempla
 import { getAcademicMonths } from "@/lib/expense-months";
 
 const BiayaMakanPage = () => {
-  const [activeTab, setActiveTab] = useState("Semua");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [activeTab, setActiveTab] = useState('Semua')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
 
   const tabs = ["Semua"];
 

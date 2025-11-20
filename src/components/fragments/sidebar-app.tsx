@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import {
   LayoutDashboard,
@@ -109,24 +108,9 @@ export function AppSidebar () {
                 <SidebarMenuItem>
                   <SidebarMenuButton>
                     <LayoutDashboard className='mr-2' size={18} />
-                    <Link href='https://laporan-uang-sekolah.vercel.app/dashboard'>
+                    <Link href='/dashboard'>
                       <span className={`font-semibold ${poppins.className}`}>
                         Dashboard Utama
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                {/* 📌 TUNGGAKAN */}
-               
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link
-                      href='/dashboard/tunggakan'
-                      className='flex items-center'
-                    >
-                      <AlertTriangle className='mr-2' size={18} />
-                      <span className={`font-semibold ${poppins.className}`}>
-                        Tunggakan
                       </span>
                     </Link>
                   </SidebarMenuButton>

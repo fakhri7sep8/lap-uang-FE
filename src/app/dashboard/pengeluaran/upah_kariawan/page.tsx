@@ -234,7 +234,6 @@ const UpahKaryawanPage = () => {
               </button>
             ))}
           </div>
-
         </div>
       </div>
     </>
