@@ -38,35 +38,40 @@ export const useAuthModule = () => {
   };
 
   const useLogin = () => {
-    const router = useRouter()
+    const router = useRouter();
+
     const mutation = useMutation({
-      mutationFn: (payload: any) => Login(payload),
+      mutationFn: Login,
       onSuccess: (data) => {
-        console.log(data);
-        Cookie.set("x-auth", data?.data?.meta?.auth?.access_token, { expires: 1 });
+        Cookie.set("x-auth", data?.data?.meta?.auth?.access_token, {
+          expires: 1,
+        });
+
         Swal.fire({
           title: "Berhasil!",
-          text: "Login berhasil, Anda akan diarahkan ke halaman admin.",
+          text: "Login berhasil.",
           icon: "success",
-          confirmButtonText: "OK",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            router.push("/dashboard"); // redirect ke dashboard
-          }
+          timer: 1200,
+          showConfirmButton: false,
         });
+
+        // ⏳ Redirect langsung tanpa menunggu Swal
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 500);
       },
-      onError: (error) => {
+      onError: () => {
         Swal.fire({
           icon: "error",
           title: "Oops...",
-          text: "Login gagal! Periksa kembali email dan password Anda.",
-          footer: '<a href="#">Kenapa saya mengalami masalah ini?</a>',
+          text: "Email atau password salah.",
         });
       },
     });
 
     return { ...mutation };
   };
+
 
   return { useLogin , useChangePassword };
 };

@@ -9,7 +9,6 @@ import {
 } from "@/interface/use-pengeluaran";
 
 export const useBudgetExpenseModule = () => {
-  // 🔹 GET all
   const getBudgetExpenseData = async (): Promise<GetBudgetExpense[]> => {
     const res = await axiosClient.get("/budget-expense");
 
@@ -28,11 +27,22 @@ export const useBudgetExpenseModule = () => {
   };
 
   const useGetBudgetExpense = () => {
-    return useQuery<GetBudgetExpense[]>({
-      queryKey: ["budget-expense"],
-      queryFn: getBudgetExpenseData,
-    });
-  };
+  const queryClient = useQueryClient();
+
+  const { data, isLoading, isError, refetch } = useQuery<GetBudgetExpense[]>({
+    queryKey: ["budget-expense"],
+    queryFn: getBudgetExpenseData,
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 2,
+    gcTime: 1000 * 60 * 10,
+  });
+
+  const refreshBudgetExpense = () =>
+    queryClient.invalidateQueries({ queryKey: ["budget-expense"] });
+
+  return { data, isLoading, isError, refetch, refreshBudgetExpense };
+};
+
 
   // 🔹 CREATE
   const createBudgetExpense = async (data: CreateBudgetExpense) => {

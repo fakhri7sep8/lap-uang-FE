@@ -72,16 +72,19 @@ const DataSelainSpp = () => {
   )
 
   const getStatusBadgeClass = (status: any) => {
-    switch ((status || '').toUpperCase()) {
-      case 'LUNAS':
-        return 'bg-green-100 text-green-700'
-      case 'BELUM_LUNAS':
-      case 'BELUM LUNAS':
-        return 'bg-yellow-100 text-yellow-700'
-      case 'TUNGGAKAN':
-        return 'bg-red-100 text-red-700'
+    const baseStyle =
+      "inline-block w-28 text-center px-3 py-1 rounded-full text-xs font-medium transition-transform duration-150 hover:scale-105";
+
+    switch ((status || "").toUpperCase()) {
+      case "LUNAS":
+        return `${baseStyle} bg-green-100 text-green-700 shadow-sm`;
+      case "BELUM_LUNAS":
+      case "BELUM LUNAS":
+        return `${baseStyle} bg-yellow-100 text-yellow-700 shadow-sm`;
+      case "TUNGGAKAN":
+        return `${baseStyle} bg-red-100 text-red-700 shadow-sm`;
       default:
-        return 'bg-gray-100 text-gray-700'
+        return `${baseStyle} bg-gray-100 text-gray-700 shadow-sm`;
     }
   }
 
@@ -188,7 +191,7 @@ const DataSelainSpp = () => {
                       : 'bg-blue-500'
                   }`}
                 >
-                  <p className='text-white font-semibold text-base'>
+                  <p className="text-white font-semibold text-base">
                     {kat.name}
                   </p>
                 </div>
@@ -344,19 +347,42 @@ const DataSelainSpp = () => {
                         {(currentPage - 1) * showCount + idx + 1}
                       </TableCell>
                       <TableCell>{p.name}</TableCell>
-                      {p.payments?.map((pmt: any, i: any) => (
-                        <TableCell key={i}>
-                          <span
-                            className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                              pmt.status
-                            )}`}
-                          >
-                            {pmt.status}
-                          </span>
-                        </TableCell>
-                      ))}
-                      <TableCell className='flex w-full gap-2 items-center justify-center'>
-                        <Button className='bg-blue-500 text-white'>
+
+                      {/* Loop semua kategori biar rapi */}
+                      {categories.map((c: any) => {
+                        const normalize = (str: string) =>
+                          str
+                            ?.toString()
+                            .trim()
+                            .toLowerCase()
+                            .replace(/[\s_]+/g, "");
+
+                        const payment = p.payments?.find(
+                          (pmt: any) =>
+                            normalize(pmt.category) === normalize(c.name)
+                        );
+
+                        return (
+                          <TableCell key={c.id}>
+                            {payment ? (
+                              <span
+                                className={`inline-block w-24 text-center px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
+                                  payment.status
+                                )}`}
+                              >
+                                {payment.status}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center justify-center w-28 px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 shadow-inner hover:scale-105 transition-all duration-150">
+                                🚫 Tidak Ada
+                              </span>
+                            )}
+                          </TableCell>
+                        );
+                      })}
+
+                      <TableCell className="flex w-full gap-2 items-center justify-center">
+                        <Button className="bg-blue-500 text-white">
                           <Download />
                         </Button>
                       </TableCell>

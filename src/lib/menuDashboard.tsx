@@ -131,34 +131,34 @@ export function generateMenuDashboard({
 
       ]
     },
-    {
-      name: 'laporan Keuangan',
-      handleOpen: setOpenReports,
-      icon: <BarChart4 className='mr-2' size={18} />,
-      open: openReports,
-      children: [
-        {
-          name: 'Laporan Arus Kas',
-          icon: <Activity className='mr-2' size={16} />,
-          children: null
-        },
-        {
-          name: 'Laporan SPP',
-          icon: <CalendarRange className='mr-2' size={16} />,
-          children: null
-        },
-        {
-          name: 'Laporan',
-          icon: <CalendarRange className='mr-2' size={16} />,
-          children: null
-        },
-        {
-          name: 'Recap Kwitansi',
-          icon: <FileText className='mr-2' size={16} />,
-          children: null
-        }
-      ]
-    },
+    // {
+    //   name: 'laporan Keuangan',
+    //   handleOpen: setOpenReports,
+    //   icon: <BarChart4 className='mr-2' size={18} />,
+    //   open: openReports,
+    //   children: [
+    //     {
+    //       name: 'Laporan Arus Kas',
+    //       icon: <Activity className='mr-2' size={16} />,
+    //       children: null
+    //     },
+    //     {
+    //       name: 'Laporan SPP',
+    //       icon: <CalendarRange className='mr-2' size={16} />,
+    //       children: null
+    //     },
+    //     {
+    //       name: 'Laporan',
+    //       icon: <CalendarRange className='mr-2' size={16} />,
+    //       children: null
+    //     },
+    //     {
+    //       name: 'Recap Kwitansi',
+    //       icon: <FileText className='mr-2' size={16} />,
+    //       children: null
+    //     }
+    //   ]
+    // },
     {
       name: 'Pengaturan Sistem',
       handleOpen: setOpenSettings,
@@ -178,24 +178,24 @@ export function generateMenuDashboard({
         }
       ]
     },
-    {
-      name: 'Bantuan',
-      handleOpen: setOpenHelp,
-      icon: <HelpCircle className='mr-2' size={18} />,
-      open: openHelp,
-      children: [
-        {
-          name: 'Tutorial',
-          icon: <BookText className='mr-2' size={16} />,
-          link: '/dashboard/tutorial',
-          children: null
-        },
-        {
-          name: 'Tentang Aplikasi',
-          icon: <Info className='mr-2' size={16} />,
-          children: null
-        }
-      ]
-    }
+    // {
+    //   name: 'Bantuan',
+    //   handleOpen: setOpenHelp,
+    //   icon: <HelpCircle className='mr-2' size={18} />,
+    //   open: openHelp,
+    //   children: [
+    //     {
+    //       name: 'Tutorial',
+    //       icon: <BookText className='mr-2' size={16} />,
+    //       link: '/dashboard/tutorial',
+    //       children: null
+    //     },
+    //     {
+    //       name: 'Tentang Aplikasi',
+    //       icon: <Info className='mr-2' size={16} />,
+    //       children: null
+    //     }
+    //   ]
+    // }
   ]
 }

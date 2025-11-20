@@ -60,7 +60,7 @@ export function Combobox ({
             aria-expanded={open}
             className={cn('w-full justify-between py-6', triggerClassName)}
           >
-            {value? value : selected ? selected.label : placeholder}
+            {selected ? selected.label : placeholder}
             <ChevronsUpDown className='ml-2 h-4 w-4 shrink-0 opacity-50' />
           </Button>
         </PopoverTrigger>

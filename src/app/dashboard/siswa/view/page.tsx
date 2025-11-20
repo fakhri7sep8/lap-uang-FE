@@ -21,6 +21,10 @@ import { CustomPagination } from "@/components/fragments/dashboard/custom-pagina
 import Loader from "@/components/ui/loader";
 import dayjs from "dayjs";
 
+// === Tambahan: tombol export ===
+import ExportPreviewButton, { Column } from "@/components/fragments/buttonExcelSiswa";
+import DeleteListButton from "@/components/fragments/deleteListButton";
+
 const LihatSemuaSiswa = () => {
   const [showFilter, setShowFilter] = useState(false);
   const [showCount, setShowCount] = useState(10);
@@ -34,6 +38,7 @@ const LihatSemuaSiswa = () => {
   const [draftJurusan, setDraftJurusan] = useState("");
   const [draftAsrama, setDraftAsrama] = useState("");
   const [draftAngkatan, setDraftAngkatan] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Ambil data siswa dari API
   const { useGetStudent, useDeleteStudent } = useStudentModule();
@@ -44,17 +49,13 @@ const LihatSemuaSiswa = () => {
     ?.filter(
       (s: any) =>
         s?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        s?.InductNumber?.toString()
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
+        s?.InductNumber?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
         s?.dorm?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     .filter((s: any) => (filterStatus ? s.status === filterStatus : true))
     .filter((s: any) => (filterJurusan ? s.major === filterJurusan : true))
     .filter((s: any) => (filterAsrama ? s.dorm === filterAsrama : true))
-    .filter((s: any) =>
-      filterAngkatan ? String(s.generation) === filterAngkatan : true
-    );
+    .filter((s: any) => (filterAngkatan ? String(s.generation) === filterAngkatan : true));
 
   const totalPages = Math.ceil(filteredData.length / showCount);
   const paginatedData = filteredData.slice(
@@ -62,19 +63,18 @@ const LihatSemuaSiswa = () => {
     currentPage * showCount
   );
 
-const getStatusBadgeClass = (status: string) => {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-green-100 text-green-700";
-    case "GRADUATION":
-      return "bg-yellow-100 text-yellow-700";
-    case "OUT":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
-
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-green-100 text-green-700";
+      case "GRADUATION":
+        return "bg-yellow-100 text-yellow-700";
+      case "OUT":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -90,12 +90,16 @@ const getStatusBadgeClass = (status: string) => {
       });
 
       if (result.isConfirmed) {
-        await deleteStudent(id);
+        setIsDeleting(true);
+
+        await deleteStudent(id); // hapus data
         await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
       }
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
+    } finally {
+      setIsDeleting(false); // 🔚 matikan loader
     }
   };
 
@@ -107,9 +111,35 @@ const getStatusBadgeClass = (status: string) => {
     );
   }
 
+  if (isDeleting) {
+    return (
+      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
+
   if (isError) {
     return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
   }
+
+  // ===== Kolom Export Excel (sesuai tabel) =====
+  const statusToLabel = (s?: string) =>
+    s === "ACTIVE" ? "Aktif" :
+    s === "GRADUATION" ? "Lulus" :
+    s === "OUT" ? "Keluar" : (s ?? "");
+
+// columns untuk FORMAT IMPOR RESMI
+const columns: Column<any>[] = [
+  { header: "Name",      key: "name" },             // nama
+  { header: "Asrama",    key: "dorm" },             // asrama
+  { header: "No_Induk",  key: "InductNumber" },     // no induk
+  { header: "generasi",  key: "generation" },       // angkatan/generasi
+  { header: "jurusan",   key: "major" },            // jurusan
+  { header: "status",    key: "status" },           // gunakan kode: ACTIVE/GRADUATION/OUT
+  { header: "NIS",       key: "NIS", value: (s) => s?.NIS ?? "" }, // kalau tidak ada di data, kosongkan
+];
+
 
   return (
     <section className="w-full min-h-[90vh] flex flex-col gap-10">
@@ -124,7 +154,7 @@ const getStatusBadgeClass = (status: string) => {
         <CardInformation
           color={"green"}
           title={"Total Data"}
-          value={filteredData.slice(0, showCount).length}
+          value={filteredData.length}
           icon={<Users size={32} className="text-green-500" />}
         />
       </section>
@@ -140,17 +170,43 @@ const getStatusBadgeClass = (status: string) => {
           type={"normal"}
         />
 
+        {/* Tombol Export */}
+        <div className="flex justify-between gap-2">
+          {/* <DeleteListButton
+            selectedIds={selectedIds}
+            onDelete={handleDeleteList}
+            disabled={isLoading}
+          /> */}
+          <ExportPreviewButton
+            data={filteredData}
+            columns={columns}
+            filename="data-siswa"
+            buttonText="Export"
+            previewLimit={20}
+          />
+        </div>
+
         <div className="w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
           <Table className="w-full h-full table-auto bg-white text-gray-700">
             <TableHeader className="text-sm font-semibold text-center">
               <TableRow>
+                {/* <TableHead>
+                  <input
+                    title="Select All"
+                    type="checkbox"
+                    // checked={paginatedData.length > 0 && selectedIds.length === paginatedData.length}
+                    // onChange={(e) => handleSelectAll(e.target.checked)}
+                  />
+                </TableHead> */}
                 <TableHead>No</TableHead>
                 <TableHead>Nama</TableHead>
+                <TableHead>NIS</TableHead>
                 <TableHead>No. Induk</TableHead>
                 <TableHead>Asrama</TableHead>
                 <TableHead>Angkatan</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Jurusan</TableHead>
+                <TableHead>Tipe Program</TableHead>
                 <TableHead>Dibuat</TableHead>
                 <TableHead>Aksi</TableHead>
               </TableRow>
@@ -159,15 +215,18 @@ const getStatusBadgeClass = (status: string) => {
             <TableBody className="text-sm divide-y divide-gray-200 text-center">
               {paginatedData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-8 text-gray-400">
+                  <TableCell colSpan={10} className="py-8 text-gray-400">
                     Data not found
                   </TableCell>
                 </TableRow>
               ) : (
                 paginatedData.map((s: any, idx: number) => (
                   <TableRow key={s.id}>
-                    <TableCell>{(currentPage - 1) * showCount + (idx + 1)}</TableCell>
+                    <TableCell>
+                      {(currentPage - 1) * showCount + (idx + 1)}
+                    </TableCell>
                     <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell className="font-medium">{s.NIS}</TableCell>
                     <TableCell>{s.InductNumber}</TableCell>
                     <TableCell>{s.dorm}</TableCell>
                     <TableCell>{s.generation}</TableCell>
@@ -181,7 +240,25 @@ const getStatusBadgeClass = (status: string) => {
                       </span>
                     </TableCell>
                     <TableCell>{s.major}</TableCell>
-                    <TableCell>{dayjs(s.createdAt).format("DD MMM YYYY")}</TableCell>
+                    <TableCell>
+                      {/* 👇 tambahan kolom baru */}
+                      {s.tipeProgram ? (
+                        <span
+                          className={`${
+                            s.tipeProgram === "FULLDAY"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-purple-100 text-purple-700"
+                          } px-3 py-1 rounded-full text-xs font-medium`}
+                        >
+                          {s.tipeProgram}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {dayjs(s.createdAt).format("DD MMM YYYY")}
+                    </TableCell>
                     <TableCell className="flex gap-2 justify-center">
                       <Link href={`/dashboard/siswa/update/${s.id}`}>
                         <Button className="bg-blue-400 text-white">
@@ -254,7 +331,7 @@ const getStatusBadgeClass = (status: string) => {
                   Jurusan
                   <select
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
-                    value={draftJurusan}
+                    value={draftJurusan}  // <- perbaikan konsistensi
                     onChange={(e) => setDraftJurusan(e.target.value)}
                   >
                     <option value="">Semua</option>
