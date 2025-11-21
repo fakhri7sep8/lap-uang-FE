@@ -3,6 +3,7 @@
 import React from 'react'
 import { Pencil, Eye, Download } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import Pagination from './pagination'
 
 export default function TablePengeluaran({
   title,
@@ -95,8 +96,8 @@ export default function TablePengeluaran({
                 <td className='py-2 px-2 text-center'>
                   <span
                     className={`inline-block px-3 py-0.5 text-[11px] font-semibold rounded-full ${item.status === "Selesai"
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
                       }`}
                   >
                     {item.status}
@@ -106,7 +107,7 @@ export default function TablePengeluaran({
                   <div className='flex justify-center'>
                     <div className='flex items-center gap-2'>
                       <button
-                        onClick={() => router.push(`update/${item?.id}`)}
+                        onClick={() => router.push(`/dashboard/pengeluaran/update/${item?.id}`)}
                         title='Edit'
                         className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
                       >
@@ -133,12 +134,7 @@ export default function TablePengeluaran({
           </tbody>
         </table>
       </div>
-
-      {/* Total footer
-      <div className="flex justify-end mt-3 text-sm font-semibold text-gray-700">
-        Total: Rp{" "}
-        {data.reduce((sum, i) => sum + i.jumlah, 0).toLocaleString("id-ID")}
-      </div> */}
+      <Pagination/>
     </div>
   )
 }

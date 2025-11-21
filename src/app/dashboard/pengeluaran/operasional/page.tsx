@@ -79,11 +79,10 @@ const OperasionalPage = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-3 font-medium rounded-t-xl transition-all duration-300 shadow-sm ${
-                  activeTab === tab
+                className={`px-5 py-3 font-medium rounded-t-xl transition-all duration-300 shadow-sm ${activeTab === tab
                     ? 'bg-white text-gray-800 shadow-md'
                     : 'bg-[#dfe6f4] text-gray-600 hover:bg-[#e6ebf7]'
-                }`}
+                  }`}
               >
                 {tab}
               </button>
@@ -116,23 +115,6 @@ const OperasionalPage = () => {
                 menu={'operasional'}
               />
             )}
-
-            {/* Pagination */}
-            <div className='flex justify-center items-center gap-2 mt-6'>
-              {[1, 2, 3, 4, 5, 6].map(num => (
-                <button
-                  key={num}
-                  onClick={() => setCurrentPage(num)}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium ${
-                    currentPage === num
-                      ? 'bg-blue-500 text-white border-blue-500'
-                      : 'bg-white border-gray-300 text-gray-600 hover:bg-blue-50'
-                  }`}
-                >
-                  {num}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>
