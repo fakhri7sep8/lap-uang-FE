@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { GraduationCap, Users, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  GraduationCap,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
+
 import CardInformation from "@/components/fragments/dashboard/card-information";
 import TablePengeluaran from "@/components/fragments/pengeluaran/table";
 import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
@@ -12,21 +19,30 @@ import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTempla
 import { AnimatePresence, motion } from "framer-motion";
 import dayjs from "dayjs";
 
+// 🔥 modern date filter
+import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
+
 const OperasionalPage = () => {
   const [activeTab, setActiveTab] = useState("Pembangunan");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
   const [showPreview, setShowPreview] = useState(false);
+
+  // 🔥 state tanggal
+  const [dateFilter, setDateFilter] = useState({
+    startDate: "",
+    endDate: "",
+  });
 
   const tabs = ["Pembangunan", "Sarana"];
 
-  // Ambil data dari API
   const { useGetExpense } = useExpenseModule();
   const { data: expenses, isLoading, isError } = useGetExpense("operasional");
 
+  // ========================================
   // FILTERING
+  // ========================================
   const filteredData = useMemo(() => {
     if (!expenses?.data) return [];
 
@@ -43,23 +59,36 @@ const OperasionalPage = () => {
           ? item?.subCategoryId === 1
           : item?.subCategoryId === 2;
 
-      return matchSearch && matchTab;
-    });
-  }, [expenses, searchTerm, activeTab]);
+      const itemDate = new Date(item.createdAt);
 
+      const matchStart = dateFilter.startDate
+        ? itemDate >= new Date(dateFilter.startDate)
+        : true;
+
+      const matchEnd = dateFilter.endDate
+        ? itemDate <= new Date(dateFilter.endDate)
+        : true;
+
+      return matchSearch && matchTab && matchStart && matchEnd;
+    });
+  }, [expenses, searchTerm, activeTab, dateFilter]);
+
+  // ========================================
   // PAGINATION LOGIC
+  // ========================================
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const startIdx = (currentPage - 1) * rowsPerPage;
   const endIdx = startIdx + rowsPerPage;
   const paginatedData = filteredData.slice(startIdx, endIdx);
 
-  // Reset ke halaman 1 jika rowsPerPage berubah
   const handleRowsPerPageChange = (e: any) => {
     setRowsPerPage(Number(e.target.value));
     setCurrentPage(1);
   };
 
-  // DATA PER BULAN UNTUK PDF
+  // ========================================
+  // PDF DATA PER BULAN
+  // ========================================
   const dataPerBulan: Record<string, any> = {};
   filteredData.forEach((row: any) => {
     const d = new Date(row.createdAt);
@@ -80,7 +109,9 @@ const OperasionalPage = () => {
     0
   );
 
-  // DOWNLOAD PDF
+  // ========================================
+  // PDF DOWNLOAD
+  // ========================================
   const handleDownloadPDF = async () => {
     const element = document.getElementById("report-pdf");
     if (!element) return;
@@ -102,8 +133,8 @@ const OperasionalPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col gap-10 items-center py-7">
-      {/* HIDDEN TEMPLATE EXPORT */}
-      <div className="hidden">
+      {/* HIDDEN PDF TEMPLATE */}
+      <div className="hidden" id="report-pdf">
         <ReportPdfTemplate
           title="LAPORAN PENGELUARAN OPERASIONAL"
           sectionLabel={`Detail Pengeluaran (${activeTab})`}
@@ -119,21 +150,11 @@ const OperasionalPage = () => {
         />
       </div>
 
-      {/* MODAL PREVIEW EXPORT */}
+      {/* MODAL PREVIEW PDF */}
       <AnimatePresence>
         {showPreview && (
-          <motion.div
-            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-            >
+          <motion.div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+            <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]">
               <div className="flex justify-between items-center p-4 border-b">
                 <h2 className="text-lg font-semibold">Preview Laporan</h2>
                 <button
@@ -145,10 +166,7 @@ const OperasionalPage = () => {
               </div>
 
               <div className="p-5 bg-gray-50">
-                <div
-                  id="report-pdf"
-                  className="bg-white shadow-md mx-auto border border-gray-200"
-                >
+                <div className="bg-white shadow-md mx-auto border border-gray-200">
                   <ReportPdfTemplate
                     title="LAPORAN PENGELUARAN OPERASIONAL"
                     sectionLabel={`Detail Pengeluaran (${activeTab})`}
@@ -201,9 +219,9 @@ const OperasionalPage = () => {
         />
       </section>
 
-      {/* TABEL + SEARCH + EXPORT */}
+      {/* MAIN CONTENT */}
       <div className="w-full rounded-3xl">
-        {/* HEADER dengan EXPORT BUTTON di sebelah */}
+        {/* HEADER */}
         <div className="pl-2 flex justify-between items-center mb-4">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800">
@@ -223,8 +241,8 @@ const OperasionalPage = () => {
           />
         </div>
 
+        {/* TABS */}
         <div className="flex flex-col gap-2 p-2">
-          {/* TABS */}
           <div className="flex gap-2 mb-[-7px]">
             {tabs.map((tab) => (
               <button
@@ -246,15 +264,25 @@ const OperasionalPage = () => {
 
           {/* TABLE CARD */}
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
-            {/* SEARCH + EXPORT BUTTON */}
-            <div className="flex w-full justify-between items-center mb-4">
-              <div className="w-full">
+            {/* 🔥 FILTER TANGGAL + SEARCH – layout sama seperti Biaya Makan */}
+
+            {/* 🔥 SEARCH + FILTER TANGGAL MIRIP BIAYA MAKAN, TAPI LEBIH RAPI */}
+
+            <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+              {/* Search full kiri, diperlebar */}
+              <div className="w-full md:flex-1">
                 <SearchInput
-                  onChange={(e: any) => {
-                    setSearchTerm(e.target.value);
-                    setCurrentPage(1);
-                  }}
+                  onChange={(e: any) => setSearchTerm(e.target.value)}
                   searchTerm={searchTerm}
+                />
+              </div>
+
+              {/* Filter tetap pojok kanan tapi tidak mepet */}
+              <div className="w-full md:w-auto flex justify-start md:justify-end">
+                <DateRangeFilterModern
+                  startDate={dateFilter.startDate}
+                  endDate={dateFilter.endDate}
+                  onChange={setDateFilter}
                 />
               </div>
             </div>
@@ -280,11 +308,10 @@ const OperasionalPage = () => {
                 menu={"operasional"}
               />
             )}
-
             {/* PAGINATION + ROWS PER PAGE */}
             {filteredData.length > 0 && (
               <div className="flex w-full justify-between items-center mt-6 flex-wrap gap-4">
-                {/* ROWS PER PAGE SELECTOR */}
+                {/* ROWS PER PAGE */}
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-600">
                     Tampil:
@@ -341,7 +368,7 @@ const OperasionalPage = () => {
                   </button>
                 </div>
 
-                {/* INFO PAGINATION */}
+                {/* INFO PAGE */}
                 <div className="text-sm text-gray-600">
                   Halaman {currentPage} dari {totalPages} ({filteredData.length}{" "}
                   data)

@@ -3,6 +3,7 @@
 import React from "react";
 import { Pencil, Eye, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
 
 export default function TablePengeluaran({
   title,
@@ -18,21 +19,26 @@ export default function TablePengeluaran({
   const internalData = [
     {
       id: 1,
-      tanggal: "2025-10-29",
-      nama: "Bayar Listrik",
-      penanggungJawab: "Pak Dimas",
-      kategori: "Pemeliharaan",
-      subKategori: "Listrik",
-      jumlah: 500000,
+      PayDate: "2025-10-29",
+      description: "Bayar Listrik",
+      PenanggungJawab: "Pak Dimas",
+      category: { name: "Pemeliharaan" },
+      Prioritas: "PENTING",
+      amount: 500000,
       status: "Selesai",
     },
   ];
 
   const data = propData ?? internalData;
 
+  // ⭐ Format DD/MM/YYYY
+  const formatTanggal = (value: string) => {
+    if (!value) return "-";
+    return dayjs(value).format("DD/MM/YYYY");
+  };
+
   return (
     <div className="p-6 bg-white rounded-2xl shadow-md border border-gray-200 w-full">
-      {/* === TITLE === */}
       <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
         Data {title}
       </h2>
@@ -59,24 +65,34 @@ export default function TablePengeluaran({
                 key={item.id}
                 className="hover:bg-gray-50 transition border-b border-gray-100 text-base"
               >
+                {/* NO */}
                 <td className="py-4 px-4 text-center">{index + 1}</td>
 
-                <td className="py-4 px-4">{item?.PayDate}</td>
+                {/* ⭐ TANGGAL FORMAT DD/MM/YYYY */}
+                <td className="py-4 px-4 text-center">
+                  {formatTanggal(item?.PayDate)}
+                </td>
 
+                {/* NAMA */}
                 <td className="py-4 px-4 font-semibold text-gray-800">
                   {item?.description}
                 </td>
 
+                {/* PJ */}
                 <td className="py-4 px-4">{item?.PenanggungJawab}</td>
 
+                {/* KATEGORI */}
                 <td className="py-4 px-4">{item?.category?.name}</td>
 
+                {/* PRIORITAS */}
                 <td className="py-4 px-4">{item?.Prioritas}</td>
 
+                {/* JUMLAH */}
                 <td className="py-4 px-4 text-right">
                   Rp {item?.amount?.toLocaleString("id-ID")}
                 </td>
 
+                {/* STATUS */}
                 <td className="py-4 px-4 text-center">
                   <span
                     className={`px-3 py-1 text-sm font-semibold rounded-full ${
@@ -89,6 +105,7 @@ export default function TablePengeluaran({
                   </span>
                 </td>
 
+                {/* ACTION BUTTON */}
                 <td className="py-4 px-4">
                   <div className="flex justify-center gap-3">
                     <button

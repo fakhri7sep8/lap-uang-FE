@@ -1,6 +1,12 @@
 'use client'
 import { useMemo, useState } from 'react'
-import { GraduationCap, Users, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import {
+  GraduationCap,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  Loader2
+} from 'lucide-react'
 import CardInformation from '@/components/fragments/dashboard/card-information'
 import TablePengeluaran2 from '@/components/fragments/pengeluaran/table'
 import SearchInput from '@/components/fragments/pengeluaran/seraach_andinput'
@@ -11,12 +17,21 @@ import ReportPdfTemplate from '@/components/template/pengeluaran/ReportPdfTempla
 import { AnimatePresence, motion } from 'framer-motion'
 import dayjs from 'dayjs'
 
+// 🔥 filter tanggal modern (ikon kalender + preset)
+import DateRangeFilterModern from '@/components/fragments/pengeluaran/DateRangeFilter'
+
 const UpahKariawanPage = () => {
   const [activeTab, setActiveTab] = useState('Guru')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [rowsPerPage, setRowsPerPage] = useState(10) // <-- Tambah state
+  const [rowsPerPage, setRowsPerPage] = useState(10)
   const [showPreview, setShowPreview] = useState(false)
+
+  // 🔥 state filter tanggal
+  const [dateFilter, setDateFilter] = useState({
+    startDate: '',
+    endDate: ''
+  })
 
   const { useGetExpense } = useExpenseModule()
   const { data: expenses, isLoading, isError } = useGetExpense('Upah Karyawan')
@@ -32,12 +47,15 @@ const UpahKariawanPage = () => {
     Laundry: 12
   }
 
+  // =====================================================
+  // FILTER DATA (search + tab + tanggal)
+  // =====================================================
   const filteredData = useMemo(() => {
     if (!expenses?.data) return []
 
-    return expenses.data.filter((item: any) => {
-      const search = searchTerm.toLowerCase()
+    const search = searchTerm.toLowerCase()
 
+    return expenses.data.filter((item: any) => {
       const matchSearch =
         item?.description?.toLowerCase().includes(search) ||
         item?.PenanggungJawab?.toLowerCase().includes(search) ||
@@ -45,12 +63,23 @@ const UpahKariawanPage = () => {
 
       const matchTab = item?.subCategoryId === subCategoryMap[activeTab]
 
-      return matchSearch && matchTab
+      // 🔥 filter tanggal
+      const itemDate = new Date(item.createdAt)
+
+      const matchStart = dateFilter.startDate
+        ? itemDate >= new Date(dateFilter.startDate)
+        : true
+
+      const matchEnd = dateFilter.endDate
+        ? itemDate <= new Date(dateFilter.endDate)
+        : true
+
+      return matchSearch && matchTab && matchStart && matchEnd
     })
-  }, [expenses, searchTerm, activeTab])
+  }, [expenses, searchTerm, activeTab, dateFilter])
 
   // =====================================================
-  // PDF DATA PER BULAN
+  // DATA PER BULAN UNTUK PDF
   // =====================================================
 
   const dataPerBulan: Record<string, any> = {}
@@ -71,7 +100,7 @@ const UpahKariawanPage = () => {
   )
 
   // =====================================================
-  // PAGINATION LOGIC
+  // PAGINATION
   // =====================================================
   const totalPages = Math.ceil(filteredData.length / rowsPerPage)
   const startIdx = (currentPage - 1) * rowsPerPage
@@ -108,22 +137,21 @@ const UpahKariawanPage = () => {
 
   return (
     <div className='min-h-screen flex flex-col gap-10 items-center py-7'>
-
       {/* HIDDEN PDF TEMPLATE */}
-      <div className="hidden">
-        <div id="report-pdf-upah">
+      <div className='hidden'>
+        <div id='report-pdf-upah'>
           <ReportPdfTemplate
-            title="LAPORAN UPAH KARYAWAN"
+            title='LAPORAN UPAH KARYAWAN'
             sectionLabel={`Detail Upah (${activeTab})`}
-            headerLogoUrl="/img/Logo.png"
+            headerLogoUrl='/img/Logo.png'
             sekolah={{
-              nama: "SMK MADINATUL QURAN",
-              alamat: "KP KEBON KELAPA, JAWA BARAT"
+              nama: 'SMK MADINATUL QURAN',
+              alamat: 'KP KEBON KELAPA, JAWA BARAT'
             }}
             tahunAjaranMulai={2024}
             dataPerBulan={dataPerBulan}
             totalPengeluaran={totalJumlah}
-            tanggalCetak={dayjs().format("DD MMMM YYYY")}
+            tanggalCetak={dayjs().format('DD MMMM YYYY')}
           />
         </div>
       </div>
@@ -156,17 +184,17 @@ const UpahKariawanPage = () => {
               <div className='p-5 bg-gray-50'>
                 <div className='bg-white shadow-md mx-auto border border-gray-200'>
                   <ReportPdfTemplate
-                    title="LAPORAN UPAH KARYAWAN"
+                    title='LAPORAN UPAH KARYAWAN'
                     sectionLabel={`Detail Upah (${activeTab})`}
-                    headerLogoUrl="/img/Logo.png"
+                    headerLogoUrl='/img/Logo.png'
                     sekolah={{
-                      nama: "SMK MADINATUL QURAN",
-                      alamat: "KP KEBON KELAPA, JAWA BARAT"
+                      nama: 'SMK MADINATUL QURAN',
+                      alamat: 'KP KEBON KELAPA, JAWA BARAT'
                     }}
                     tahunAjaranMulai={2024}
                     dataPerBulan={dataPerBulan}
                     totalPengeluaran={totalJumlah}
-                    tanggalCetak={dayjs().format("DD MMMM YYYY")}
+                    tanggalCetak={dayjs().format('DD MMMM YYYY')}
                   />
                 </div>
               </div>
@@ -221,7 +249,7 @@ const UpahKariawanPage = () => {
 
           {/* EXPORT BUTTON */}
           <ExportPDFButton
-            label="Export PDF"
+            label='Export PDF'
             onExport={async () => {
               setShowPreview(true)
               return true
@@ -232,7 +260,7 @@ const UpahKariawanPage = () => {
         <div className='flex flex-col gap-2 p-2'>
           {/* TABS */}
           <div className='flex gap-2 mb-[-7px]'>
-            {tabs.map((tab) => (
+            {tabs.map(tab => (
               <button
                 key={tab}
                 onClick={() => {
@@ -241,8 +269,8 @@ const UpahKariawanPage = () => {
                 }}
                 className={`px-5 py-3 font-medium rounded-t-xl transition-all duration-300 shadow-sm ${
                   activeTab === tab
-                    ? "bg-white text-gray-800 shadow-md"
-                    : "bg-[#dfe6f4] text-gray-600 hover:bg-[#e6ebf7]"
+                    ? 'bg-white text-gray-800 shadow-md'
+                    : 'bg-[#dfe6f4] text-gray-600 hover:bg-[#e6ebf7]'
                 }`}
               >
                 {tab}
@@ -250,27 +278,43 @@ const UpahKariawanPage = () => {
             ))}
           </div>
 
-          {/* TABLE */}
+          {/* TABLE CARD */}
           <div className='bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl'>
-            <SearchInput
-              onChange={(e: any) => {
-                setSearchTerm(e.target.value)
-                setCurrentPage(1) // <-- Reset pagination saat search
-              }}
-              searchTerm={searchTerm}
-            />
+            {/* 🔥 Search kiri full + filter tanggal kanan (layout mirip Biaya Makan) */}
+            <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4'>
+              {/* Search full kiri */}
+              <div className='flex-1'>
+                <SearchInput
+                  onChange={(e: any) => {
+                    setSearchTerm(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  searchTerm={searchTerm}
+                />
+              </div>
 
+              {/* Filter tanggal mepet pojok kanan */}
+              <div className='w-full md:w-auto flex justify-end'>
+                <DateRangeFilterModern
+                  startDate={dateFilter.startDate}
+                  endDate={dateFilter.endDate}
+                  onChange={setDateFilter}
+                />
+              </div>
+            </div>
+
+            {/* TABLE */}
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="animate-spin w-6 h-6 text-gray-500 mr-3" />
-                <span className="text-gray-500">Memuat data...</span>
+              <div className='flex items-center justify-center py-8'>
+                <Loader2 className='animate-spin w-6 h-6 text-gray-500 mr-3' />
+                <span className='text-gray-500'>Memuat data...</span>
               </div>
             ) : isError ? (
-              <p className="text-center text-red-500 py-6">
+              <p className='text-center text-red-500 py-6'>
                 Gagal memuat data.
               </p>
             ) : filteredData.length === 0 ? (
-              <p className="text-center text-gray-400 py-6">
+              <p className='text-center text-gray-400 py-6'>
                 Tidak ada data ditemukan.
               </p>
             ) : (
@@ -284,7 +328,6 @@ const UpahKariawanPage = () => {
             {/* PAGINATION + ROWS PER PAGE */}
             {filteredData.length > 0 && (
               <div className='flex w-full justify-between items-center mt-6 flex-wrap gap-4'>
-                
                 {/* ROWS PER PAGE SELECTOR */}
                 <div className='flex items-center gap-2'>
                   <label className='text-sm font-medium text-gray-600'>
@@ -315,14 +358,14 @@ const UpahKariawanPage = () => {
 
                   <div className='flex gap-1'>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                      (num) => (
+                      num => (
                         <button
                           key={num}
                           onClick={() => setCurrentPage(num)}
                           className={`px-3 py-2 rounded-lg border text-sm font-medium transition ${
                             currentPage === num
-                              ? "bg-blue-500 text-white border-blue-500"
-                              : "bg-white border-gray-300 text-gray-600 hover:bg-blue-50"
+                              ? 'bg-blue-500 text-white border-blue-500'
+                              : 'bg-white border-gray-300 text-gray-600 hover:bg-blue-50'
                           }`}
                         >
                           {num}
@@ -351,7 +394,6 @@ const UpahKariawanPage = () => {
             )}
           </div>
         </div>
-
       </div>
     </div>
   )

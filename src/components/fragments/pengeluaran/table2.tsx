@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import dayjs from "dayjs";
 import { Pencil, Eye, Download } from "lucide-react";
 
 export default function TablePengeluaran2({
@@ -42,13 +43,18 @@ export default function TablePengeluaran2({
 
   const data = propData ?? internalData;
 
+  // Helper format tanggal
+  const formatTanggal = (value: string) => {
+    return dayjs(value).format("DD/MM/YYYY");
+  };
+
   return (
     <div className="p-6 bg-white rounded-2xl shadow-md border border-gray-200 w-full">
       <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
         Data {title}
       </h2>
 
-      {/* DESKTOP & TABLET TABLE */}
+      {/* DESKTOP TABLE */}
       <div className="hidden sm:block overflow-x-auto">
         <table className="w-full text-base text-gray-700">
           <thead>
@@ -71,13 +77,20 @@ export default function TablePengeluaran2({
                 className="hover:bg-gray-50 transition border-b border-gray-100 text-base"
               >
                 <td className="py-4 px-4 text-center">{index + 1}</td>
-                <td className="py-4 px-4">{item.tanggal}</td>
+
+                {/* 🔥 TANGGAL DIFORMAT */}
+                <td className="py-4 px-4">
+                  {formatTanggal(item.tanggal ?? item.createdAt)}
+                </td>
+
                 <td className="py-4 px-4 font-semibold">{item.nama}</td>
                 <td className="py-4 px-4">{item.penanggungJawab}</td>
                 <td className="py-4 px-4">{item.kategori}</td>
+
                 <td className="py-4 px-4 text-right">
-                  Rp {item.jumlah.toLocaleString("id-ID")}
+                  Rp {item.jumlah?.toLocaleString("id-ID")}
                 </td>
+
                 <td className="py-4 px-4 text-center">
                   <span
                     className={`px-3 py-1 text-sm font-semibold rounded-full ${
@@ -89,6 +102,7 @@ export default function TablePengeluaran2({
                     {item.status}
                   </span>
                 </td>
+
                 <td className="py-4 px-4">
                   <div className="flex justify-center gap-3">
                     <button className="p-2 hover:bg-blue-50 rounded-lg border">
@@ -108,7 +122,7 @@ export default function TablePengeluaran2({
         </table>
       </div>
 
-      {/* MOBILE CARD VERSION */}
+      {/* MOBILE VERSION */}
       <div className="sm:hidden flex flex-col gap-4">
         {data.map((item, index) => (
           <div
@@ -124,7 +138,9 @@ export default function TablePengeluaran2({
 
             <div className="flex justify-between">
               <span className="font-semibold">Tanggal:</span>
-              <span>{item.tanggal}</span>
+
+              {/* 🔥 MOBILE FORMAT JUGA */}
+              <span >{formatTanggal(item.tanggal ?? item.createdAt)}</span>
             </div>
 
             <div className="flex justify-between">
@@ -139,7 +155,7 @@ export default function TablePengeluaran2({
 
             <div className="flex justify-between">
               <span className="font-semibold">Jumlah:</span>
-              <span>Rp {item.jumlah.toLocaleString("id-ID")}</span>
+              <span>Rp {item.jumlah?.toLocaleString("id-ID")}</span>
             </div>
 
             <div className="mt-3 flex justify-between items-center">
