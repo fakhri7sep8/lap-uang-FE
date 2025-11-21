@@ -14,35 +14,32 @@ const OperasionalPage = () => {
 
   const tabs = ['Pembangunan', 'Sarana']
 
-  // ✅ Ambil data dari API pakai TanStack Query
   const { useGetExpense } = useExpenseModule()
   const { data: expenses, isLoading, isError } = useGetExpense('operasional')
-  console.log(expenses)
-  // ✅ Fallback kalau belum ada data
 
-  // ✅ Filter data berdasarkan pencarian dan tab aktif
+  // ===================== FILTER =====================
   const filteredData = useMemo(() => {
-  if (!expenses?.data) return []
+    if (!expenses?.data) return []
 
-  return expenses.data.filter((item: any) => {
     const search = searchTerm.toLowerCase()
 
-    // Search matching
-    const matchSearch =
-      item?.description?.toLowerCase().includes(search) ||
-      item?.PenanggungJawab?.toLowerCase().includes(search) ||
-      item?.category?.name?.toLowerCase().includes(search)
+    return expenses.data.filter((item: any) => {
+      const matchSearch =
+        item?.description?.toLowerCase().includes(search) ||
+        item?.PenanggungJawab?.toLowerCase().includes(search) ||
+        item?.category?.name?.toLowerCase().includes(search)
 
-    // Subcategory filter berdasarkan tab
-    const matchTab =
-      activeTab === 'Pembangunan'
-        ? item?.subCategoryId === 1
-        : item?.subCategoryId === 2
+      const matchTab =
+        activeTab === 'Pembangunan'
+          ? item?.subCategoryId === 1
+          : item?.subCategoryId === 2
 
-    return matchSearch && matchTab
-  })
-}, [expenses, searchTerm, activeTab])
+      return matchSearch && matchTab
+    })
+  }, [expenses, searchTerm, activeTab])
 
+  // ===================== NILAI CARD TERFILTER =====================
+  const filteredCount = searchTerm.trim() === '' ? 0 : filteredData.length
 
   return (
     <div className='min-h-screen flex flex-col gap-10 items-center py-7'>
@@ -51,13 +48,15 @@ const OperasionalPage = () => {
         <CardInformation
           color='blue'
           title='Total Data'
-          value={expenses?.length}
+          value={filteredData?.length}
           icon={<GraduationCap size={32} className='text-blue-500' />}
         />
+
+        {/* 🟢 CARD TERFILTER — sudah diperbaiki */}
         <CardInformation
           color='green'
           title='Data Terfilter'
-          value={filteredData?.length}
+          value={filteredCount}
           icon={<Users size={32} className='text-green-500' />}
         />
       </section>
@@ -111,7 +110,11 @@ const OperasionalPage = () => {
                 Tidak ada data ditemukan.
               </p>
             ) : (
-              <TablePengeluaran title='Operasional' data={filteredData} menu={'operasional'} />
+              <TablePengeluaran
+                title='Operasional'
+                data={filteredData}
+                menu={'operasional'}
+              />
             )}
 
             {/* Pagination */}
