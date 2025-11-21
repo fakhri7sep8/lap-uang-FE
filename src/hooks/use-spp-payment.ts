@@ -62,8 +62,6 @@ export const useSppPaymentModule = () => {
     enabled: !!studentID && !!year, // hanya fetch kalau dua-duanya ada
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    staleTime: 1000 * 60 * 2, // data dianggap fresh selama 2 menit
-    gcTime: 1000 * 60 * 10,   // data disimpan di cache selama 10 menit
     select: (res) => res.data,
   });
 
@@ -83,8 +81,6 @@ export const useSppPaymentModule = () => {
     queryFn: getPayments,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    staleTime: 1000 * 60 * 2, // data dianggap fresh 2 menit
-    gcTime: 1000 * 60 * 10,   // disimpan di cache 10 menit
     select: (res) => res.data, // sesuai BaseResponse { data: ... }
   });
 
@@ -102,8 +98,6 @@ export const useSppPaymentModule = () => {
     queryFn: getRecapSPPPayment,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    staleTime: 1000 * 60 * 2, // data fresh selama 2 menit
-    gcTime: 1000 * 60 * 10,   // cache disimpan selama 10 menit
     select: (res) => res.data,
   });
 

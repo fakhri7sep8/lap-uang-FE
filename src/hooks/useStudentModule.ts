@@ -143,8 +143,6 @@ const useCreateStudent = () => {
     queryKey: ["get-student"],
     queryFn: getStudentData,
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 2, // data dianggap fresh selama 2 menit
-    gcTime: 1000 * 60 * 10,   // data disimpan di cache selama 10 menit
     select: (res) => res.data.data || [],
   });
 

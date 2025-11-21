@@ -34,8 +34,6 @@ export const useCategoryPaymentModule = () => {
       queryFn: getCategory,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      staleTime: 0,
-      gcTime: 1000 * 60 * 10, // disimpan di cache 10 menit
       select: (res) => res.data,
     });
 

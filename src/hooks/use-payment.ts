@@ -71,8 +71,6 @@ export const usePaymentModule = () => {
       queryKey: ["payments"],
       queryFn: getPayments,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 2,
-      gcTime: 1000 * 60 * 10,
       select: (res) => res.data,
     });
 
@@ -89,8 +87,6 @@ export const usePaymentModule = () => {
       queryKey: ["payments-recap"],
       queryFn: getRecapPayments,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 2,
-      gcTime: 1000 * 60 * 10,
       select: (res) => res.data,
     });
 
@@ -119,24 +115,25 @@ export const usePaymentModule = () => {
   };
 
   const useCreatePayment = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: CreatePaymentDto) => createPayment(payload),
-    onSuccess: async (_data, payload) => {
-      Swal.fire("Berhasil", "Pembayaran berhasil ditambahkan", "success");
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["payments"] }),
-        queryClient.invalidateQueries({
-          queryKey: ["payments-by-cns", payload.studentId, payload.typeId],
-        }),
-      ]);
-    },
-    onError: (error: any) => {
-      Swal.fire("Error", "Gagal menambahkan: " + error.message, "error");
-    },
-  });
-};
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (payload: CreatePaymentDto) => createPayment(payload),
+      onSuccess: async (_data, payload) => {
+        Swal.fire("Berhasil", "Pembayaran berhasil ditambahkan", "success");
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["payments"] }),
+          queryClient.invalidateQueries({ queryKey: ["categoryPayment"] }),
+          queryClient.invalidateQueries({
+            queryKey: ["payments-by-cns", payload.studentId, payload.typeId],
+          }),
+        ]);
+      },
 
+      onError: (error: any) => {
+        Swal.fire("Error", "Gagal menambahkan: " + error.message, "error");
+      },
+    });
+  };
 
   const useGetPaymentsByCategory = () => {
     const queryClient = useQueryClient();
@@ -152,27 +149,26 @@ export const usePaymentModule = () => {
     });
   };
 
- const useUpdatePayment = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: any) =>
-      updatePayment(payload.studentId, payload, payload.typeId),
-    onSuccess: async (_data, payload) => {
-      Swal.fire("Berhasil", "Pembayaran berhasil diupdate", "success");
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["payments"] }),
-        queryClient.invalidateQueries({
-          queryKey: ["payments-by-cns", payload.studentId, payload.typeId],
-        }),
-        queryClient.invalidateQueries({ queryKey: ["payment-detail"] }),
-      ]);
-    },
-    onError: (error: any) => {
-      Swal.fire("Error", "Gagal mengupdate: " + error.message, "error");
-    },
-  });
-};
-
+  const useUpdatePayment = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (payload: any) =>
+        updatePayment(payload.studentId, payload, payload.typeId),
+      onSuccess: async (_data, payload) => {
+        Swal.fire("Berhasil", "Pembayaran berhasil diupdate", "success");
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["payments"] }),
+          queryClient.invalidateQueries({
+            queryKey: ["payments-by-cns", payload.studentId, payload.typeId],
+          }),
+          queryClient.invalidateQueries({ queryKey: ["payment-detail"] }),
+        ]);
+      },
+      onError: (error: any) => {
+        Swal.fire("Error", "Gagal mengupdate: " + error.message, "error");
+      },
+    });
+  };
 
   const useDeletePayment = () => {
     const queryClient = useQueryClient();
@@ -195,9 +191,7 @@ export const usePaymentModule = () => {
       queryFn: () => getPaymentsByCNS(ids, idc),
       enabled: !!ids && !!idc,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 2,
-      gcTime: 1000 * 60 * 10,
-      select: (res) => res.data,
+      select: (res) => res.data?.payments || [],
     });
 
     const refreshPaymentsByCNS = () =>

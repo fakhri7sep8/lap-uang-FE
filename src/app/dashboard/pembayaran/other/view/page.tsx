@@ -20,97 +20,99 @@ import { Button } from "@/components/ui/button";
 import CardInformation from "@/components/fragments/dashboard/card-information";
 import Loader from "@/components/ui/loader";
 import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
-import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
-import { usePaymentModule } from "@/hooks/use-payment";
 import SearchDataTable from "@/components/fragments/dashboard/search-data-table";
-import { AnimatePresence } from "framer-motion";
+import { axiosClient } from "@/lib/axiosClient";
 
 const DataSelainSpp = () => {
   const [showCount, setShowCount] = useState<any>(10);
   const [currentPage, setCurrentPage] = useState<any>(1);
   const [startIndex, setStartIndex] = useState<any>(0);
   const [searchTerm, setSearchTerm] = useState<any>("");
+
   const maxVisible = 4;
 
-  // selectedCategory object
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [cicilanData, setCicilanData] = useState<any[]>([]);
-  const [showFilter, setShowFilter] = useState(false);
 
-  const { useGetCategory } = useCategoryPaymentModule();
-  const { data: categories = [], isLoading: isLoadingCategory } =
-    useGetCategory() as any;
+  // === NEW STATE: categories & recap berasal dari API final ===
+  const [categories, setCategories] = useState<any[]>([]);
+  const [recap, setRecap] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const {
-    useGetRecapPayments,
-    useGetPaymentsByCategory,
-    useGetCicilanPayments,
-  } = usePaymentModule();
-  const { data: recap = [], isLoading, isError } = useGetRecapPayments() as any;
+  // Fetch data payment-types + student status
+  const fetchAll = async () => {
+  setLoading(true);
+  try {
+    const res = await axiosClient.get("/payment-types/with-status");
 
-  const { mutate: getPaymentsByCategory, data: paymentsByCategory } =
-    useGetPaymentsByCategory() as any;
-  const { mutate: getCicilanPayments } = useGetCicilanPayments() as any;
+    const json = res.data;
 
-  const selectedCategoryType: any = categories.find(
-    (c: any) => c.id === selectedCategory?.id
-  )?.type;
+    const listKategori = json.data || [];
+    setCategories(listKategori);
+
+    // Bikin recap siswa (mirip logic lama lu)
+    const siswaUnique: any = {};
+
+    listKategori.forEach((kategori: any) => {
+      kategori.students?.forEach((s: any) => {
+        if (!siswaUnique[s.id]) {
+          siswaUnique[s.id] = { id: s.id, name: s.name };
+        }
+      });
+    });
+
+    setRecap(Object.values(siswaUnique));
+  } catch (err) {
+    console.log("Error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  useEffect(() => {
+    fetchAll();
+  }, []);
 
   const filteredData: any[] = recap.filter((p: any) =>
     searchTerm ? p.name.toLowerCase().includes(searchTerm.toLowerCase()) : true
   );
+
   const totalPages: any = Math.ceil(filteredData.length / showCount);
   const paginatedData: any[] = filteredData.slice(
     (currentPage - 1) * showCount,
     currentPage * showCount
   );
 
-  const getStatusBadgeClass = (status: any) => {
+  const getStatusBadgeClass = (status: string) => {
     const baseStyle =
       "inline-block w-28 text-center px-3 py-1 rounded-full text-xs font-medium transition-transform duration-150 hover:scale-105";
 
     switch ((status || "").toUpperCase()) {
       case "LUNAS":
-        return `${baseStyle} bg-green-100 text-green-700 shadow-sm`;
-      case "BELUM_LUNAS":
+        return `${baseStyle} bg-green-100 text-green-700`;
       case "BELUM LUNAS":
-        return `${baseStyle} bg-yellow-100 text-yellow-700 shadow-sm`;
+        return `${baseStyle} bg-yellow-100 text-yellow-700`;
       case "TUNGGAKAN":
-        return `${baseStyle} bg-red-100 text-red-700 shadow-sm`;
+        return `${baseStyle} bg-red-100 text-red-700`;
+      case "NYICIL":
+        return `${baseStyle} bg-purple-100 text-purple-700`;
       default:
-        return `${baseStyle} bg-gray-100 text-gray-700 shadow-sm`;
+        return `${baseStyle} bg-gray-50 text-gray-500`;
     }
   };
 
-  // Ambil data sesuai type: cicilan pakai id, lainnya pakai name
-  useEffect(() => {
-    if (!selectedCategory) return;
+  const handlePrev = () => startIndex > 0 && setStartIndex(startIndex - 1);
+  const handleNext = () =>
+    startIndex < categories.length - maxVisible &&
+    setStartIndex(startIndex + 1);
 
-    if (selectedCategoryType === "INSTALLMENT") {
-      getCicilanPayments(selectedCategory.id, {
-        onSuccess: (data: any) => setCicilanData(data),
-      });
-    } else {
-      getPaymentsByCategory(selectedCategory.name); // pakai name untuk kategori biasa
-    }
-  }, [selectedCategory, selectedCategoryType]);
-
-  if (isLoading || isLoadingCategory) {
+  if (loading) {
     return (
       <div className="p-6 w-full h-[89vh] flex justify-center items-center">
         <Loader />
       </div>
     );
   }
-
-  if (isError) {
-    return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
-  }
-
-  const handlePrev = () => startIndex > 0 && setStartIndex(startIndex - 1);
-  const handleNext = () =>
-    startIndex < categories.length - maxVisible &&
-    setStartIndex(startIndex + 1);
 
   return (
     <section className="flex flex-col gap-10 w-full">
@@ -123,33 +125,32 @@ const DataSelainSpp = () => {
         />
         <CardInformation
           color="green"
-          title="Lunas"
-          value={filteredData.slice(0, showCount).length}
+          title="Kategori Aktif"
+          value={categories.length}
           icon={<Users size={32} className="text-green-500" />}
         />
       </section>
 
       <section className="w-full flex flex-col gap-6 h-full pb-6">
-        {/* {tabel} */}
         <SearchDataTable
           title={"Data Pembayaran"}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          setShowFilter={setShowFilter}
+          setShowFilter={() => {}}
           setShowCount={setShowCount}
           type={"normal"}
         />
 
-        {/* Carousel */}
+        {/* === CAROUSEL FIXED (NORMAL + INSTALLMENT = SAME MECHANISM) === */}
         <div className="w-full flex items-center">
           <button
-            title="Previous"
             onClick={handlePrev}
             disabled={startIndex === 0}
             className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
+
           <div className="overflow-hidden flex-1 mx-2">
             <div
               className="flex gap-4 transition-transform duration-500"
@@ -157,6 +158,7 @@ const DataSelainSpp = () => {
                 transform: `translateX(-${startIndex * (100 / maxVisible)}%)`,
               }}
             >
+              {/* tombol Semua */}
               <div
                 onClick={() => setSelectedCategory(null)}
                 className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-12 rounded-xl cursor-pointer ${
@@ -165,12 +167,11 @@ const DataSelainSpp = () => {
               >
                 <p className="text-white font-semibold text-base">Semua</p>
               </div>
-              {categories.map((kat: any, i: any) => (
+
+              {categories.map((kat: any) => (
                 <div
-                  key={i}
-                  onClick={() =>
-                    setSelectedCategory({ id: kat.id, name: kat.name })
-                  }
+                  key={kat.id}
+                  onClick={() => setSelectedCategory(kat)}
                   className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-12 rounded-xl cursor-pointer ${
                     selectedCategory?.id === kat.id
                       ? "bg-blue-700"
@@ -184,8 +185,8 @@ const DataSelainSpp = () => {
               ))}
             </div>
           </div>
+
           <button
-            title="Next"
             onClick={handleNext}
             disabled={startIndex >= categories.length - maxVisible}
             className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
@@ -194,43 +195,48 @@ const DataSelainSpp = () => {
           </button>
         </div>
 
-        {/* Table */}
+        {/* ==== TABLE ==== */}
         <div className="w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
           {selectedCategory ? (
-            selectedCategoryType === "INSTALLMENT" ? (
-              // Cicilan pakai ID
-              <Table className="w-full text-gray-700 text-center">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>No</TableHead>
-                    <TableHead>Nama Siswa</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Nominal</TableHead>
-                    <TableHead>Sudah Dibayar</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Aksi</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {cicilanData.length > 0 ? (
-                    cicilanData.map((item: any, idx: any) => (
-                      <TableRow key={item.studentId}>
+            <Table className="w-full text-gray-700 text-center">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>No</TableHead>
+                  <TableHead>Nama</TableHead>
+                  <TableHead>Kategori</TableHead>
+                  <TableHead>Nominal</TableHead>
+                  <TableHead>Dibayar</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+
+              <TableBody>
+                {selectedCategory.students?.length > 0 ? (
+                  selectedCategory.students.map((s: any, idx: number) => {
+                    const pembayaran = selectedCategory.payments?.find(
+                      (p: any) => p.studentId === s.id
+                    );
+
+                    return (
+                      <TableRow key={s.id}>
                         <TableCell>{idx + 1}</TableCell>
-                        <TableCell>{item.nama}</TableCell>
-                        <TableCell>{item.tipeKategori}</TableCell>
+                        <TableCell>{s.name}</TableCell>
+                        <TableCell>{selectedCategory.name}</TableCell>
                         <TableCell>
-                          Rp. {item.jumlahTagihan?.toLocaleString("id-ID")}
+                          Rp.{" "}
+                          {selectedCategory.nominal?.toLocaleString("id-ID")}
                         </TableCell>
                         <TableCell>
-                          Rp. {item.jumlahPembayaran?.toLocaleString("id-ID")}
+                          Rp. {pembayaran?.paid?.toLocaleString("id-ID") || 0}
                         </TableCell>
                         <TableCell>
                           <span
                             className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                              item.status
+                              s.status
                             )}`}
                           >
-                            {item.status}
+                            {s.status}
                           </span>
                         </TableCell>
                         <TableCell>
@@ -239,76 +245,22 @@ const DataSelainSpp = () => {
                           </Button>
                         </TableCell>
                       </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={7}
-                        className="text-center text-gray-400 py-6"
-                      >
-                        Tidak ada data cicilan
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            ) : (
-              // Biasa pakai name
-              <Table className="w-full text-gray-700 text-center">
-                <TableHeader>
+                    );
+                  })
+                ) : (
                   <TableRow>
-                    <TableHead>No</TableHead>
-                    <TableHead>Nama Siswa</TableHead>
-                    <TableHead>Tahun</TableHead>
-                    <TableHead>Kategori</TableHead>
-                    <TableHead>Nominal</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Aksi</TableHead>
+                    <TableCell
+                      colSpan={7}
+                      className="text-center text-gray-400 py-6"
+                    >
+                      Tidak ada data
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paymentsByCategory?.data?.length > 0 ? (
-                    paymentsByCategory.data.map((item: any, idx: any) => (
-                      <TableRow key={item.id}>
-                        <TableCell>{idx + 1}</TableCell>
-                        <TableCell>{item.student?.name}</TableCell>
-                        <TableCell>{item.year}</TableCell>
-                        <TableCell>{item.type?.name}</TableCell>
-                        <TableCell>
-                          Rp. {item.amount?.toLocaleString("id-ID")}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${getStatusBadgeClass(
-                              item.status
-                            )}`}
-                          >
-                            {item.status}
-                          </span>
-                        </TableCell>
-                        <TableCell className="flex gap-2 justify-center">
-                          <Button className="bg-blue-500 text-white">
-                            <Download size={16} />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={7}
-                        className="text-center text-gray-400 py-6"
-                      >
-                        Tidak ada data untuk kategori ini
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            )
+                )}
+              </TableBody>
+            </Table>
           ) : (
-            // Semua
-            <Table className="w-full h-full table-auto bg-white text-gray-700 text-center">
+            <Table className="w-full text-gray-700 text-center">
               <TableHeader>
                 <TableRow>
                   <TableHead>No</TableHead>
@@ -319,6 +271,7 @@ const DataSelainSpp = () => {
                   <TableHead>Aksi</TableHead>
                 </TableRow>
               </TableHeader>
+
               <TableBody>
                 {paginatedData.length === 0 ? (
                   <TableRow>
@@ -327,27 +280,19 @@ const DataSelainSpp = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  paginatedData.map((p: any, idx: any) => (
+                  paginatedData.map((p: any, idx: number) => (
                     <TableRow key={p.id}>
                       <TableCell>
                         {(currentPage - 1) * showCount + idx + 1}
                       </TableCell>
                       <TableCell>{p.name}</TableCell>
 
-                      {/* Loop semua kategori biar rapi */}
                       {categories.map((c: any) => {
-                        const normalize = (str: string) =>
-                          str
-                            ?.toString()
-                            .trim()
-                            .toLowerCase()
-                            .replace(/[\s_]+/g, "");
-
-                        const studentInCategory = c.students?.find(
-                          (s: any) => normalize(s.name) === normalize(p.name)
+                        const student = c.students?.find(
+                          (s: any) => s.name === p.name
                         );
 
-                        const status = studentInCategory?.paymentStatus || null;
+                        const status = student?.status;
 
                         return (
                           <TableCell key={c.id}>
@@ -360,7 +305,7 @@ const DataSelainSpp = () => {
                                 {status}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center justify-center w-28 px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700 shadow-inner hover:scale-105 transition-all duration-150">
+                              <span className="inline-flex items-center justify-center w-28 px-3 py-1 rounded-full text-xs bg-gray-200 text-gray-700">
                                 🚫 Tidak Ada
                               </span>
                             )}
@@ -368,7 +313,7 @@ const DataSelainSpp = () => {
                         );
                       })}
 
-                      <TableCell className="flex w-full gap-2 items-center justify-center">
+                      <TableCell className="flex gap-2 justify-center">
                         <Button className="bg-blue-500 text-white">
                           <Download />
                         </Button>

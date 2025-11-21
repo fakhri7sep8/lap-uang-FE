@@ -69,8 +69,6 @@ export const useExpenseModule = () => {
       queryKey: ["expenses"],
       queryFn: getExpenses,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 2,
-      gcTime: 1000 * 60 * 10,
       select: (data) => data.data,
     });
     const refreshExpense = () =>

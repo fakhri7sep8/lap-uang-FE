@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Combobox } from "@/components/ui/combobox";
 import {
   Select,
@@ -11,137 +11,183 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+
 import { useStudentModule } from "@/hooks/useStudentModule";
 import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
-import { usePaymentModule } from "@/hooks/use-payment";
+import { usePaymentHistoryModule } from "@/hooks/usePaymentHistoryModule";
+
 import { formatRupiah } from "@/lib/format-rupiah";
-import { Send, FileDown, ArrowRight, ArrowRightCircle } from "lucide-react";
+import { Send, FileDown, ArrowRightCircle } from "lucide-react";
 import Swal from "sweetalert2";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const InputNonSPP = () => {
   const [selectedSiswa, setSelectedSiswa] = useState<string>("");
-  const [selectedKategori, setSelectedKategori] = useState<string>("");
-  const [selectIDCateogry, setIDCategory] = useState<string>();
+  const [selectIDCategory, setIDCategory] = useState<string>();
   const [cicilanNominal, setCicilanNominal] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { useGetStudent } = useStudentModule();
-  const { useGetCategory, useDetailCategory } = useCategoryPaymentModule();
-  const { useCreatePayment, useUpdatePayment, useGetPaymentsByCNS } =
-    usePaymentModule();
+  const { useGetCategory } = useCategoryPaymentModule();
+  const { useCreateHistory, useGetAllHistory } = usePaymentHistoryModule();
 
   const { data: siswaMQ } = useGetStudent();
   const { data: categoryMQ } = useGetCategory();
+  const { data: historyMQ } = useGetAllHistory();
+
+  const { mutate: createHistory } = useCreateHistory();
+  const router = useRouter();
+
+  // ===========================
+  // Ambil data siswa terpilih
+  // ===========================
   const siswa = siswaMQ?.find(
     (s: any) => s.name === selectedSiswa || s.InductNumber === selectedSiswa
   );
 
-  const { data: detailCategoryMQ, isLoading: isLoadingDetail } =
-    useDetailCategory(selectIDCateogry);
-  const { data: existingPayment, isLoading: isLoadingPayment } =
-    useGetPaymentsByCNS(siswa?.id || "", selectIDCateogry || "");
+  // ===========================
+  // Ambil kategori dipilih
+  // ===========================
+  const selectedCategory = categoryMQ?.find(
+    (c: any) => c.id === selectIDCategory
+  );
 
-  const isLoadingState = isLoadingDetail || isLoadingPayment;
+  // ===========================
+  // Ambil HISTORY by siswa + kategori
+  // ===========================
+ const studentHistory = historyMQ?.filter(
+  (h: any) =>
+    h.studentId === siswa?.id &&
+    h.type?.id === selectIDCategory // ← FIX DI SINI !!!
+);
 
-  const { mutate: createPayments, isPending: isPendingCreate } =
-    useCreatePayment();
-  const { mutate: updatePayments, isPending: isPendingUpdate } =
-    useUpdatePayment();
 
-  const isSubmitting = isPendingCreate || isPendingUpdate;
+  const totalDibayar =
+    studentHistory?.reduce((acc: number, h: any) => acc + h.amount, 0) || 0;
 
-  // Cicilan input
+  // ===========================
+  // Handle Cicilan
+  // ===========================
   const handleCicilanChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "");
-    const inputNominal = Number(raw || 0);
-    const sudahDibayar =
-      existingPayment?.reduce((acc: number, p: any) => acc + p.amount, 0) || 0;
-    const totalTagihan = detailCategoryMQ?.data?.nominal || 0;
-    const sisaTagihan = Math.max(totalTagihan - sudahDibayar, 0);
-    setCicilanNominal(inputNominal > sisaTagihan ? sisaTagihan : inputNominal);
+    const nominal = Number(raw || 0);
+
+    const total = selectedCategory?.nominal || 0;
+    const sisa = Math.max(total - totalDibayar, 0);
+
+    setCicilanNominal(nominal > sisa ? sisa : nominal);
   };
 
-  // Submit
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
-    if (!siswa) return;
-
-    const paymentsDTO = {
-      studentId: siswa.id,
-      date: new Date().toISOString(),
-      method: "NORMAL",
-      year: new Date().getFullYear(),
-      typeId: selectIDCateogry || "",
-      status: "LUNAS",
-    };
-
-    if (detailCategoryMQ?.data?.type === "NORMAL") {
-      const payload = {
-        ...paymentsDTO,
-        amount: detailCategoryMQ?.data?.nominal,
-      };
-      existingPayment?.length > 0
-        ? updatePayments({ id: existingPayment[0].id, payload })
-        : createPayments(payload as any);
-    }
-
-    if (detailCategoryMQ?.data?.type === "INSTALLMENT") {
-      createPayments({ ...paymentsDTO, amount: cicilanNominal } as any);
-    }
-  };
-
-  const totalNominal =
-    detailCategoryMQ?.data?.type === "INSTALLMENT"
-      ? (detailCategoryMQ?.data?.nominal || 0) -
-        (existingPayment?.reduce((acc: any, p: any) => acc + p.amount, 0) || 0)
-      : detailCategoryMQ?.data?.nominal || 0;
-
+  // ===========================
+  // Status Pembayaran
+  // ===========================
   const getStatusPembayaran = () => {
-    if (detailCategoryMQ?.data?.type === "INSTALLMENT") {
-      const sudahDibayar =
-        existingPayment && Array.isArray(existingPayment)
-          ? existingPayment.reduce((acc: number, p: any) => acc + p.amount, 0)
-          : existingPayment?.amount || 0;
-      if (sudahDibayar >= (detailCategoryMQ?.data?.nominal || 0))
-        return "LUNAS";
-      if (sudahDibayar > 0) return "BELUM LUNAS";
-      return "BELUM BAYAR";
-    }
-    if (detailCategoryMQ?.data?.type === "NORMAL") {
-      const payments = Array.isArray(existingPayment)
-        ? existingPayment
-        : existingPayment
-        ? [existingPayment]
-        : [];
-      if (payments.some((p: any) => p.status === "LUNAS")) return "LUNAS";
-      if (payments.length > 0) return "BELUM LUNAS";
-      return "BELUM BAYAR";
-    }
+    if (!siswa || !selectIDCategory) return "- Menunggu input -";
+
+    const total = selectedCategory?.nominal || 0;
+
+    if (totalDibayar >= total) return "LUNAS";
+    if (totalDibayar > 0) return "BELUM LUNAS";
+
     return "BELUM BAYAR";
   };
 
   const isAllLunas = getStatusPembayaran() === "LUNAS";
 
-  // Download template
-  const downloadTemplate = () => {
-    Swal.fire("Download Template", "Template akan segera diunduh.", "info");
+  // ===========================
+  // Handle Submit
+  // ===========================
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!siswa || !selectIDCategory || !selectedCategory) return;
+
+    setIsSubmitting(true);
+
+    const payloadBase = {
+      studentId: siswa.id,
+      date: new Date().toISOString(),
+      method: "NORMAL",
+      year: new Date().getFullYear(),
+      typeId: selectIDCategory,
+      status: "LUNAS",
+    };
+
+    const afterSave = () => {
+      setIsSubmitting(false);
+      router.refresh();
+    };
+
+    if (selectedCategory.type === "NORMAL") {
+      createHistory(
+        { ...payloadBase, amount: selectedCategory.nominal },
+        { onSettled: afterSave }
+      );
+    }
+
+    if (selectedCategory.type === "INSTALLMENT") {
+      createHistory(
+        { ...payloadBase, amount: cicilanNominal },
+        { onSettled: afterSave }
+      );
+    }
   };
 
-  const handleImportClick = () => {
-    Swal.fire(
-      "Impor Excel",
-      "Fitur impor Excel bisa ditambahkan di sini",
-      "info"
-    );
-  };
+  // ===========================
+  // Nominal tampil
+  // ===========================
+  const totalNominal =
+    selectedCategory?.type === "INSTALLMENT"
+      ? (selectedCategory?.nominal || 0) - totalDibayar
+      : selectedCategory?.nominal || 0;
 
+  // ===========================
+  // Drawer action (dummy)
+  // ===========================
+  const downloadTemplate = () =>
+    Swal.fire("Download Template", "Template akan diunduh.", "info");
+
+  const handleImportClick = () =>
+    Swal.fire("Impor Excel", "Fitur impor Excel menyusul.", "info");
+
+  // ============================================================
+  // ======================= UI =================================
+  // ============================================================
   return (
-    <div className="w-full flex justify-center items-center p-8">
+    <div className="w-full flex flex-col justify-center items-center p-8">
+      {/* MENU Atas */}
+      <div className="flex flex-row gap-6 mb-8 w-full">
+        <div
+          onClick={() => router.push("/dashboard/pembayaran/input/inputSPP")}
+          className="flex-1 py-4 flex items-center justify-center gap-2 border border-orange-500 text-orange-500 text-lg rounded-xl cursor-pointer hover:bg-orange-500 hover:text-white transition"
+        >
+          <ArrowRightCircle size={24} />
+          Input Pembayaran SPP
+        </div>
+
+        <div
+          onClick={() => router.push("/dashboard/pembayaran/input/inputNonSpp")}
+          className="flex-1 py-4 flex items-center justify-center gap-2 bg-orange-500 text-white border border-orange-500 text-lg rounded-xl cursor-pointer hover:bg-white hover:text-orange-500 transition"
+        >
+          <ArrowRightCircle size={24} />
+          Input Pembayaran Non SPP
+        </div>
+      </div>
+
+      {/* FORM */}
       <section className="w-full bg-white rounded-2xl shadow-md p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <h1 className="font-semibold text-2xl">Input Pembayaran Non-SPP</h1>
 
-          {/* Nama Siswa & No Induk */}
+          {/* Siswa */}
           <div className="flex gap-6">
             <div className="flex flex-col w-1/2">
               <label className="text-sm font-medium mb-1">Nama Siswa</label>
@@ -156,6 +202,7 @@ const InputNonSPP = () => {
                 placeholder="Pilih siswa"
               />
             </div>
+
             <div className="flex flex-col w-1/2">
               <label className="text-sm font-medium mb-1">No Induk</label>
               <Combobox
@@ -177,10 +224,10 @@ const InputNonSPP = () => {
               Kategori Pembayaran
             </label>
             <Select
-              value={selectIDCateogry || ""}
-              onValueChange={(val) => setIDCategory(val)}
+              value={selectIDCategory || ""}
+              onValueChange={setIDCategory}
             >
-              <SelectTrigger className="w-full py-6">
+              <SelectTrigger className="w-full py-4">
                 <SelectValue placeholder="Pilih kategori" />
               </SelectTrigger>
               <SelectContent className="bg-gray-50 border-slate-300">
@@ -188,9 +235,7 @@ const InputNonSPP = () => {
                   <SelectLabel>Kategori</SelectLabel>
                   {categoryMQ
                     ?.filter((c: any) =>
-                      siswa
-                        ? c.students.some((s: any) => s.id === siswa.id)
-                        : true
+                      siswa ? c.students.some((s: any) => s.id === siswa.id) : true
                     )
                     .map((c: any) => (
                       <SelectItem key={c.id} value={c.id}>
@@ -202,51 +247,90 @@ const InputNonSPP = () => {
             </Select>
           </div>
 
-          {/* Cicilan */}
-          {detailCategoryMQ?.data?.type === "INSTALLMENT" && (
-            <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                value={cicilanNominal ? formatRupiah(cicilanNominal) : ""}
-                onChange={handleCicilanChange}
-                className="border-slate-300 border rounded-md px-4 py-2"
-                placeholder="Masukkan jumlah cicilan"
-              />
-            </div>
+          {/* TABEL History */}
+          {selectedCategory?.type === "INSTALLMENT" &&
+            studentHistory?.length > 0 && (
+              <div className="w-full border border-slate-200 rounded-xl overflow-hidden shadow-sm bg-white mt-4">
+                <Table className="w-full">
+                  <TableHeader>
+                    <TableRow className="bg-slate-50">
+                      <TableHead className="text-center font-semibold">No</TableHead>
+                      <TableHead className="text-center font-semibold">Nama Siswa</TableHead>
+                      <TableHead className="text-center font-semibold">Kategori</TableHead>
+                      <TableHead className="text-center font-semibold">Nominal Dibayar</TableHead>
+                      <TableHead className="text-center font-semibold">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+
+                  <TableBody>
+                    {studentHistory.map((item: any, i: number) => {
+                      const totalSoFar = studentHistory
+                        .slice(0, i + 1)
+                        .reduce((acc: number, h: any) => acc + h.amount, 0);
+
+                      const status =
+                        totalSoFar >= (selectedCategory?.nominal || 0)
+                          ? "LUNAS"
+                          : "BELUM LUNAS";
+
+                      return (
+                        <TableRow key={i} className="hover:bg-slate-50">
+                          <TableCell className="text-center">{i + 1}</TableCell>
+                          <TableCell className="text-center">{siswa?.name}</TableCell>
+                          <TableCell className="text-center">
+                            {selectedCategory?.name}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            Rp. {item.amount.toLocaleString("id-ID")}
+                          </TableCell>
+                          <TableCell className="text-center">{status}</TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+
+          {/* Input Cicilan */}
+          {selectedCategory?.type === "INSTALLMENT" && (
+            <input
+              type="text"
+              value={cicilanNominal ? formatRupiah(cicilanNominal) : ""}
+              onChange={handleCicilanChange}
+              placeholder="Masukkan jumlah cicilan"
+              className="border-slate-300 border rounded-md px-4 py-2"
+            />
           )}
 
+          {/* Status */}
           <div className="flex flex-col">
             <label className="text-sm font-medium mb-1">
               Status Pembayaran
             </label>
-            <div className="w-full border rounded-md p-4 border-slate-300">
-              {isLoadingState ? (
-                <p className="font-medium text-slate-500">Loading...</p>
-              ) : (
-                <p className="font-semibold text-lg">{getStatusPembayaran()}</p>
-              )}
+            <div className="w-full border rounded-md p-4 border-slate-300 text-base text-slate-400">
+              {getStatusPembayaran()}
             </div>
           </div>
 
+          {/* Nominal */}
           <div className="flex flex-col">
             <label className="text-sm font-medium mb-1">Nominal</label>
-            <div className="w-full border rounded-md p-4 border-slate-300">
-              {isLoadingState ? (
-                <p className="font-medium text-slate-500">Loading...</p>
-              ) : (
-                <p className="font-semibold text-lg">
-                  Rp. {totalNominal.toLocaleString("id-ID")}
-                </p>
-              )}
+            <div className="w-full border rounded-md p-4 border-slate-300 text-base text-slate-400">
+              {siswa && selectedCategory
+                ? `Rp. ${totalNominal.toLocaleString("id-ID")}`
+                : "- Pilih siswa & kategori -"}
             </div>
           </div>
 
-          {/* Button Section */}
+          {/* Button Action */}
           <div className="flex flex-col items-end gap-4 mt-4">
             <button
               type="submit"
-              disabled={isSubmitting || isAllLunas}
-              className={`w-full py-5 border text-lg flex items-center justify-center gap-2 rounded-xl transition-all ${
+              disabled={
+                isSubmitting || isAllLunas || !siswa || !selectIDCategory
+              }
+              className={`w-full py-5 flex items-center justify-center gap-2 text-lg rounded-xl border transition-all ${
                 isSubmitting || isAllLunas
                   ? "cursor-not-allowed bg-gray-200 text-gray-600 border-gray-300"
                   : "cursor-pointer border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
@@ -263,7 +347,7 @@ const InputNonSPP = () => {
             <button
               type="button"
               onClick={downloadTemplate}
-              className="w-full py-5 hover:bg-blue-500 hover:text-white transition-all cursor-pointer border border-blue-500 text-blue-500 text-lg flex items-center justify-center gap-2 rounded-xl"
+              className="w-full py-5 flex items-center justify-center gap-2 text-lg rounded-xl border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition"
             >
               <FileDown size={24} />
               Download format excel
@@ -272,18 +356,11 @@ const InputNonSPP = () => {
             <button
               type="button"
               onClick={handleImportClick}
-              className="w-full py-5 hover:bg-purple-500 hover:text-white transition-all cursor-pointer border border-purple-500 text-purple-500 text-lg flex items-center justify-center gap-2 rounded-xl"
+              className="w-full py-5 flex items-center justify-center gap-2 text-lg rounded-xl border border-purple-500 text-purple-500 hover:bg-purple-500 hover:text-white transition"
             >
               <FileDown size={24} />
               Impor dari Excel
             </button>
-            <Link
-              href="/dashboard/pembayaran/input/inputSPP"
-              className="w-full py-5 hover:bg-orange-500 hover:text-white transition-all cursor-pointer border border-orange-500 text-orange-500 text-lg flex items-center justify-center gap-2 rounded-xl"
-            >
-              <ArrowRightCircle size={24} />
-              Input Pembayaran SPP
-            </Link>
           </div>
         </form>
       </section>

@@ -63,6 +63,7 @@ const UpdateKategori = () => {
   const { data: siswaMQ } = useGetStudent();
 
   const [selectedSiswa, setSelectedSiswa] = useState<Option[]>([]);
+  const [selectAll, setSelectAll] = useState(false);
 
   const siswaOptions: Option[] =
     siswaMQ?.map((s: any) => ({
@@ -81,11 +82,12 @@ const UpdateKategori = () => {
     },
     validationSchema: updateCategorySchema,
     onSubmit: (values) => {
-      const payload = {
+      const payload: any = {
         ...values,
-        studentIds: selectedSiswa.map((s) => s.value),
+        ...(selectedSiswa.length > 0 && !selectAll
+          ? { studentIds: selectedSiswa.map((s) => s.value) }
+          : {}),
       };
-
       mutate.mutate(payload);
     },
   });
@@ -108,9 +110,15 @@ const UpdateKategori = () => {
             value: s.id,
           }))
         );
+
+        // kalau semua siswa terpilih
+        setSelectAll(
+          data.data.students.length === siswaMQ?.length &&
+            siswaMQ?.length > 0
+        );
       }
     }
-  }, [data]);
+  }, [data, siswaMQ]);
 
   if (isLoading && !data) {
     return (
@@ -141,9 +149,6 @@ const UpdateKategori = () => {
                 onChange={formik.handleChange}
                 className="border-slate-300 px-3 py-6"
               />
-              {formik.errors.name && (
-                <p className="text-red-500 text-sm">{formik.errors.name}</p>
-              )}
             </div>
 
             {/* Pilih Siswa */}
@@ -152,7 +157,11 @@ const UpdateKategori = () => {
               <MultipleSelector
                 defaultOptions={siswaOptions}
                 value={selectedSiswa}
-                onChange={setSelectedSiswa}
+                onChange={(val) => {
+                  setSelectedSiswa(val);
+                  setSelectAll(val.length === siswaOptions.length);
+                }}
+                placeholder="Pilih siswa..."
               />
             </div>
 
@@ -168,13 +177,10 @@ const UpdateKategori = () => {
                 }
                 className="border-slate-300 px-3 py-6"
               />
-              {formik.errors.semester && (
-                <p className="text-red-500 text-sm">{formik.errors.semester}</p>
-              )}
             </div>
 
             {/* Tahun Ajaran */}
-            <div className="flex flex-col gap-4 ">
+            <div className="flex flex-col gap-4">
               <Label>Tahun Ajaran</Label>
               <Select
                 value={formik.values.TA}
@@ -185,7 +191,6 @@ const UpdateKategori = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-white">
                   <SelectGroup>
-                    <SelectLabel>Tahun Ajaran</SelectLabel>
                     {academicYears.map((year) => (
                       <SelectItem key={year} value={year}>
                         {year}
@@ -196,7 +201,7 @@ const UpdateKategori = () => {
               </Select>
             </div>
 
-            {/* Type */}
+            {/* Tipe */}
             <div className="flex flex-col gap-4">
               <Label>Tipe Kategori</Label>
               <Select

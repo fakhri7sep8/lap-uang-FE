@@ -28,6 +28,7 @@ import { ArrowRightCircle, FileDown, Send } from "lucide-react";
 import * as XLSX from "xlsx";
 import Swal from "sweetalert2";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const bulanList = [
   "Juli",
@@ -55,7 +56,7 @@ const InputSPPPage = () => {
 
   const { useGetStudent } = useStudentModule();
   const { data: siswaMQ } = useGetStudent();
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { useCreateSPPPayment, useGetByStudentID } = useSppPaymentModule();
   const { mutate: createSPPPayment } = useCreateSPPPayment();
 
@@ -114,6 +115,8 @@ const InputSPPPage = () => {
     return siswa?.tipeProgram === "FULLDAY" ? 1000000 : 2500000;
   };
 
+  const router = useRouter();
+
   const startYear = siswa?.InductYear || new Date().getFullYear();
   const yearOptions = [0, 1, 2].map(
     (i) => `${startYear + i}/${startYear + i + 1}`
@@ -124,7 +127,7 @@ const InputSPPPage = () => {
       {
         Nama: "",
         Bulan: "",
-        Nominal: "",
+        Nominal: 2500000,
         Status: "",
       },
     ]);
@@ -133,25 +136,64 @@ const InputSPPPage = () => {
     XLSX.writeFile(wb, "Template-SPP.xlsx");
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     if (!siswa) return;
 
-    selectedMonths.forEach((bulan) => {
-      createSPPPayment({
-        payload: {
-          studentId: siswa.id,
-          month: bulan,
-          year: yearSPP,
-          nominal: getNominalSPP(),
-          status: "LUNAS",
-        },
-      });
-    });
+    setIsSubmitting(true);
+
+    try {
+      await Promise.all(
+        selectedMonths.map(
+          (bulan) =>
+            new Promise<void>((resolve) => {
+              createSPPPayment(
+                {
+                  payload: {
+                    studentId: siswa.id,
+                    month: bulan,
+                    year: yearSPP,
+                    nominal: getNominalSPP(),
+                    status: "LUNAS",
+                  },
+                },
+                {
+                  onSuccess: () => resolve(),
+                  onError: () => resolve(),
+                }
+              );
+            })
+        )
+      );
+
+      setSelectedMonths([]);
+      refetchSppPayments();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="p-8 w-full flex justify-center">
+    <div className="p-8 w-full flex justify-center flex-col">
+      {/* Navigation Buttons */}
+      <div className="flex flex-row gap-6 mb-8 w-full">
+        <div
+          onClick={() => router.push("/dashboard/pembayaran/input/inputSPP")}
+          className="flex-1 py-4 flex items-center justify-center gap-2 bg-orange-500 text-white border border-orange-500 text-lg rounded-xl cursor-pointer 
+             hover:bg-white hover:text-orange-500 transition"
+        >
+          <ArrowRightCircle size={24} />
+          Input Pembayaran SPP
+        </div>
+
+        <div
+          onClick={() => router.push("/dashboard/pembayaran/input/inputNonSpp")}
+          className="flex-1 py-4 flex items-center justify-center gap-2 border border-orange-500 text-orange-500 text-lg rounded-xl cursor-pointer hover:bg-orange-500 hover:text-white transition"
+        >
+          <ArrowRightCircle size={24} />
+          Input Pembayaran Non-SPP
+        </div>
+      </div>
       <section className="bg-white shadow-md rounded-2xl p-6 w-full flex flex-col gap-4">
         <h1 className="text-2xl font-semibold mb-4">Input Pembayaran SPP</h1>
 
@@ -368,6 +410,18 @@ const InputSPPPage = () => {
               );
             })}
           </div>
+          {/* Total Nominal */}
+          <div className="flex flex-col mb-4">
+            <label className="text-sm font-medium mb-1">Total Nominal</label>
+            <div className="w-full border rounded-md p-4 border-slate-300">
+              <p className="font-semibold text-lg">
+                Rp.{" "}
+                {(getNominalSPP() * selectedMonths.length).toLocaleString(
+                  "id-ID"
+                )}
+              </p>
+            </div>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -375,15 +429,17 @@ const InputSPPPage = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={!siswa} // disable kalau belum pilih siswa
+              disabled={!siswa || isSubmitting} // disable kalau belum pilih siswa atau sedang submit
               className={`w-full py-5 border text-lg flex items-center justify-center gap-2 rounded-xl transition-all ${
-                !siswa
+                !siswa || isSubmitting
                   ? "cursor-not-allowed bg-gray-200 text-gray-600 border-gray-300"
                   : "cursor-pointer border-green-500 text-green-500 hover:bg-green-500 hover:text-white"
               }`}
             >
               <Send size={24} />
-              {sppPayments?.spp?.every((p: any) => p.status === "LUNAS")
+              {isSubmitting
+                ? "Sedang menyimpan..."
+                : sppPayments?.spp?.every((p: any) => p.status === "LUNAS")
                 ? "Semua bulan sudah lunas"
                 : "Simpan"}
             </button>
@@ -416,7 +472,7 @@ const InputSPPPage = () => {
               className="hidden"
               // onChange={handleReadExcel}
             />
-             <Link
+            <Link
               href="/dashboard/pembayaran/input/inputNonSpp"
               className="w-full py-5 hover:bg-orange-500 hover:text-white transition-all cursor-pointer border border-orange-500 text-orange-500 text-lg flex items-center justify-center gap-2 rounded-xl"
             >
