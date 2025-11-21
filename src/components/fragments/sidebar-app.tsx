@@ -39,6 +39,7 @@ import { Poppins } from 'next/font/google'
 import { generateMenuDashboard } from '@/lib/menuDashboard'
 import Image from 'next/image'
 import Link from 'next/link'
+import Cookie from 'js-cookie'
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -54,6 +55,11 @@ export function AppSidebar () {
   const [openReports, setOpenReports] = useState(false)
   const [openHelp, setOpenHelp] = useState(false)
   const [openSettings, setOpenSettings] = useState(false)
+
+  const handleLogout = () => {
+    Cookie.remove('x-auth');
+    window.location.href = '/auth/login';
+  }
 
   const menuDashboard = generateMenuDashboard({
     openStudents,
@@ -304,7 +310,7 @@ export function AppSidebar () {
                   {/* Divider */}
                   <div className='border-t border-[#232329] my-1' />
                   {/* Log out */}
-                  <DropdownMenuItem className='px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2'>
+                  <DropdownMenuItem onClick={()=> handleLogout()} className='px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2'>
                     <LogOut size={18} className='text-gray-400' />
                     <span className={`${poppins.className}`}>Log out</span>
                   </DropdownMenuItem>
