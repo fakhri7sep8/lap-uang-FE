@@ -63,24 +63,6 @@ const BiayaMakanPage = () => {
     });
   }, [expenses, searchTerm, activeTab, dateFilter]);
 
-  // ========================================
-  // PDF DATA PER BULAN
-  // ========================================
-  const dataPerBulan: Record<string, any> = {};
-  filteredData.forEach((row: any) => {
-    const d = new Date(row.createdAt);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}`;
-
-    dataPerBulan[key] = {
-      tanggal: row.createdAt,
-      nominal: (dataPerBulan[key]?.nominal || 0) + row.amount,
-      jenis: row.category?.name,
-    };
-  });
-
   const totalJumlah = filteredData.reduce(
     (acc: number, curr: any) => acc + curr.amount,
     0
@@ -132,7 +114,7 @@ const BiayaMakanPage = () => {
             alamat: "KP KEBON KELAPA, JAWA BARAT",
           }}
           tahunAjaranMulai={2024}
-          dataPerBulan={dataPerBulan}
+          data={filteredData}
           totalPengeluaran={totalJumlah}
           tanggalCetak={dayjs().format("DD MMMM YYYY")}
         />
@@ -196,11 +178,8 @@ const BiayaMakanPage = () => {
 
           {/* TABLE CARD */}
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
-            {/* 🔥 SEARCH FULL WIDTH + FILTER TANGGAL DI KANAN */}
-            {/* 🔥 SEARCH + FILTER TANGGAL MIRIP BIAYA MAKAN, TAPI LEBIH RAPI */}
-
+            {/* SEARCH + FILTER */}
             <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-              {/* Search full kiri, diperlebar */}
               <div className="w-full md:flex-1">
                 <SearchInput
                   onChange={(e: any) => setSearchTerm(e.target.value)}
@@ -208,7 +187,6 @@ const BiayaMakanPage = () => {
                 />
               </div>
 
-              {/* Filter tetap pojok kanan tapi tidak mepet */}
               <div className="w-full md:w-auto flex justify-start md:justify-end">
                 <DateRangeFilterModern
                   startDate={dateFilter.startDate}

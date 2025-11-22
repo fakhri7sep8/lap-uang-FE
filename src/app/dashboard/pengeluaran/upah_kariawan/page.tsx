@@ -149,7 +149,7 @@ const UpahKariawanPage = () => {
               alamat: 'KP KEBON KELAPA, JAWA BARAT'
             }}
             tahunAjaranMulai={2024}
-            dataPerBulan={dataPerBulan}
+            data={Object.values(dataPerBulan)}
             totalPengeluaran={totalJumlah}
             tanggalCetak={dayjs().format('DD MMMM YYYY')}
           />
@@ -192,7 +192,7 @@ const UpahKariawanPage = () => {
                       alamat: 'KP KEBON KELAPA, JAWA BARAT'
                     }}
                     tahunAjaranMulai={2024}
-                    dataPerBulan={dataPerBulan}
+                    data={Object.values(dataPerBulan)}
                     totalPengeluaran={totalJumlah}
                     tanggalCetak={dayjs().format('DD MMMM YYYY')}
                   />

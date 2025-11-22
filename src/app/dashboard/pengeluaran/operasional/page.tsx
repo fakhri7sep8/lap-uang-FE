@@ -144,7 +144,7 @@ const OperasionalPage = () => {
             alamat: "KP KEBON KELAPA, JAWA BARAT",
           }}
           tahunAjaranMulai={2024}
-          dataPerBulan={dataPerBulan}
+          data={paginatedData}
           totalPengeluaran={totalJumlah}
           tanggalCetak={dayjs().format("DD MMMM YYYY")}
         />
@@ -176,7 +176,7 @@ const OperasionalPage = () => {
                       alamat: "KP KEBON KELAPA, JAWA BARAT",
                     }}
                     tahunAjaranMulai={2024}
-                    dataPerBulan={dataPerBulan}
+                    data={paginatedData}
                     totalPengeluaran={totalJumlah}
                     tanggalCetak={dayjs().format("DD MMMM YYYY")}
                   />

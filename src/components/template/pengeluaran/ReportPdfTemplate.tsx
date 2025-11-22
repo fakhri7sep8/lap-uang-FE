@@ -1,8 +1,7 @@
 /* eslint-disable jsx-a11y/alt-text */
 "use client";
 
-import { getAcademicMonths } from "@/lib/expense-months";
-import type { CSSProperties } from "react";
+import dayjs from "dayjs";
 
 type ReportPdfTemplateProps = {
   title: string;
@@ -13,50 +12,23 @@ type ReportPdfTemplateProps = {
     alamat: string;
   };
   tahunAjaranMulai: number;
-  dataPerBulan?: Record<
-    string,
-    {
-      tanggal?: string | null;
-      nominal?: number | null;
-      jenis?: string | null;
-    }
-  >;
-  totalPengeluaran: number;
+  data: any[]; // ← sekarang langsung list data dari filteredData
+  totalPengeluaran?: number;
   tanggalCetak: string;
   themeColor?: string;
 };
 
-/* ======== STYLE TABLE (SAFE FOR PDF) ======== */
-const thStyle: CSSProperties = {
-  border: "1px solid #cbd5e1",
-  padding: "8px",
-  textAlign: "left",
-  fontWeight: 600,
-  backgroundColor: "#f1f5f9",
-};
-
-const tdStyle: CSSProperties = {
-  border: "1px solid #cbd5e1",
-  padding: "7px",
-  height: "28px",
-};
-
-/* ======== COMPONENT ======== */
 export default function ReportPdfTemplate({
   title,
   sectionLabel = "Detail Pengeluaran",
-  themeColor = "#00D86F",
   headerLogoUrl,
   sekolah,
   tahunAjaranMulai,
-  dataPerBulan = {},
-  totalPengeluaran,
+  data = [],
+  totalPengeluaran = 0,
   tanggalCetak,
+  themeColor = "#00D86F",
 }: ReportPdfTemplateProps) {
-  const months = getAcademicMonths(tahunAjaranMulai);
-  const tahunAkhir = tahunAjaranMulai + 1;
-  const tahunAjaranLabel = `${tahunAjaranMulai}/${tahunAkhir}`;
-
   return (
     <div
       className="flex justify-center py-6"
@@ -100,16 +72,11 @@ export default function ReportPdfTemplate({
 
         <hr style={{ borderColor: "#cbd5e1", marginBottom: "32px" }} />
 
-        {/* TITLE */}
         <h2 style={{ fontSize: "16px", fontWeight: 600, marginBottom: "4px" }}>
           {title}
         </h2>
 
-        <p style={{ fontSize: "12px", color: "#4b5563", marginBottom: "16px" }}>
-          Tahun Ajaran {tahunAjaranLabel}
-        </p>
-
-        {/* BAR HIJAU (SAMA PERSIS SPP STYLE) */}
+        {/* PANEL GREEN */}
         <div
           style={{
             backgroundColor: themeColor,
@@ -120,37 +87,15 @@ export default function ReportPdfTemplate({
             color: "white",
             fontSize: "13px",
             fontWeight: 500,
-            letterSpacing: "0.2px",
-
             display: "flex",
-            alignItems: "center",        // vertikal center
-            justifyContent: "space-between", // kiri & kanan
-            // jangan pakai lineHeight di parent
+            alignItems: "center",
+            justifyContent: "space-between",
+            letterSpacing: "0.2px",
           }}
         >
-          <span
-            style={{
-              display: "inline-block",
-              margin: 0,
-              lineHeight: 1,                 // pastikan teks sendiri tidak punya tinggi berlebih
-              transform: "scale(1.06)",     // efek pembesaran
-              transformOrigin: "center",    // supaya membesar dari tengah
-              transition: "transform .12s ease",
-            }}
-          >
-            {sectionLabel}
-          </span>
-          <span
-            style={{
-              display: "inline-block",
-              margin: 0,
-              lineHeight: 1,
-              transform: "scale(1.06)",
-              transformOrigin: "center",
-              transition: "transform .12s ease",
-            }}
-          >
-            {tahunAjaranLabel}
+          <span style={{ lineHeight: 1 }}>{sectionLabel}</span>
+          <span style={{ lineHeight: 1 }}>
+            Tahun Ajaran {tahunAjaranMulai}/{tahunAjaranMulai + 1}
           </span>
         </div>
 
@@ -160,38 +105,56 @@ export default function ReportPdfTemplate({
             width: "100%",
             borderCollapse: "collapse",
             fontSize: "12px",
-            tableLayout: "fixed",
           }}
         >
           <thead>
             <tr>
-              <th style={thStyle}>Bulan</th>
-              <th style={thStyle}>Tanggal</th>
-              <th style={thStyle}>Pengeluaran</th>
-              <th style={thStyle}>Jenis Pengeluaran</th>
+              <th style={th}>Tanggal</th>
+              <th style={th}>Deskripsi</th>
+              <th style={th}>Penanggung Jawab</th>
+              <th style={th}>Kategori</th>
+              <th style={th}>Nominal</th>
+              <th style={th}>Jenis / SubKategori</th>
             </tr>
           </thead>
 
           <tbody>
-            {months.map((m: any) => {
-              const row = dataPerBulan[m.key] || {};
-              return (
-                <tr key={m.key}>
-                  <td style={tdStyle}>{m.label}</td>
-                  <td style={tdStyle}>{row.tanggal || ""}</td>
-                  <td style={tdStyle}>
-                    {row.nominal
-                      ? `Rp -${row.nominal.toLocaleString("id-ID")}`
-                      : ""}
-                  </td>
-                  <td style={tdStyle}>{row.jenis || ""}</td>
-                </tr>
-              );
-            })}
+            {data.map((item, i) => (
+              <tr key={i}>
+                <td style={td}>
+                  {item.PayDate
+                    ? dayjs(item.PayDate).format("DD/MM/YYYY")
+                    : item.tanggal
+                    ? dayjs(item.tanggal).format("DD/MM/YYYY")
+                    : "-"}
+                </td>
+
+                <td style={td}>{item.description ?? item.nama ?? "-"}</td>
+
+                <td style={td}>{item.PenanggungJawab ?? item.penanggungJawab}</td>
+
+                <td style={td}>{item.category?.name ?? item.kategori}</td>
+
+                <td style={td}>
+                  {item.amount || item.jumlah
+                    ? `Rp ${Number(item.amount ?? item.jumlah).toLocaleString(
+                        "id-ID"
+                      )}`
+                    : ""}
+                </td>
+
+                <td style={td}>
+                  {item.subCategory?.name ??
+                    item.subKategori ??
+                    item.category?.name ??
+                    "-"}
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
 
-        {/* TOTAL BAR (FOLLOW SPP STYLE) */}
+        {/* TOTAL BAR */}
         <div
           style={{
             backgroundColor: themeColor,
@@ -201,17 +164,14 @@ export default function ReportPdfTemplate({
             borderRadius: "6px",
             display: "flex",
             alignItems: "center",
-            color: "#ffffff",
+            justifyContent: "space-between",
+            color: "white",
             fontSize: "13px",
             fontWeight: 600,
-            justifyContent: "space-between",
-            lineHeight: "1",
           }}
         >
-          <span style={{ lineHeight: "1" }}>Total Pengeluaran :</span>
-          <span style={{ lineHeight: "1" }}>
-            Rp -{totalPengeluaran.toLocaleString("id-ID")}
-          </span>
+          <span>Total Pengeluaran :</span>
+          <span>Rp {totalPengeluaran.toLocaleString("id-ID")}</span>
         </div>
 
         {/* FOOTER */}
@@ -233,3 +193,17 @@ export default function ReportPdfTemplate({
     </div>
   );
 }
+
+/* Styles */
+const th: React.CSSProperties = {
+  border: "1px solid #cbd5e1",
+  padding: "8px",
+  textAlign: "left",
+  backgroundColor: "#f1f5f9",
+  fontWeight: 600,
+};
+
+const td: React.CSSProperties = {
+  border: "1px solid #cbd5e1",
+  padding: "7px",
+};
