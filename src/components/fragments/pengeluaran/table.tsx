@@ -5,21 +5,24 @@ import { Pencil, Eye, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import dayjs from "dayjs";
 
+type TablePengeluaranProps = {
+  title: string;
+  menu: string;      // "operasional" | "biaya_makan" | "pemeliharaan" | "upah_karyawan" | dst
+  data?: any[];
+};
+
 export default function TablePengeluaran({
   title,
   data: propData,
   menu,
-}: {
-  title: string;
-  menu: string;
-  data?: any[];
-}) {
+}: TablePengeluaranProps) {
   const router = useRouter();
 
+  // Data dummy fallback kalau propData belum dikirim
   const internalData = [
     {
       id: 1,
-      PayDate: "2025-10-29",
+      PayDate: "2025-10-29T00:00:00.000Z",
       description: "Bayar Listrik",
       PenanggungJawab: "Pak Dimas",
       category: { name: "Pemeliharaan" },
@@ -31,108 +34,130 @@ export default function TablePengeluaran({
 
   const data = propData ?? internalData;
 
-  // ⭐ Format DD/MM/YYYY
-  const formatTanggal = (value: string) => {
+  // ⭐ Format tanggal ke DD/MM/YYYY
+  const formatTanggal = (value: string | Date | null | undefined) => {
     if (!value) return "-";
     return dayjs(value).format("DD/MM/YYYY");
   };
 
+  // Base path untuk routing pengeluaran
+  const basePath = "/dashboard/pengeluaran";
+
   return (
     <div className="p-6 bg-white rounded-2xl shadow-md border border-gray-200 w-full">
+      {/* TITLE */}
       <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
         Data {title}
       </h2>
 
+      {/* TABLE */}
       <div className="overflow-x-auto">
-        <table className="w-full text-base text-gray-700">
+        <table className="w-full text-sm text-gray-700">
           <thead>
-            <tr className="bg-gray-100 text-gray-700 uppercase font-semibold text-sm border-b border-gray-200">
-              <th className="py-4 px-4 text-center">No</th>
-              <th className="py-4 px-4">Tanggal Pengeluaran</th>
-              <th className="py-4 px-4">Nama</th>
-              <th className="py-4 px-4">Penanggung Jawab</th>
-              <th className="py-4 px-4">Kategori</th>
-              <th className="py-4 px-4">Prioritas</th>
-              <th className="py-4 px-4 text-right">Jumlah (Rp)</th>
-              <th className="py-4 px-4 text-center">Status</th>
-              <th className="py-4 px-4 text-center">Aksi</th>
+            <tr className="bg-gray-100 text-gray-700 uppercase font-semibold text-xs border-b border-gray-200">
+              <th className="py-3 px-3 text-center w-[4%]">No</th>
+              <th className="py-3 px-3 w-[10%]">Tanggal Pengeluaran</th>
+              <th className="py-3 px-3 w-[20%]">Deskripsi / Nama</th>
+              <th className="py-3 px-3 w-[15%]">Penanggung Jawab</th>
+              <th className="py-3 px-3 w-[12%]">Kategori</th>
+              <th className="py-3 px-3 w-[10%]">Prioritas</th>
+              <th className="py-3 px-3 w-[12%] text-right">Jumlah (Rp)</th>
+              <th className="py-3 px-3 w-[15%] text-center">Aksi</th>
             </tr>
           </thead>
 
           <tbody>
             {data?.map((item, index) => (
               <tr
-                key={item.id}
-                className="hover:bg-gray-50 transition border-b border-gray-100 text-base"
+                key={item.id ?? index}
+                className="hover:bg-gray-50 transition border-b border-gray-100 text-sm"
               >
                 {/* NO */}
-                <td className="py-4 px-4 text-center">{index + 1}</td>
-
-                {/* ⭐ TANGGAL FORMAT DD/MM/YYYY */}
-                <td className="py-4 px-4 text-center">
-                  {formatTanggal(item?.PayDate)}
+                <td className="py-3 px-3 text-center text-gray-600">
+                  {index + 1}
                 </td>
 
-                {/* NAMA */}
-                <td className="py-4 px-4 font-semibold text-gray-800">
-                  {item?.description}
+                {/* TANGGAL */}
+                <td className="py-3 px-3">
+                  {formatTanggal(item?.PayDate ?? item?.createdAt)}
                 </td>
 
-                {/* PJ */}
-                <td className="py-4 px-4">{item?.PenanggungJawab}</td>
+                {/* DESKRIPSI */}
+                <td className="py-3 px-3 font-medium text-gray-800">
+                  {item?.description ?? "-"}
+                </td>
+
+                {/* PENANGGUNG JAWAB */}
+                <td className="py-3 px-3">
+                  {item?.PenanggungJawab ?? "-"}
+                </td>
 
                 {/* KATEGORI */}
-                <td className="py-4 px-4">{item?.category?.name}</td>
+                <td className="py-3 px-3">
+                  {item?.category?.name ?? "-"}
+                </td>
 
                 {/* PRIORITAS */}
-                <td className="py-4 px-4">{item?.Prioritas}</td>
+                <td className="py-3 px-3">
+                  {item?.Prioritas ?? "-"}
+                </td>
 
                 {/* JUMLAH */}
-                <td className="py-4 px-4 text-right">
-                  Rp {item?.amount?.toLocaleString("id-ID")}
+                <td className="py-3 px-3 text-right">
+                  Rp {Number(item?.amount ?? 0).toLocaleString("id-ID")}
                 </td>
 
-                {/* STATUS */}
-                <td className="py-4 px-4 text-center">
-                  <span
-                    className={`px-3 py-1 text-sm font-semibold rounded-full ${
-                      item.status === "Selesai"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {item.status}
-                  </span>
-                </td>
 
-                {/* ACTION BUTTON */}
-                <td className="py-4 px-4">
-                  <div className="flex justify-center gap-3">
+                {/* AKSI */}
+                <td className="py-3 px-3">
+                  <div className="flex justify-center gap-2">
+                    {/* EDIT */}
                     <button
-                      onClick={() => router.push(`update/${item?.id}`)}
+                      onClick={() =>
+                        router.push(`${basePath}/update/${item?.id}`)
+                      }
                       title="Edit"
-                      className="p-2 hover:bg-blue-50 rounded-lg border"
+                      className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 bg-white hover:bg-blue-50 hover:shadow-sm transition"
                     >
-                      <Pencil size={18} className="text-blue-600" />
+                      <Pencil size={16} className="text-blue-600" />
                     </button>
 
+                    {/* DETAIL (opsional – sesuaikan rute kalau sudah ada page-nya) */}
                     <button
+                      onClick={() =>
+                        router.push(`${basePath}/detail/${item?.id}`)
+                      }
                       title="Detail"
-                      className="p-2 hover:bg-green-50 rounded-lg border"
+                      className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 bg-white hover:bg-green-50 hover:shadow-sm transition"
                     >
-                      <Eye size={18} className="text-green-600" />
+                      <Eye size={16} className="text-green-600" />
                     </button>
 
+                    {/* DOWNLOAD KWITANSI (opsional – sesuaikan rute/API) */}
                     <button
+                      onClick={() =>
+                        router.push(`${basePath}/receipt/${item?.id}`)
+                      }
                       title="Download Kwitansi"
-                      className="p-2 hover:bg-orange-50 rounded-lg border"
+                      className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 bg-white hover:bg-orange-50 hover:shadow-sm transition"
                     >
-                      <Download size={18} className="text-orange-600" />
+                      <Download size={16} className="text-orange-600" />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
+
+            {(!data || data.length === 0) && (
+              <tr>
+                <td
+                  colSpan={9}
+                  className="py-6 text-center text-gray-400 text-sm"
+                >
+                  Tidak ada data.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

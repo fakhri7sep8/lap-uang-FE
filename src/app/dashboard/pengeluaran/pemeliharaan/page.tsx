@@ -1,8 +1,15 @@
 "use client";
 import { useMemo, useState } from "react";
-import { GraduationCap, Users, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import {
+  GraduationCap,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
+
 import CardInformation from "@/components/fragments/dashboard/card-information";
-import TablePengeluaran2 from "@/components/fragments/pengeluaran/table";
+import TablePengeluaran from "@/components/fragments/pengeluaran/table";
 import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
 import { useExpenseModule } from "@/hooks/expense/useExpense";
 
@@ -75,7 +82,10 @@ const PemeliharaanPage = () => {
     setCurrentPage(1);
   };
 
-  const totalJumlah = filteredData.reduce((acc: number, curr: any) => acc + curr.amount, 0);
+  const totalJumlah = filteredData.reduce(
+    (acc: number, curr: any) => acc + curr.amount,
+    0
+  );
 
   // PDF DOWNLOAD
   const handleDownloadPDF = async () => {
@@ -100,7 +110,9 @@ const PemeliharaanPage = () => {
   return (
     <div className="min-h-screen flex flex-col gap-10 items-center py-7">
 
-      {/* 🔥 HIDDEN PDF TEMPLATE (BARU) */}
+      {/* ===================== */}
+      {/* HIDDEN PDF TEMPLATE */}
+      {/* ===================== */}
       <div className="hidden" id="report-pdf-pemeliharaan">
         <ReportPdfTemplate
           title="LAPORAN PEMELIHARAAN SEKOLAH"
@@ -111,11 +123,76 @@ const PemeliharaanPage = () => {
             alamat: "KP KEBON KELAPA, JAWA BARAT",
           }}
           tahunAjaranMulai={2024}
-          data={filteredData} 
+          data={filteredData}
           totalPengeluaran={totalJumlah}
           tanggalCetak={dayjs().format("DD MMMM YYYY")}
         />
       </div>
+
+      {/* ===================================================== */}
+      {/* 🔥 PREVIEW MODAL PDF — FIXED */}
+      {/* ===================================================== */}
+      <AnimatePresence>
+        {showPreview && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+            >
+              <div className="flex justify-between items-center p-4 border-b">
+                <h2 className="text-lg font-semibold">Preview Laporan</h2>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="text-gray-500 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-5 bg-gray-50">
+                <div className="bg-white shadow-md mx-auto border border-gray-200">
+                  <ReportPdfTemplate
+                    title="LAPORAN PEMELIHARAAN SEKOLAH"
+                    sectionLabel={`Detail Pemeliharaan (${activeTab})`}
+                    headerLogoUrl="/img/Logo.png"
+                    sekolah={{
+                      nama: "SMK MADINATUL QURAN",
+                      alamat: "KP KEBON KELAPA, JAWA BARAT",
+                    }}
+                    tahunAjaranMulai={2024}
+                    data={filteredData}
+                    totalPengeluaran={totalJumlah}
+                    tanggalCetak={dayjs().format("DD MMMM YYYY")}
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 flex justify-end gap-3 border-t">
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  Batal
+                </button>
+
+                <button
+                  onClick={handleDownloadPDF}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                >
+                  Download PDF
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ===================== */}
       {/* CARDS */}
@@ -135,17 +212,16 @@ const PemeliharaanPage = () => {
         />
       </section>
 
-      {/* ===================== */}
-      {/* MAIN */}
-      {/* ===================== */}
+      {/* MAIN CONTENT */}
       <div className="w-full rounded-3xl">
-
         <div className="px-3 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800">
               Data Pengeluaran Pemeliharaan Sekolah
             </h1>
-            <p className="text-gray-500 mb-6">Data Pengeluaran Sekolah Management.</p>
+            <p className="text-gray-500 mb-6">
+              Data Pengeluaran Sekolah Management.
+            </p>
           </div>
 
           <ExportPDFButton
@@ -157,9 +233,7 @@ const PemeliharaanPage = () => {
           />
         </div>
 
-        {/* ===================== */}
         {/* TABS */}
-        {/* ===================== */}
         <div className="flex flex-col gap-2 p-2">
           <div className="flex gap-2 mb-[-7px]">
             {tabs.map((tab) => (
@@ -180,14 +254,11 @@ const PemeliharaanPage = () => {
             ))}
           </div>
 
-          {/* ===================== */}
-          {/* TABLE CARD */}
-          {/* ===================== */}
+          {/* CARD WRAPPER */}
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
 
-            {/* 🔥 Search kiri - filter kanan */}
+            {/* SEARCH + DATE FILTER */}
             <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-
               <div className="w-full md:flex-1">
                 <SearchInput
                   onChange={(e: any) => setSearchTerm(e.target.value)}
@@ -202,28 +273,31 @@ const PemeliharaanPage = () => {
                   onChange={setDateFilter}
                 />
               </div>
-
             </div>
 
-            {/* ===================== */}
             {/* TABLE */}
-            {/* ===================== */}
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="animate-spin w-6 h-6 text-gray-500 mr-3" />
                 Memuat data...
               </div>
             ) : isError ? (
-              <p className="text-center text-red-500 py-6">Gagal memuat data pemeliharaan.</p>
+              <p className="text-center text-red-500 py-6">
+                Gagal memuat data pemeliharaan.
+              </p>
             ) : filteredData.length === 0 ? (
-              <p className="text-center text-gray-400 py-6">Tidak ada data ditemukan.</p>
+              <p className="text-center text-gray-400 py-6">
+                Tidak ada data ditemukan.
+              </p>
             ) : (
-              <TablePengeluaran2 title="Pemeliharaan" data={paginatedData} menu="pemeliharaan" />
+              <TablePengeluaran
+                title="Pemeliharaan"
+                data={paginatedData}
+                menu="pemeliharaan"
+              />
             )}
 
-            {/* ===================== */}
             {/* PAGINATION */}
-            {/* ===================== */}
             {filteredData.length > 0 && (
               <div className="flex w-full justify-between items-center mt-6 flex-wrap gap-4">
 
@@ -251,17 +325,21 @@ const PemeliharaanPage = () => {
                   </button>
 
                   <div className="flex gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-                      <button
-                        key={num}
-                        onClick={() => setCurrentPage(num)}
-                        className={`px-3 py-2 rounded-lg border text-sm ${
-                          currentPage === num ? "bg-blue-500 text-white" : "bg-white"
-                        }`}
-                      >
-                        {num}
-                      </button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (num) => (
+                        <button
+                          key={num}
+                          onClick={() => setCurrentPage(num)}
+                          className={`px-3 py-2 rounded-lg border text-sm ${
+                            currentPage === num
+                              ? "bg-blue-500 text-white"
+                              : "bg-white"
+                          }`}
+                        >
+                          {num}
+                        </button>
+                      )
+                    )}
                   </div>
 
                   <button

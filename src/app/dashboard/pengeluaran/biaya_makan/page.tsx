@@ -13,7 +13,6 @@ import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTempla
 import { AnimatePresence, motion } from "framer-motion";
 import dayjs from "dayjs";
 
-// 🔥 modern date filter
 import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
 
 const BiayaMakanPage = () => {
@@ -22,7 +21,6 @@ const BiayaMakanPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showPreview, setShowPreview] = useState(false);
 
-  // 🔥 date filter state
   const [dateFilter, setDateFilter] = useState({
     startDate: "",
     endDate: "",
@@ -33,9 +31,9 @@ const BiayaMakanPage = () => {
   const { useGetExpense } = useExpenseModule();
   const { data: expenses } = useGetExpense("Makan");
 
-  // ========================================
+  // ==========================
   // FILTERING
-  // ========================================
+  // ==========================
   const filteredData = useMemo(() => {
     if (!expenses?.data) return [];
 
@@ -68,9 +66,9 @@ const BiayaMakanPage = () => {
     0
   );
 
-  // ========================================
+  // ==========================
   // PDF DOWNLOAD
-  // ========================================
+  // ==========================
   const handleDownloadPDF = async () => {
     const element = document.getElementById("report-pdf-makan");
     if (!element) return;
@@ -90,9 +88,9 @@ const BiayaMakanPage = () => {
     setShowPreview(false);
   };
 
-  // ========================================
-  // Pagination otomatis
-  // ========================================
+  // ==========================
+  // PAGINATION
+  // ==========================
   const pageSize = 10;
   const totalPages = Math.ceil(filteredData.length / pageSize);
 
@@ -103,7 +101,10 @@ const BiayaMakanPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col gap-10 items-center py-7">
-      {/* HIDDEN TEMPLATE EXPORT */}
+
+      {/* ========================== */}
+      {/* HIDDEN PDF TEMPLATE */}
+      {/* ========================== */}
       <div className="hidden" id="report-pdf-makan">
         <ReportPdfTemplate
           title="LAPORAN BIAYA MAKAN"
@@ -114,13 +115,70 @@ const BiayaMakanPage = () => {
             alamat: "KP KEBON KELAPA, JAWA BARAT",
           }}
           tahunAjaranMulai={2024}
-          data={filteredData}
+          data={filteredData}    // << FIX BENAR
           totalPengeluaran={totalJumlah}
           tanggalCetak={dayjs().format("DD MMMM YYYY")}
         />
       </div>
 
+      {/* ========================== */}
+      {/* PDF PREVIEW MODAL */}
+      {/* ========================== */}
+      <AnimatePresence>
+        {showPreview && (
+          <motion.div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+            <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]">
+              <div className="flex justify-between items-center p-4 border-b">
+                <h2 className="text-lg font-semibold">Preview Laporan</h2>
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="text-gray-500 text-xl"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="p-5 bg-gray-50">
+                <div className="bg-white shadow-md mx-auto border border-gray-200">
+                  <ReportPdfTemplate
+                    title="LAPORAN BIAYA MAKAN"
+                    sectionLabel="Detail Pengeluaran Biaya Makan"
+                    headerLogoUrl="/img/Logo.png"
+                    sekolah={{
+                      nama: "SMK MADINATUL QURAN",
+                      alamat: "KP KEBON KELAPA, JAWA BARAT",
+                    }}
+                    tahunAjaranMulai={2024}
+                    data={filteredData}
+                    totalPengeluaran={totalJumlah}
+                    tanggalCetak={dayjs().format("DD MMMM YYYY")}
+                  />
+                </div>
+              </div>
+
+              <div className="p-4 flex justify-end gap-3 border-t">
+                <button
+                  onClick={() => setShowPreview(false)}
+                  className="px-4 py-2 border rounded-lg"
+                >
+                  Batal
+                </button>
+
+                <button
+                  onClick={handleDownloadPDF}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                >
+                  Download PDF
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ========================== */}
       {/* INFO CARDS */}
+      {/* ========================== */}
       <section className="w-full grid grid-cols-2 gap-4">
         <CardInformation
           color={"blue"}
@@ -136,9 +194,10 @@ const BiayaMakanPage = () => {
         />
       </section>
 
+      {/* ========================== */}
       {/* MAIN CONTENT */}
+      {/* ========================== */}
       <div className="w-full rounded-3xl">
-        {/* TITLE + EXPORT */}
         <div className="pl-2 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800">
@@ -176,10 +235,12 @@ const BiayaMakanPage = () => {
             ))}
           </div>
 
-          {/* TABLE CARD */}
+          {/* TABLE WRAPPER */}
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
-            {/* SEARCH + FILTER */}
+
+            {/* SEARCH + DATE FILTER */}
             <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+
               <div className="w-full md:flex-1">
                 <SearchInput
                   onChange={(e: any) => setSearchTerm(e.target.value)}
@@ -194,6 +255,7 @@ const BiayaMakanPage = () => {
                   onChange={setDateFilter}
                 />
               </div>
+
             </div>
 
             {/* TABLE */}
@@ -228,5 +290,4 @@ const BiayaMakanPage = () => {
     </div>
   );
 };
-
 export default BiayaMakanPage;
