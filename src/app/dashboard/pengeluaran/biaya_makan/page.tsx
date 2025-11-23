@@ -105,7 +105,8 @@ const BiayaMakanPage = () => {
       {/* ========================== */}
       {/* HIDDEN PDF TEMPLATE */}
       {/* ========================== */}
-      <div className="hidden" id="report-pdf-makan">
+      <div className="hidden" >
+        <div id="report-pdf-makan">
         <ReportPdfTemplate
           title="LAPORAN BIAYA MAKAN"
           sectionLabel="Detail Pengeluaran Biaya Makan"
@@ -119,6 +120,8 @@ const BiayaMakanPage = () => {
           totalPengeluaran={totalJumlah}
           tanggalCetak={dayjs().format("DD MMMM YYYY")}
         />
+
+        </div>
       </div>
 
       {/* ========================== */}

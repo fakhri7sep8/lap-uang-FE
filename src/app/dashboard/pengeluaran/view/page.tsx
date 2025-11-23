@@ -1,16 +1,7 @@
-
 "use client";
 
-import { useState, useCallback } from "react";
-import CardInformation from "@/components/fragments/dashboard/card-information";
-import SearchDataTable from "@/components/fragments/dashboard/search-data-table";
-import ExportPDFButton from "@/components/fragments/ExportPDFButton";
-import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTemplate";
-import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
+import { useState, useEffect, useMemo } from "react";
 import dayjs from "dayjs";
-import { AnimatePresence, motion } from "framer-motion";
-
-/* TABLE UI */
 import {
   Table,
   TableBody,
@@ -19,139 +10,134 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import CardInformation from "@/components/fragments/dashboard/card-information";
+import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
+import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
+import { useExpenseModule } from "@/hooks/expense/useExpense";
 
-import { FaMoneyBill, FaRegFile } from "react-icons/fa6";
+import { AnimatePresence, motion } from "framer-motion";
+import ExportPDFButton from "@/components/fragments/ExportPDFButton";
+import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTemplate";
+import { GraduationCap, Loader2, Users } from "lucide-react";
 
-const dummyExpenses = {
-  data: [
-    {
-      id: 1,
-      description: "Pembelian ATK untuk kantor",
-      jenisPengeluaran: "Operasional",
-      periode: "2025",
-      amount: 1500000,
-      createdAt: "2025-01-10",
-    },
-    {
-      id: 2,
-      description: "Pembangunan ruang kelas baru",
-      jenisPengeluaran: "Pembangunan",
-      periode: "2024/2025",
-      amount: 25000000,
-      createdAt: "2024-11-05",
-    },
-    {
-      id: 3,
-      description: "Perbaikan sarana olahraga",
-      jenisPengeluaran: "Sarana",
-      periode: "2025",
-      amount: 5000000,
-      createdAt: "2025-03-18",
-    },
-    {
-      id: 4,
-      description: "Biaya listrik dan air",
-      jenisPengeluaran: "Operasional",
-      periode: "2025",
-      amount: 1200000,
-      createdAt: "2025-02-02",
-    },
-  ],
-};
+export default function SemuaPengeluaranPage() {
+  const { useGetExpense } = useExpenseModule();
 
-export default function PengeluaranViewPage() {
-  const [showPreview, setShowPreview] = useState(false);
+  // 🔥 Ambil semua kategori
+  const op = useGetExpense("Operasional");
+  const pm = useGetExpense("Pemeliharaan");
+  const uk = useGetExpense("Upah Karyawan");
+  const mk = useGetExpense("Makan");
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [showCount, setShowCount] = useState(10);
+  const [dateFilter, setDateFilter] = useState({ startDate: "", endDate: "" });
   const [currentPage, setCurrentPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [showPreview, setShowPreview] = useState(false);
 
-  /* FILTERING */
-  const expenses = dummyExpenses.data;
+  const loading = op.isLoading || pm.isLoading || uk.isLoading || mk.isLoading;
 
-  const filteredData = expenses
-    .filter((item) =>
-      item.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  // 🔥 Gabung semua expense dari semua kategori
+  const allExpenses = useMemo(() => {
+    if (!op.data?.data || !pm.data?.data || !uk.data?.data || !mk.data?.data)
+      return [];
 
-  const totalData = filteredData.length;
-  const totalJumlah = filteredData.reduce((acc, curr) => acc + curr.amount, 0);
+    return [
+      ...op.data.data.map((x: any) => ({ ...x, jenis: "Operasional" })),
+      ...pm.data.data.map((x: any) => ({ ...x, jenis: "Pemeliharaan" })),
+      ...uk.data.data.map((x: any) => ({ ...x, jenis: "Upah Karyawan" })),
+      ...mk.data.data.map((x: any) => ({ ...x, jenis: "Makan" })),
+    ];
+  }, [op.data, pm.data, uk.data, mk.data]);
 
-  /* PAGINATION */
-  const totalPages = Math.ceil(totalData / showCount);
-  const paginated = filteredData.slice(
-    (currentPage - 1) * showCount,
-    currentPage * showCount
+  // =====================================================
+  // FILTERING
+  // =====================================================
+  const filteredData = useMemo(() => {
+    return allExpenses.filter((item: any) => {
+      const search = searchTerm.toLowerCase();
+
+      const matchSearch =
+        item.description?.toLowerCase().includes(search) ||
+        item.PenanggungJawab?.toLowerCase().includes(search) ||
+        item.jenis?.toLowerCase().includes(search);
+
+      const itemDate = new Date(item.createdAt);
+      const matchStart = dateFilter.startDate
+        ? itemDate >= new Date(dateFilter.startDate)
+        : true;
+      const matchEnd = dateFilter.endDate
+        ? itemDate <= new Date(dateFilter.endDate)
+        : true;
+
+      return matchSearch && matchStart && matchEnd;
+    });
+  }, [allExpenses, searchTerm, dateFilter]);
+
+  const totalJumlah = filteredData.reduce(
+    (acc: number, curr: any) => acc + curr.amount,
+    0
   );
 
-  /* ============================
-       PDF PREVIEW (HTML MODE)
-     ============================ */
+  // =====================================================
+  // PAGINATION
+  // =====================================================
+  const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+  const paginated = filteredData.slice(
+    (currentPage - 1) * rowsPerPage,
+    currentPage * rowsPerPage
+  );
 
-  const handleExport = useCallback(async () => {
-    setShowPreview(true);
-  }, []);
-
-  const handleDownloadPDF = useCallback(async () => {
-    const element = document.getElementById("report-pdf");
-    if (!element) return;
+  // =====================================================
+  // PDF DOWNLOAD
+  // =====================================================
+  const handleDownloadPDF = async () => {
+    const el = document.getElementById("report-pdf-gabungan");
+    if (!el) return;
 
     const html2pdf = (await import("html2pdf.js")).default;
 
     html2pdf()
       .set({
         margin: 10,
-        filename: `laporan-pengeluaran-${dayjs().format("YYYY-MM-DD")}.pdf`,
+        filename: `laporan-semua-pengeluaran-${dayjs().format(
+          "YYYY-MM-DD"
+        )}.pdf`,
         html2canvas: { scale: 2, useCORS: true },
         jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
       })
-      .from(element)
+      .from(el)
       .save();
 
     setShowPreview(false);
-  }, []);
-
-  /* ============================
-           DATA PER BULAN
-     ============================ */
-
-  const tahunAjaranMulai = 2025;
-  const dataPerBulan: Record<string, any> = {};
-
-  filteredData.forEach((row) => {
-    const d = new Date(row.createdAt);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-
-    dataPerBulan[key] = {
-      tanggal: row.createdAt,
-      nominal: (dataPerBulan[key]?.nominal || 0) + row.amount,
-      jenis: row.jenisPengeluaran,
-    };
-  });
-
-  /* ============================
-           RENDER PAGE
-     ============================ */
+  };
 
   return (
-    <>
-      {/* TEMPLATE UNTUK EXPORT */}
+    <div className="min-h-screen flex flex-col gap-10 py-7 px-3">
+      {/* ========================== */}
+      {/* HIDDEN PDF TEMPLATE */}
+      {/* ========================== */}
       <div className="hidden">
-        <ReportPdfTemplate
-          title="LAPORAN PENGELUARAN SEKOLAH"
-          sectionLabel="Detail Pengeluaran Sekolah"
-          headerLogoUrl="/img/Logo.png"
-          sekolah={{
-            nama: "SMK MADINATUL QURAN",
-            alamat: "KP KEBON KELAPA, JAWA BARAT",
-          }}
-          tahunAjaranMulai={tahunAjaranMulai}
-          dataPerBulan={dataPerBulan}
-          totalPengeluaran={totalJumlah}
-          tanggalCetak={dayjs().format("DD MMMM YYYY")}
-        />
+        <div id="report-pdf-gabungan">
+          <ReportPdfTemplate
+            title="LAPORAN SELURUH PENGELUARAN"
+            sectionLabel="Detail Semua Pengeluaran"
+            headerLogoUrl="/img/Logo.png"
+            sekolah={{
+              nama: "SMK MADINATUL QURAN",
+              alamat: "KP KEBON KELAPA, JAWA BARAT",
+            }}
+            tahunAjaranMulai={2024}
+            data={filteredData}
+            totalPengeluaran={totalJumlah}
+            tanggalCetak={dayjs().format("DD MMMM YYYY")}
+          />
+        </div>
       </div>
 
-      {/* PREVIEW MODAL (HTML) */}
+      {/* ========================== */}
+      {/* PREVIEW MODAL */}
+      {/* ========================== */}
       <AnimatePresence>
         {showPreview && (
           <motion.div
@@ -160,38 +146,31 @@ export default function PengeluaranViewPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div
-              className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh] shadow-xl"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-            >
+            <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh] shadow-xl">
               <div className="flex justify-between items-center p-4 border-b">
-                <h2 className="text-lg font-semibold">Preview Laporan</h2>
+                <h2 className="text-lg font-semibold">
+                  Preview Laporan Semua Pengeluaran
+                </h2>
                 <button
-                  className="text-gray-500 text-xl"
                   onClick={() => setShowPreview(false)}
+                  className="text-gray-500 text-xl"
                 >
                   ✕
                 </button>
               </div>
 
-              {/* HTML PREVIEW */}
               <div className="p-5 bg-gray-50">
-                <div
-                  id="report-pdf"
-                  className="bg-white shadow-md mx-auto border border-gray-200"
-                >
+                <div className="bg-white border shadow-md">
                   <ReportPdfTemplate
-                    title="LAPORAN PENGELUARAN SEKOLAH"
-                    sectionLabel="Detail Pengeluaran Sekolah"
+                    title="LAPORAN SELURUH PENGELUARAN"
+                    sectionLabel="Detail Semua Pengeluaran"
                     headerLogoUrl="/img/Logo.png"
                     sekolah={{
                       nama: "SMK MADINATUL QURAN",
                       alamat: "KP KEBON KELAPA, JAWA BARAT",
                     }}
-                    tahunAjaranMulai={tahunAjaranMulai}
-                    dataPerBulan={dataPerBulan}
+                    tahunAjaranMulai={2024}
+                    data={filteredData}
                     totalPengeluaran={totalJumlah}
                     tanggalCetak={dayjs().format("DD MMMM YYYY")}
                   />
@@ -217,55 +196,112 @@ export default function PengeluaranViewPage() {
         )}
       </AnimatePresence>
 
-      {/* PAGE UI */}
-      <div className="min-h-screen bg-gray-100 py-7 px-3 flex flex-col gap-10">
-
-        {/* CARDS */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <CardInformation
-            color="blue"
-            title="Total Data"
-            value={totalData}
-            icon={<FaRegFile size={32} className="text-blue-400" />}
-          />
-          <CardInformation
-            color="green"
-            title="Total Jumlah"
-            value={`Rp ${totalJumlah.toLocaleString("id-ID")}`}
-            icon={<FaMoneyBill size={32} className="text-green-400" />}
-          />
-        </div>
-
-        {/* SEARCH */}
-        <SearchDataTable
-          title="Manajemen Pengeluaran"
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          setShowFilter={() => {}}
-          setShowCount={setShowCount}
-          type="normal"
+      {/* ========================== */}
+      {/* INFO CARDS */}
+      {/* ========================== */}
+      <section className="grid grid-cols-2 gap-4">
+        <CardInformation
+          color="blue"
+          title="Total Data"
+          value={allExpenses.length}
+          icon={<GraduationCap size={32} className="text-blue-500" />}
         />
+        <CardInformation
+          color="green"
+          title="Data Terfilter"
+          value={filteredData.length}
+          icon={<Users size={32} className="text-green-500" />}
+        />
+      </section>
 
-        {/* BUTTON */}
-        <div className="w-full flex justify-end mb-4">
+      {/* ========================== */}
+      {/* MAIN TABLE WRAPPER */}
+      {/* ========================== */}
+      <div className="bg-white rounded-2xl p-5 shadow">
+        {/* SEARCH + DATE FILTER */}
+        {/* ===================== */}
+        {/* HEADER FILTER + SEARCH */}
+        {/* ===================== */}
+
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
+          {/* SEARCH INPUT */}
+          <div className="flex items-center w-full md:w-[60%] bg-white border border-gray-300 rounded-xl px-4 py-3 shadow-sm">
+            <input
+              type="text"
+              placeholder="Cari nama / no. Induk / asrama..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full outline-none text-gray-700"
+            />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5 text-gray-500"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35m1.8-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+          </div>
+
+          {/* SHOW COUNT */}
+          <div className="flex items-center gap-2">
+            <span className="text-gray-600 font-medium">Showing</span>
+
+            <select
+              value={rowsPerPage}
+              onChange={(e) => {
+                setRowsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow cursor-pointer"
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+            </select>
+          </div>
+
           <ExportPDFButton
             label="Export PDF"
             onExport={async () => {
-              handleExport(); 
-              return;
+              setShowPreview(true);
+              return true;
             }}
           />
+          {/* FILTER BUTTON */}
+          <DateRangeFilterModern
+            startDate={dateFilter.startDate}
+            endDate={dateFilter.endDate}
+            onChange={setDateFilter}
+          />
+
+          {/* EXPORT PDF */}
         </div>
 
         {/* TABLE */}
-        <div className="rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
-          <Table className="w-full text-gray-700">
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="animate-spin w-6 h-6 mr-3" />
+            Memuat data...
+          </div>
+        ) : (
+          <Table className="w-full">
             <TableHeader>
               <TableRow>
                 <TableHead>No</TableHead>
                 <TableHead>Keterangan</TableHead>
                 <TableHead>Jenis</TableHead>
-                <TableHead>Periode</TableHead>
+                <TableHead>Penanggung Jawab</TableHead>
                 <TableHead>Nominal</TableHead>
                 <TableHead>Tanggal</TableHead>
               </TableRow>
@@ -273,14 +309,14 @@ export default function PengeluaranViewPage() {
 
             <TableBody>
               {paginated.map((row: any, i: number) => (
-                <TableRow key={row.id}>
-                  <TableCell>{(currentPage - 1) * showCount + i + 1}</TableCell>
-                  <TableCell>{row.description}</TableCell>
-                  <TableCell>{row.jenisPengeluaran}</TableCell>
-                  <TableCell>{row.periode}</TableCell>
+                <TableRow key={row.id} className="text-center">
                   <TableCell>
-                    Rp {row.amount.toLocaleString("id-ID")}
+                    {(currentPage - 1) * rowsPerPage + i + 1}
                   </TableCell>
+                  <TableCell>{row.description}</TableCell>
+                  <TableCell>{row.jenis}</TableCell>
+                  <TableCell>{row.PenanggungJawab}</TableCell>
+                  <TableCell>Rp {row.amount.toLocaleString("id-ID")}</TableCell>
                   <TableCell>
                     {dayjs(row.createdAt).format("DD MMM YYYY")}
                   </TableCell>
@@ -288,14 +324,25 @@ export default function PengeluaranViewPage() {
               ))}
             </TableBody>
           </Table>
+        )}
 
-          <CustomPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
+        {/* PAGINATION */}
+        <div className="flex justify-end gap-2 mt-4">
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-4 py-2 rounded border ${
+                currentPage === i + 1
+                  ? "bg-blue-500 text-white border-blue-500"
+                  : "bg-white border-gray-300 hover:bg-gray-100"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
         </div>
       </div>
-    </>
+    </div>
   );
 }

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import { useMemo, useState } from "react";
 import {
@@ -36,7 +37,7 @@ const PemeliharaanPage = () => {
   const tabs = ["Listrik", "Air", "Internet", "BPJS"];
 
   const { useGetExpense } = useExpenseModule();
-  const { data: expenses, isLoading, isError } = useGetExpense("pemeliharaan");
+  const { data: expenses, isLoading, isError } = useGetExpense("Pemeliharaan");
 
   const subCategoryMap: Record<string, number> = {
     Listrik: 3,
@@ -113,7 +114,9 @@ const PemeliharaanPage = () => {
       {/* ===================== */}
       {/* HIDDEN PDF TEMPLATE */}
       {/* ===================== */}
-      <div className="hidden" id="report-pdf-pemeliharaan">
+      <div className="hidden" >
+        <div id="report-pdf-pemeliharaan">
+
         <ReportPdfTemplate
           title="LAPORAN PEMELIHARAAN SEKOLAH"
           sectionLabel={`Detail Pemeliharaan (${activeTab})`}
@@ -127,6 +130,7 @@ const PemeliharaanPage = () => {
           totalPengeluaran={totalJumlah}
           tanggalCetak={dayjs().format("DD MMMM YYYY")}
         />
+        </div>
       </div>
 
       {/* ===================================================== */}

@@ -38,7 +38,7 @@ const OperasionalPage = () => {
   const tabs = ["Pembangunan", "Sarana"];
 
   const { useGetExpense } = useExpenseModule();
-  const { data: expenses, isLoading, isError } = useGetExpense("operasional");
+  const { data: expenses, isLoading, isError } = useGetExpense("Operasional");
 
   // ========================================
   // FILTERING
@@ -134,7 +134,8 @@ const OperasionalPage = () => {
   return (
     <div className="min-h-screen flex flex-col gap-10 items-center py-7">
       {/* HIDDEN PDF TEMPLATE */}
-      <div className="hidden" id="report-pdf">
+      <div className="hidden" >
+        <div id="report-pdf">
         <ReportPdfTemplate
           title="LAPORAN PENGELUARAN OPERASIONAL"
           sectionLabel={`Detail Pengeluaran (${activeTab})`}
@@ -144,10 +145,12 @@ const OperasionalPage = () => {
             alamat: "KP KEBON KELAPA, JAWA BARAT",
           }}
           tahunAjaranMulai={2024}
-          data={paginatedData}
+          data={filteredData}
           totalPengeluaran={totalJumlah}
           tanggalCetak={dayjs().format("DD MMMM YYYY")}
         />
+
+        </div>
       </div>
 
       {/* MODAL PREVIEW PDF */}
