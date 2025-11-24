@@ -181,7 +181,7 @@ const columns: Column<any>[] = [
             data={filteredData}
             columns={columns}
             filename="data-siswa"
-            buttonText="Export"
+            buttonText="Export to Excel"
             previewLimit={20}
           />
         </div>

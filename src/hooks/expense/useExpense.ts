@@ -10,8 +10,11 @@ export const useExpenseModule = () => {
 
   const getAll = async (ct:string) => axiosClient.get(`/expense/${ct}`);
   const create = async (data: any) => axiosClient.post("/expense", data);
+  // yang benar
+const getAllExpense = async () => axiosClient.get(`/expense`);
+
   const update = async (id: string, data: any) =>
-    axiosClient.patch(`/expense/${id}`, data);
+    axiosClient.patch(`/updateExpense/${id}`, data);
   const softDelete = async (id: string, isDelete: boolean) =>
     axiosClient.patch(`/expense/${id}/isdelete?isDelete=${isDelete}`);
   const remove = async (id: string) => axiosClient.delete(`/expense/${id}`);
@@ -19,7 +22,7 @@ export const useExpenseModule = () => {
 
   const useGetExpense = (ct:string) =>
     useQuery({
-      queryKey: ["get-expense"],
+      queryKey: ["get-expense", ct],
       queryFn: () => getAll(ct),
       select: (res) => res.data,
     });
@@ -44,6 +47,36 @@ export const useExpenseModule = () => {
         });
       },
     });
+const useGetAllExpense = () =>
+  useQuery({
+    queryKey: ["get-all-expense"],
+    queryFn: async () => {
+      const kategori = [
+        "Operasional",
+        "Pemeliharaan",
+        "Upah Karyawan",
+        "Makan"
+      ];
+
+      const requests = kategori.map((ct) => getAll(ct));
+      const results = await Promise.all(requests);
+
+      // gabung semua data jadi 1 list
+      return results.flatMap((r) => r.data.data);
+    },
+  });
+
+
+
+const useDetailExpense = (id: string) =>
+  useQuery({
+    queryKey: ["detail-expense", id],
+    queryFn: () => detail(id),
+    enabled: !!id, // hanya jalan kalau id ada
+    select: (res) => res.data.data, // BE balikin { data: {...} }
+  });
+
+
 
   const useUpdateExpense = (id: string) =>
     useMutation({
@@ -79,5 +112,7 @@ export const useExpenseModule = () => {
     useUpdateExpense,
     useDeleteExpense,
     useSoftDeleteExpense,
+    useDetailExpense,
+    useGetAllExpense
   };
 };

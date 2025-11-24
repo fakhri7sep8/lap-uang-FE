@@ -1,140 +1,166 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { Pencil, Eye, Download } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import Pagination from './pagination'
+import React from "react";
+import { Pencil, Eye, Download } from "lucide-react";
+import { useRouter } from "next/navigation";
+import dayjs from "dayjs";
+
+type TablePengeluaranProps = {
+  title: string;
+  menu: string;      // "operasional" | "biaya_makan" | "pemeliharaan" | "upah_karyawan" | dst
+  data?: any[];
+};
 
 export default function TablePengeluaran({
   title,
   data: propData,
-  menu
-}: {
-  title: string,
-  menu: string,
-  data?: any[]
-}) {
-  const router = useRouter()
-  // Default internal data (kept for backward compatibility)
+  menu,
+}: TablePengeluaranProps) {
+  const router = useRouter();
+
+  // Data dummy fallback kalau propData belum dikirim
   const internalData = [
     {
       id: 1,
-      tanggal: '2025-10-29',
-      nama: 'Bayar Listrik',
-      penanggungJawab: 'Pak Dimas',
-      kategori: 'Pemeliharaan',
-      subKategori: 'Listrik',
-      jumlah: 500000,
-      status: 'Selesai'
+      PayDate: "2025-10-29T00:00:00.000Z",
+      description: "Bayar Listrik",
+      PenanggungJawab: "Pak Dimas",
+      category: { name: "Pemeliharaan" },
+      Prioritas: "PENTING",
+      amount: 500000,
+      status: "Selesai",
     },
-    {
-      id: 2,
-      tanggal: '2025-10-29',
-      nama: 'Gaji Guru Honorer',
-      penanggungJawab: 'Pak Hadi',
-      kategori: 'Upah Karyawan',
-      subKategori: 'Guru',
-      jumlah: 2500000,
-      status: 'Selesai'
-    },
-    {
-      id: 3,
-      tanggal: '2025-10-29',
-      nama: 'Langganan Internet',
-      penanggungJawab: 'Bu Sinta',
-      kategori: 'Pemeliharaan',
-      subKategori: 'Internet',
-      jumlah: 450000,
-      status: 'Proses'
-    }
-  ]
+  ];
 
-  // If parent passed data, use it; otherwise fall back to internalData
-  const data = propData ?? internalData
+  const data = propData ?? internalData;
+
+  // ⭐ Format tanggal ke DD/MM/YYYY
+  const formatTanggal = (value: string | Date | null | undefined) => {
+    if (!value) return "-";
+    return dayjs(value).format("DD/MM/YYYY");
+  };
+
+  // Base path untuk routing pengeluaran
+  const basePath = "/dashboard/pengeluaran";
 
   return (
-    <div className='p-5 bg-white rounded-xl shadow-sm'>
-      <h2 className='text-base font-semibold mb-4 text-gray-800 flex items-center gap-2'>
+    <div className="p-6 bg-white rounded-2xl shadow-md border border-gray-200 w-full">
+      {/* TITLE */}
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
         Data {title}
       </h2>
 
-      <div className='overflow-x-auto'>
-        <table className='w-full text-[12px] text-gray-700'>
+      {/* TABLE */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-gray-700">
           <thead>
-            <tr className='bg-gray-100 text-gray-600 text-left font-medium'>
-              <th className='py-2 px-2 text-center w-[3%]'>No</th>
-              <th className='py-2 px-2 w-[10%]'>Tanggal Pengeluaran</th>
-              <th className='py-2 px-2 w-[12%]'>Deskripsi</th>
-              <th className='py-2 px-2 w-[12%]'>Penanggung Jawab</th>
-              <th className='py-2 px-2 w-[10%]'>Kategori</th>
-              <th className='py-2 px-2 w-[12%]'>Prioritas</th>
-              <th className='py-2 px-2 w-[10%] text-right'>Jumlah (Rp)</th>
-              <th className='py-2 px-2 w-[8%] text-center'>Status</th>
-              <th className='py-2 px-2 w-[15%] text-center'>Aksi</th>
+            <tr className="bg-gray-100 text-gray-700 uppercase font-semibold text-xs border-b border-gray-200">
+              <th className="py-3 px-3 text-center w-[4%]">No</th>
+              <th className="py-3 px-3 w-[10%]">Tanggal Pengeluaran</th>
+              <th className="py-3 px-3 w-[20%]">Deskripsi / Nama</th>
+              <th className="py-3 px-3 w-[15%]">Penanggung Jawab</th>
+              <th className="py-3 px-3 w-[12%]">Kategori</th>
+              <th className="py-3 px-3 w-[10%]">Prioritas</th>
+              <th className="py-3 px-3 w-[12%] text-right">Jumlah (Rp)</th>
+              <th className="py-3 px-3 w-[15%] text-center">Aksi</th>
             </tr>
           </thead>
 
           <tbody>
             {data?.map((item, index) => (
               <tr
-                key={item.id}
-                className='hover:bg-gray-50 transition-all text-[12px]'
+                key={item.id ?? index}
+                className="hover:bg-gray-50 transition border-b border-gray-100 text-sm"
               >
-                <td className='py-2 px-2 text-center text-gray-600'>
+                {/* NO */}
+                <td className="py-3 px-3 text-center text-gray-600">
                   {index + 1}
                 </td>
-                <td className='py-2 px-2'>{item?.PayDate}</td>
-                <td className='py-2 px-2 font-medium text-gray-800'>
-                  {item?.description}
-                </td>
-                <td className='py-2 px-2'>{item?.PenanggungJawab}</td>
-                <td className='py-2 px-2'>{item?.category?.name}</td>
-                <td className='py-2 px-2'>{item?.Prioritas}</td>
-                <td className='py-2 px-2 text-right'>
-                  Rp {item?.amount?.toLocaleString('id-ID')}
-                </td>
-                <td className='py-2 px-2 text-center'>
-                  <span
-                    className={`inline-block px-3 py-0.5 text-[11px] font-semibold rounded-full ${item.status === "Selesai"
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                  >
-                    {item.status}
-                  </span>
-                </td>
-                <td className='py-2 px-2'>
-                  <div className='flex justify-center'>
-                    <div className='flex items-center gap-2'>
-                      <button
-                        onClick={() => router.push(`/dashboard/pengeluaran/update/${item?.id}`)}
-                        title='Edit'
-                        className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
-                      >
-                        <Pencil
-                          size={14}
-                          className='text-blue-600 group-hover:text-blue-700 transition-colors'
-                        />
-                      </button>
 
-                      <button
-                        title='Download Kwitansi'
-                        className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
-                      >
-                        <Download
-                          size={14}
-                          className='text-orange-600 group-hover:text-orange-700 transition-colors'
-                        />
-                      </button>
-                    </div>
+                {/* TANGGAL */}
+                <td className="py-3 px-3">
+                  {formatTanggal(item?.PayDate ?? item?.createdAt)}
+                </td>
+
+                {/* DESKRIPSI */}
+                <td className="py-3 px-3 font-medium text-gray-800">
+                  {item?.description ?? "-"}
+                </td>
+
+                {/* PENANGGUNG JAWAB */}
+                <td className="py-3 px-3">
+                  {item?.PenanggungJawab ?? "-"}
+                </td>
+
+                {/* KATEGORI */}
+                <td className="py-3 px-3">
+                  {item?.category?.name ?? "-"}
+                </td>
+
+                {/* PRIORITAS */}
+                <td className="py-3 px-3">
+                  {item?.Prioritas ?? "-"}
+                </td>
+
+                {/* JUMLAH */}
+                <td className="py-3 px-3 text-right">
+                  Rp {Number(item?.amount ?? 0).toLocaleString("id-ID")}
+                </td>
+
+
+                {/* AKSI */}
+                <td className="py-3 px-3">
+                  <div className="flex justify-center gap-2">
+                    {/* EDIT */}
+                    <button
+                      onClick={() =>
+                        router.push(`${basePath}/update/${item?.id}`)
+                      }
+                      title="Edit"
+                      className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 bg-white hover:bg-blue-50 hover:shadow-sm transition"
+                    >
+                      <Pencil size={16} className="text-blue-600" />
+                    </button>
+
+                    {/* DETAIL (opsional – sesuaikan rute kalau sudah ada page-nya) */}
+                    <button
+                      onClick={() =>
+                        router.push(`${basePath}/detail/${item?.id}`)
+                      }
+                      title="Detail"
+                      className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 bg-white hover:bg-green-50 hover:shadow-sm transition"
+                    >
+                      <Eye size={16} className="text-green-600" />
+                    </button>
+
+                    {/* DOWNLOAD KWITANSI (opsional – sesuaikan rute/API) */}
+                    <button
+                      onClick={() =>
+                        router.push(`${basePath}/receipt/${item?.id}`)
+                      }
+                      title="Download Kwitansi"
+                      className="flex items-center justify-center border border-gray-200 rounded-md p-1.5 bg-white hover:bg-orange-50 hover:shadow-sm transition"
+                    >
+                      <Download size={16} className="text-orange-600" />
+                    </button>
                   </div>
                 </td>
               </tr>
             ))}
+
+            {(!data || data.length === 0) && (
+              <tr>
+                <td
+                  colSpan={9}
+                  className="py-6 text-center text-gray-400 text-sm"
+                >
+                  Tidak ada data.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
-      <Pagination/>
     </div>
-  )
+  );
 }
