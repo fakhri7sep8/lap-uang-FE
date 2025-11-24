@@ -22,60 +22,71 @@ import Loader from "@/components/ui/loader";
 import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
 import SearchDataTable from "@/components/fragments/dashboard/search-data-table";
 import { axiosClient } from "@/lib/axiosClient";
+import { AnimatePresence, motion } from "framer-motion";
 
 const DataSelainSpp = () => {
   const [showCount, setShowCount] = useState<any>(10);
   const [currentPage, setCurrentPage] = useState<any>(1);
   const [startIndex, setStartIndex] = useState<any>(0);
   const [searchTerm, setSearchTerm] = useState<any>("");
-
+  const [showFilter, setShowFilter] = useState(false);
   const maxVisible = 4;
-
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
+  const [filterAngkatan, setFilterAngkatan] = useState("");
 
-  // === NEW STATE: categories & recap berasal dari API final ===
   const [categories, setCategories] = useState<any[]>([]);
   const [recap, setRecap] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterOptions, setFilterOptions] = useState<number[]>([]);
 
   // Fetch data payment-types + student status
   const fetchAll = async () => {
-  setLoading(true);
-  try {
-    const res = await axiosClient.get("/payment-types/with-status");
+    setLoading(true);
+    try {
+      const res = await axiosClient.get("/payment-types/with-status");
+      const listKategori = res.data.data || [];
+      setCategories(listKategori);
 
-    const json = res.data;
+      const siswaUnique: any = {};
+      const generationsSet = new Set<number>();
 
-    const listKategori = json.data || [];
-    setCategories(listKategori);
-
-    // Bikin recap siswa (mirip logic lama lu)
-    const siswaUnique: any = {};
-
-    listKategori.forEach((kategori: any) => {
-      kategori.students?.forEach((s: any) => {
-        if (!siswaUnique[s.id]) {
-          siswaUnique[s.id] = { id: s.id, name: s.name };
-        }
+      listKategori.forEach((kategori: any) => {
+        kategori.students?.forEach((s: any) => {
+          if (!siswaUnique[s.id]) {
+            siswaUnique[s.id] = {
+              id: s.id,
+              name: s.name,
+              generation: s.generation,
+            };
+            generationsSet.add(s.generation); // ambil generation
+          }
+        });
       });
-    });
 
-    setRecap(Object.values(siswaUnique));
-  } catch (err) {
-    console.log("Error:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      setRecap(Object.values(siswaUnique));
+      setFilterOptions(Array.from(generationsSet).sort((a, b) => b - a)); // urut desc
+    } catch (err) {
+      console.log("Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchAll();
   }, []);
 
-  const filteredData: any[] = recap.filter((p: any) =>
-    searchTerm ? p.name.toLowerCase().includes(searchTerm.toLowerCase()) : true
-  );
+  const filteredData: any[] = recap.filter((p: any) => {
+    const matchesSearch = searchTerm
+      ? p.name.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+
+    const matchesGeneration = filterAngkatan
+      ? p.generation.toString() === filterAngkatan
+      : true;
+
+    return matchesSearch && matchesGeneration;
+  });
 
   const totalPages: any = Math.ceil(filteredData.length / showCount);
   const paginatedData: any[] = filteredData.slice(
@@ -136,7 +147,7 @@ const DataSelainSpp = () => {
           title={"Data Pembayaran"}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
-          setShowFilter={() => {}}
+          setShowFilter={setShowFilter}
           setShowCount={setShowCount}
           type={"normal"}
         />
@@ -332,6 +343,78 @@ const DataSelainSpp = () => {
           />
         </div>
       </section>
+      <AnimatePresence>
+        {showFilter && (
+          <>
+            {/* BACKDROP */}
+            <motion.div
+              className="fixed inset-0 bg-black/40 z-40"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              onClick={() => setShowFilter(false)}
+            />
+
+            {/* DRAWER */}
+            <motion.div
+              className="fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 shadow-lg p-6 flex flex-col gap-6"
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold">Filter</h3>
+                <button
+                  onClick={() => setShowFilter(false)}
+                  className="text-gray-500 hover:text-gray-700 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* FILTER CONTENT */}
+              <div className="flex flex-col gap-4">
+                <label className="flex flex-col text-sm">
+                  Angkatan
+                  <select
+                    className="mt-1 border border-gray-300 rounded-md px-3 py-2"
+                    value={filterAngkatan}
+                    onChange={(e) => setFilterAngkatan(e.target.value)}
+                  >
+                    <option value="">Semua</option>
+                    {filterOptions.map((gen) => (
+                      <option key={gen} value={gen}>
+                        {gen}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+
+              {/* BUTTONS */}
+              <div className="mt-auto flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    setFilterAngkatan("");
+                  }}
+                  className="w-full py-2 px-4 bg-red-500 text-white rounded-md"
+                >
+                  Reset
+                </button>
+
+                <button
+                  onClick={() => setShowFilter(false)}
+                  className="w-full py-2 px-4 bg-blue-500 text-white rounded-md"
+                >
+                  Terapkan
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </section>
   );
 };

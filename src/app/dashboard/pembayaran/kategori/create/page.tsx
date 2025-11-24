@@ -134,10 +134,11 @@ const CreateKategori = () => {
               <MultipleSelector
                 defaultOptions={siswaOptions}
                 value={selectedSiswa}
+                selectAll={selectAll}
+                onSelectAllChange={setSelectAll}
                 onChange={(val) => {
                   setSelectedSiswa(val);
-                  // kalau val kosong tapi user pilih semua
-                  setSelectAll(val.length === 0 && selectAll);
+                  setSelectAll(val.length === siswaOptions.length);
                 }}
                 placeholder="Pilih siswa..."
               />
@@ -283,7 +284,6 @@ const CreateKategori = () => {
                 <p className="text-red-500 text-sm">{formik.errors.nominal}</p>
               )}
             </div>
-          
           </div>
 
           {/* Buttons */}

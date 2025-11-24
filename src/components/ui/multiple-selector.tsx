@@ -12,6 +12,8 @@ interface MultipleSelectorProps {
   defaultOptions: Option[];
   value: Option[];
   onChange: (selected: Option[]) => void;
+  selectAll?: boolean;          // controlled dari parent
+  onSelectAllChange?: (val: boolean) => void;
   placeholder?: string;
   emptyIndicator?: React.ReactNode;
 }
@@ -19,13 +21,14 @@ interface MultipleSelectorProps {
 const MultipleSelector: React.FC<MultipleSelectorProps> = ({
   defaultOptions,
   value,
+  selectAll = false,
+  onSelectAllChange,
   onChange,
   placeholder = "Select...",
   emptyIndicator,
 }) => {
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [selectAll, setSelectAll] = useState(false); // ⬅️ tambahan
   const containerRef = useRef<HTMLDivElement>(null);
 
   const filteredOptions = useMemo(() => {
@@ -37,8 +40,8 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
 
   const toggleOption = (option: Option) => {
     if (option.value === "__ALL__") {
-      setSelectAll(!selectAll);
-      onChange([]); // kalau pilih semua, kosongin selectedSiswa
+      onSelectAllChange?.(!selectAll); // toggle di parent
+      onChange([]); // kosongin selected kalau pilih semua
       return;
     }
 
@@ -56,7 +59,6 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
     onChange(uniqueValue);
     setSearch("");
     setIsOpen(true);
-    setSelectAll(false); // kalau pilih manual, all auto off
   };
 
   // Klik di luar dropdown → tutup
@@ -98,11 +100,13 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
             </button>
           </span>
         ))}
+
         {selectAll && (
           <span className="bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-2 py-1 rounded-md text-sm">
             Semua siswa dipilih
           </span>
         )}
+
         <input
           type="text"
           placeholder={value.length === 0 && !selectAll ? placeholder : ""}
@@ -139,7 +143,7 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
                 </p>
               )
             : filteredOptions.map((opt) => {
-                const selected = value.find((v) => v.value === opt.value);
+                const selected = value.some((v) => v.value === opt.value);
                 return (
                   <button
                     key={opt.value}

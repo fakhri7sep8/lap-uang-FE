@@ -104,18 +104,19 @@ const UpdateKategori = () => {
       });
 
       if (data.data.students) {
+        const allSelected =
+          data.data.students.length === siswaMQ?.length && siswaMQ?.length > 0;
+
         setSelectedSiswa(
-          data.data.students.map((s: any) => ({
-            label: s.name,
-            value: s.id,
-          }))
+          allSelected
+            ? []
+            : data.data.students.map((s: any) => ({
+                label: s.name,
+                value: s.id,
+              }))
         );
 
-        // kalau semua siswa terpilih
-        setSelectAll(
-          data.data.students.length === siswaMQ?.length &&
-            siswaMQ?.length > 0
-        );
+        setSelectAll(allSelected); // ⬅️ ini penting
       }
     }
   }, [data, siswaMQ]);
@@ -157,6 +158,8 @@ const UpdateKategori = () => {
               <MultipleSelector
                 defaultOptions={siswaOptions}
                 value={selectedSiswa}
+                selectAll={selectAll}
+                onSelectAllChange={setSelectAll}
                 onChange={(val) => {
                   setSelectedSiswa(val);
                   setSelectAll(val.length === siswaOptions.length);

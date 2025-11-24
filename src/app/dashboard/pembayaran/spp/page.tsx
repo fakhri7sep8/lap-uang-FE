@@ -52,17 +52,16 @@ const SPP = () => {
   const angkatanList = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
   const { mutate: deletePayment } = useDeletePayment();
 
-  const filteredData =
-    payments
-      ?.filter((s: any) =>
-        s?.nama?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      ?.filter((s: any) =>
-        filterBulan ? s[filterBulan.toLowerCase()] !== undefined : true
-      )
-      ?.filter((s: any) =>
-        filterAngkatan ? s?.angkatan?.toString() === filterAngkatan : true
-      ) || [];
+  const filteredData = (payments ?? [])
+    ?.filter((s: any) =>
+      s?.nama?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    ?.filter((s: any) =>
+      filterBulan ? s[filterBulan.toLowerCase()] !== undefined : true
+    )
+    ?.filter((s: any) =>
+      filterAngkatan ? s?.generation?.toString() === filterAngkatan : true
+    );
 
   const totalPages = Math.ceil(filteredData.length / showCount);
   const paginatedData = filteredData.slice(
@@ -276,18 +275,13 @@ const SPP = () => {
                 </label>
                 <label className="flex flex-col text-sm">
                   Angkatan
-                  <select
+                  <input
+                    type="text"
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Contoh: 2025"
                     value={draftAngkatan}
                     onChange={(e) => setDraftAngkatan(e.target.value)}
-                  >
-                    <option value="">Semua</option>
-                    {angkatanList.map((a: any) => (
-                      <option key={a} value={a}>
-                        {a}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </label>
               </div>
               <div className="mt-auto flex flex-col gap-2">
