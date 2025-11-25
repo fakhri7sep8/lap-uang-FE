@@ -36,7 +36,16 @@ const OperasionalPage = () => {
   const tabs = ["Pembangunan", "Sarana"];
 
   const { useGetExpense } = useExpenseModule();
-  const { data: expenses, isLoading, isError } = useGetExpense("Operasional");
+  const { data: expenses, isLoading, isError } = useGetExpense("operasional");
+
+  // ========================================
+  // SAFELIST DATA (FIX UTAMA)
+  // ========================================
+  const safeList = useMemo(() => {
+    if (Array.isArray(expenses)) return expenses;
+    if (Array.isArray(expenses?.data)) return expenses.data;
+    return [];
+  }, [expenses]);
 
   // Normalizer
   const normalizeRows = (exp: any) => {
@@ -316,6 +325,8 @@ const OperasionalPage = () => {
                 menu={"operasional"}
               />
             )}
+
+            {/* PAGINATION */}
 
             {/* PAGINATION */}
             {filteredData.length > 0 && (
