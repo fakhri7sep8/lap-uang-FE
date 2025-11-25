@@ -38,17 +38,24 @@ const OperasionalPage = () => {
   const tabs = ["Pembangunan", "Sarana"];
 
   const { useGetExpense } = useExpenseModule();
-  const { data: expenses, isLoading, isError } = useGetExpense("Operasional");
+  const { data: expenses, isLoading, isError } = useGetExpense("operasional");
 
   // ========================================
-  // FILTERING
+  // SAFELIST DATA (FIX UTAMA)
+  // ========================================
+  const safeList = useMemo(() => {
+    if (Array.isArray(expenses)) return expenses;
+    if (Array.isArray(expenses?.data)) return expenses.data;
+    return [];
+  }, [expenses]);
+
+  // ========================================
+  // FILTERING (pakai safeList)
   // ========================================
   const filteredData = useMemo(() => {
-    if (!expenses?.data) return [];
-
     const search = searchTerm.toLowerCase();
 
-    return expenses.data.filter((item: any) => {
+    return safeList.filter((item: any) => {
       const matchSearch =
         item?.description?.toLowerCase().includes(search) ||
         item?.PenanggungJawab?.toLowerCase().includes(search) ||
@@ -71,7 +78,7 @@ const OperasionalPage = () => {
 
       return matchSearch && matchTab && matchStart && matchEnd;
     });
-  }, [expenses, searchTerm, activeTab, dateFilter]);
+  }, [safeList, searchTerm, activeTab, dateFilter]);
 
   // ========================================
   // PAGINATION LOGIC
@@ -134,8 +141,7 @@ const OperasionalPage = () => {
   return (
     <div className="min-h-screen flex flex-col gap-10 items-center py-7">
       {/* HIDDEN PDF TEMPLATE */}
-      <div className="hidden" >
-        <div id="report-pdf">
+      <div className="hidden" id="report-pdf">
         <ReportPdfTemplate
           title="LAPORAN PENGELUARAN OPERASIONAL"
           sectionLabel={`Detail Pengeluaran (${activeTab})`}
@@ -145,12 +151,10 @@ const OperasionalPage = () => {
             alamat: "KP KEBON KELAPA, JAWA BARAT",
           }}
           tahunAjaranMulai={2024}
-          data={filteredData}
+          data={paginatedData}
           totalPengeluaran={totalJumlah}
           tanggalCetak={dayjs().format("DD MMMM YYYY")}
         />
-
-        </div>
       </div>
 
       {/* MODAL PREVIEW PDF */}
@@ -211,7 +215,7 @@ const OperasionalPage = () => {
         <CardInformation
           color="blue"
           title="Total Data"
-          value={expenses?.data?.length}
+          value={safeList?.length}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
@@ -267,12 +271,8 @@ const OperasionalPage = () => {
 
           {/* TABLE CARD */}
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
-            {/* 🔥 FILTER TANGGAL + SEARCH – layout sama seperti Biaya Makan */}
-
-            {/* 🔥 SEARCH + FILTER TANGGAL MIRIP BIAYA MAKAN, TAPI LEBIH RAPI */}
-
+            {/* SEARCH + FILTER */}
             <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
-              {/* Search full kiri, diperlebar */}
               <div className="w-full md:flex-1">
                 <SearchInput
                   onChange={(e: any) => setSearchTerm(e.target.value)}
@@ -280,7 +280,6 @@ const OperasionalPage = () => {
                 />
               </div>
 
-              {/* Filter tetap pojok kanan tapi tidak mepet */}
               <div className="w-full md:w-auto flex justify-start md:justify-end">
                 <DateRangeFilterModern
                   startDate={dateFilter.startDate}
@@ -311,7 +310,8 @@ const OperasionalPage = () => {
                 menu={"operasional"}
               />
             )}
-            {/* PAGINATION + ROWS PER PAGE */}
+
+            {/* PAGINATION */}
             {filteredData.length > 0 && (
               <div className="flex w-full justify-between items-center mt-6 flex-wrap gap-4">
                 {/* ROWS PER PAGE */}
@@ -332,7 +332,7 @@ const OperasionalPage = () => {
                   <span className="text-sm text-gray-600">per halaman</span>
                 </div>
 
-                {/* PAGINATION CONTROLS */}
+                {/* PAGINATION BUTTONS */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -371,10 +371,10 @@ const OperasionalPage = () => {
                   </button>
                 </div>
 
-                {/* INFO PAGE */}
+                {/* INFO */}
                 <div className="text-sm text-gray-600">
-                  Halaman {currentPage} dari {totalPages} ({filteredData.length}{" "}
-                  data)
+                  Halaman {currentPage} dari {totalPages} (
+                  {filteredData.length} data)
                 </div>
               </div>
             )}
