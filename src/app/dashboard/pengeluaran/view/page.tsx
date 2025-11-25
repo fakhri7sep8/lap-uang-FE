@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import dayjs from "dayjs";
 import {
   Table,
@@ -10,51 +10,77 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import CardInformation from "@/components/fragments/dashboard/card-information";
-import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
-import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
-import { useExpenseModule } from "@/hooks/expense/useExpense";
 
-import { AnimatePresence, motion } from "framer-motion";
+import CardInformation from "@/components/fragments/dashboard/card-information";
+import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
+
+import { useExpenseModule } from "@/hooks/expense/useExpense";
 import ExportPDFButton from "@/components/fragments/ExportPDFButton";
 import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTemplate";
-import { GraduationCap, Loader2, Users } from "lucide-react";
+
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  GraduationCap,
+  Loader2,
+  Users,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
 export default function SemuaPengeluaranPage() {
   const { useGetExpense } = useExpenseModule();
 
-  // 🔥 Ambil semua kategori
   const op = useGetExpense("Operasional");
   const pm = useGetExpense("Pemeliharaan");
   const uk = useGetExpense("Upah Karyawan");
   const mk = useGetExpense("Makan");
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [dateFilter, setDateFilter] = useState({ startDate: "", endDate: "" });
+  const [dateFilter, setDateFilter] = useState({
+    startDate: "",
+    endDate: "",
+  });
+
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showPreview, setShowPreview] = useState(false);
 
   const loading = op.isLoading || pm.isLoading || uk.isLoading || mk.isLoading;
 
-  // 🔥 Gabung semua expense dari semua kategori
-  const allExpenses = useMemo(() => {
-    if (!op.data?.data || !pm.data?.data || !uk.data?.data || !mk.data?.data)
-      return [];
+  const normalize = (x: any) => {
+    if (!x) return [];
+    if (Array.isArray(x)) return x;
+    if (Array.isArray(x?.data)) return x.data;
+    if (Array.isArray(x?.data?.data)) return x.data.data;
+    return [];
+  };
 
-    return [
-      ...op.data.data.map((x: any) => ({ ...x, jenis: "Operasional" })),
-      ...pm.data.data.map((x: any) => ({ ...x, jenis: "Pemeliharaan" })),
-      ...uk.data.data.map((x: any) => ({ ...x, jenis: "Upah Karyawan" })),
-      ...mk.data.data.map((x: any) => ({ ...x, jenis: "Makan" })),
-    ];
+  const allExpenses = useMemo(() => {
+    const opRows = normalize(op.data).map((x: any) => ({
+      ...x,
+      jenis: "Operasional",
+    }));
+    const pmRows = normalize(pm.data).map((x: any) => ({
+      ...x,
+      jenis: "Pemeliharaan",
+    }));
+    const ukRows = normalize(uk.data).map((x: any) => ({
+      ...x,
+      jenis: "Upah Karyawan",
+    }));
+    const mkRows = normalize(mk.data).map((x: any) => ({
+      ...x,
+      jenis: "Makan",
+    }));
+
+    return [...opRows, ...pmRows, ...ukRows, ...mkRows];
   }, [op.data, pm.data, uk.data, mk.data]);
 
   // =====================================================
-  // FILTERING
+  // FILTER + SORT DATA TERBARU
   // =====================================================
   const filteredData = useMemo(() => {
-    return allExpenses.filter((item: any) => {
+    const f = allExpenses.filter((item: any) => {
       const search = searchTerm.toLowerCase();
 
       const matchSearch =
@@ -62,16 +88,24 @@ export default function SemuaPengeluaranPage() {
         item.PenanggungJawab?.toLowerCase().includes(search) ||
         item.jenis?.toLowerCase().includes(search);
 
-      const itemDate = new Date(item.createdAt);
+      const d = new Date(item.createdAt);
+
       const matchStart = dateFilter.startDate
-        ? itemDate >= new Date(dateFilter.startDate)
+        ? d >= new Date(dateFilter.startDate)
         : true;
+
       const matchEnd = dateFilter.endDate
-        ? itemDate <= new Date(dateFilter.endDate)
+        ? d <= new Date(dateFilter.endDate)
         : true;
 
       return matchSearch && matchStart && matchEnd;
     });
+
+    // SORT TERBARU → TERLAMA
+    return f.sort(
+      (a: any, b: any) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
   }, [allExpenses, searchTerm, dateFilter]);
 
   const totalJumlah = filteredData.reduce(
@@ -79,18 +113,19 @@ export default function SemuaPengeluaranPage() {
     0
   );
 
-  // =====================================================
   // PAGINATION
-  // =====================================================
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+
   const paginated = filteredData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
 
-  // =====================================================
-  // PDF DOWNLOAD
-  // =====================================================
+  const handleRowsPerPageChange = (e: any) => {
+    setRowsPerPage(Number(e.target.value));
+    setCurrentPage(1);
+  };
+
   const handleDownloadPDF = async () => {
     const el = document.getElementById("report-pdf-gabungan");
     if (!el) return;
@@ -114,9 +149,8 @@ export default function SemuaPengeluaranPage() {
 
   return (
     <div className="min-h-screen flex flex-col gap-10 py-7 px-3">
-      {/* ========================== */}
+
       {/* HIDDEN PDF TEMPLATE */}
-      {/* ========================== */}
       <div className="hidden">
         <div id="report-pdf-gabungan">
           <ReportPdfTemplate
@@ -135,18 +169,12 @@ export default function SemuaPengeluaranPage() {
         </div>
       </div>
 
-      {/* ========================== */}
       {/* PREVIEW MODAL */}
-      {/* ========================== */}
       <AnimatePresence>
         {showPreview && (
-          <motion.div
-            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh] shadow-xl">
+          <motion.div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+            <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]">
+
               <div className="flex justify-between items-center p-4 border-b">
                 <h2 className="text-lg font-semibold">
                   Preview Laporan Semua Pengeluaran
@@ -160,7 +188,7 @@ export default function SemuaPengeluaranPage() {
               </div>
 
               <div className="p-5 bg-gray-50">
-                <div className="bg-white border shadow-md">
+                <div className="bg-white border shadow">
                   <ReportPdfTemplate
                     title="LAPORAN SELURUH PENGELUARAN"
                     sectionLabel="Detail Semua Pengeluaran"
@@ -184,6 +212,7 @@ export default function SemuaPengeluaranPage() {
                 >
                   Batal
                 </button>
+
                 <button
                   onClick={handleDownloadPDF}
                   className="px-4 py-2 bg-red-500 text-white rounded-lg"
@@ -196,9 +225,7 @@ export default function SemuaPengeluaranPage() {
         )}
       </AnimatePresence>
 
-      {/* ========================== */}
-      {/* INFO CARDS */}
-      {/* ========================== */}
+      {/* CARDS */}
       <section className="grid grid-cols-2 gap-4">
         <CardInformation
           color="blue"
@@ -206,6 +233,7 @@ export default function SemuaPengeluaranPage() {
           value={allExpenses.length}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
+
         <CardInformation
           color="green"
           title="Data Terfilter"
@@ -214,134 +242,204 @@ export default function SemuaPengeluaranPage() {
         />
       </section>
 
-      {/* ========================== */}
-      {/* MAIN TABLE WRAPPER */}
-      {/* ========================== */}
-      <div className="bg-white rounded-2xl p-5 shadow">
-        {/* SEARCH + DATE FILTER */}
-        {/* ===================== */}
-        {/* HEADER FILTER + SEARCH */}
-        {/* ===================== */}
+      {/* HEADER */}
+      <div className="px-3 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-800 mb-1">
+            Data Semua Pengeluaran
+          </h1>
+          <p className="text-gray-500 mb-6">
+            Data Semua Pengeluaran Sekolah Management.
+          </p>
+        </div>
 
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
-          {/* SEARCH INPUT */}
-          <div className="flex items-center w-full md:w-[60%] bg-white border border-gray-300 rounded-xl px-4 py-3 shadow-sm">
-            <input
-              type="text"
-              placeholder="Cari nama / no. Induk / asrama..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="w-full outline-none text-gray-700"
-            />
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5 text-gray-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-4.35-4.35m1.8-5.65a7 7 0 11-14 0 7 7 0 0114 0z"
+        <ExportPDFButton
+          label="Export PDF"
+          onExport={async () => {
+            setShowPreview(true);
+            return true;
+          }}
+        />
+      </div>
+
+      {/* TABLE WRAPPER */}
+      <div className="bg-white rounded-2xl p-5 shadow-md">
+
+        {/* FILTER HEADER */}
+        <div className="w-full flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+          {/* SEARCH */}
+          <div className="w-full md:flex-1">
+            <div className="flex items-center bg-white border border-gray-300 rounded-xl px-4 py-3 shadow-sm">
+              <input
+                type="text"
+                placeholder="Cari nama / no. Induk / asrama..."
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full outline-none text-gray-700"
               />
-            </svg>
+            </div>
           </div>
 
-          {/* SHOW COUNT */}
-          <div className="flex items-center gap-2">
-            <span className="text-gray-600 font-medium">Showing</span>
+          {/* ROW PER PAGE */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 font-medium">Tampil:</span>
 
-            <select
-              value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg shadow cursor-pointer"
-            >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
-            </select>
+              <select
+                value={rowsPerPage}
+                onChange={handleRowsPerPageChange}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white shadow-sm"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+
+              <span className="text-sm text-gray-600">per halaman</span>
+            </div>
           </div>
 
-          <ExportPDFButton
-            label="Export PDF"
-            onExport={async () => {
-              setShowPreview(true);
-              return true;
-            }}
-          />
-          {/* FILTER BUTTON */}
-          <DateRangeFilterModern
-            startDate={dateFilter.startDate}
-            endDate={dateFilter.endDate}
-            onChange={setDateFilter}
-          />
-
-          {/* EXPORT PDF */}
+          {/* DATE FILTER */}
+          <div className="w-full md:w-auto flex justify-start md:justify-end">
+            <DateRangeFilterModern
+              startDate={dateFilter.startDate}
+              endDate={dateFilter.endDate}
+              onChange={setDateFilter}
+            />
+          </div>
         </div>
 
         {/* TABLE */}
         {loading ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-10">
             <Loader2 className="animate-spin w-6 h-6 mr-3" />
             Memuat data...
           </div>
         ) : (
-          <Table className="w-full">
-            <TableHeader>
-              <TableRow>
-                <TableHead>No</TableHead>
-                <TableHead>Keterangan</TableHead>
-                <TableHead>Jenis</TableHead>
-                <TableHead>Penanggung Jawab</TableHead>
-                <TableHead>Nominal</TableHead>
-                <TableHead>Tanggal</TableHead>
-              </TableRow>
-            </TableHeader>
+          <div className="w-full overflow-x-auto mt-4">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-gray-100 border-b border-gray-300">
+                  <th className="py-4 px-4 text-center text-xs font-semibold uppercase w-[60px]">
+                    No
+                  </th>
+                  <th className="py-4 px-4 text-left text-xs font-semibold uppercase">
+                    Tanggal
+                  </th>
+                  <th className="py-4 px-4 text-left text-xs font-semibold uppercase">
+                    Keterangan
+                  </th>
+                  <th className="py-4 px-4 text-left text-xs font-semibold uppercase">
+                    Jenis
+                  </th>
+                  <th className="py-4 px-4 text-left text-xs font-semibold uppercase">
+                    Penanggung Jawab
+                  </th>
+                  <th className="py-4 px-4 text-right text-xs font-semibold uppercase">
+                    Nominal
+                  </th>
+                </tr>
+              </thead>
 
-            <TableBody>
-              {paginated.map((row: any, i: number) => (
-                <TableRow key={row.id} className="text-center">
-                  <TableCell>
-                    {(currentPage - 1) * rowsPerPage + i + 1}
-                  </TableCell>
-                  <TableCell>{row.description}</TableCell>
-                  <TableCell>{row.jenis}</TableCell>
-                  <TableCell>{row.PenanggungJawab}</TableCell>
-                  <TableCell>Rp {row.amount.toLocaleString("id-ID")}</TableCell>
-                  <TableCell>
-                    {dayjs(row.createdAt).format("DD MMM YYYY")}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              <tbody>
+                {paginated.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="py-6 text-center text-gray-400"
+                    >
+                      Tidak ada data
+                    </td>
+                  </tr>
+                )}
+
+                {paginated.map((row: any, i: number) => (
+                  <tr
+                    key={row.id}
+                    className="border-b border-gray-200 hover:bg-gray-50 transition"
+                  >
+                    <td className="py-4 px-4 text-center font-semibold text-gray-700">
+                      {(currentPage - 1) * rowsPerPage + i + 1}
+                    </td>
+
+                    <td className="py-4 px-4 text-gray-700">
+                      {dayjs(row.createdAt).format("DD MMM YYYY")}
+                    </td>
+
+                    <td className="py-4 px-4 text-gray-800 font-medium">
+                      {row.description}
+                    </td>
+
+                    <td className="py-4 px-4 text-gray-700">
+                      {row.jenis}
+                    </td>
+
+                    <td className="py-4 px-4 text-gray-700">
+                      {row.PenanggungJawab}
+                    </td>
+
+                    <td className="py-4 px-4 text-right font-semibold text-gray-800">
+                      Rp {row.amount.toLocaleString("id-ID")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         {/* PAGINATION */}
-        <div className="flex justify-end gap-2 mt-4">
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-4 py-2 rounded border ${
-                currentPage === i + 1
-                  ? "bg-blue-500 text-white border-blue-500"
-                  : "bg-white border-gray-300 hover:bg-gray-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        {filteredData.length > 0 && (
+          <div className="flex w-full justify-between items-center mt-6 flex-wrap gap-4">
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="p-2 border rounded-lg disabled:opacity-40"
+              >
+                <ChevronLeft size={18} />
+              </button>
+
+              <div className="flex gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                  (num) => (
+                    <button
+                      key={num}
+                      onClick={() => setCurrentPage(num)}
+                      className={`px-3 py-2 rounded-lg border text-sm ${
+                        currentPage === num
+                          ? "bg-blue-500 text-white border-blue-500"
+                          : "bg-white"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <button
+                onClick={() =>
+                  setCurrentPage(Math.min(totalPages, currentPage + 1))
+                }
+                disabled={currentPage === totalPages}
+                className="p-2 border rounded-lg disabled:opacity-40"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+
+            <div className="text-sm text-gray-600">
+              Halaman {currentPage} dari {totalPages} ({filteredData.length} data)
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

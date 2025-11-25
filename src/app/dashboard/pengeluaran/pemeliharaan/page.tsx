@@ -1,5 +1,6 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
+
 import { useMemo, useState } from "react";
 import {
   GraduationCap,
@@ -26,7 +27,6 @@ const PemeliharaanPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-
   const [showPreview, setShowPreview] = useState(false);
 
   const [dateFilter, setDateFilter] = useState({
@@ -46,12 +46,23 @@ const PemeliharaanPage = () => {
     BPJS: 6,
   };
 
-  const filteredData = useMemo(() => {
-    if (!expenses?.data) return [];
+  // ⭐ NORMALIZER — agar expenses SELALU array
+  const normalizeRows = (exp: any) => {
+    if (!exp) return [];
+    if (Array.isArray(exp)) return exp;
+    if (Array.isArray(exp?.data)) return exp.data;
+    if (Array.isArray(exp?.data?.data)) return exp.data.data;
+    return [];
+  };
 
+  // ===============================
+  // FILTERING
+  // ===============================
+  const filteredData = useMemo(() => {
+    const rows = normalizeRows(expenses);
     const search = searchTerm.toLowerCase();
 
-    return expenses.data.filter((item: any) => {
+    return rows.filter((item: any) => {
       const matchSearch =
         item?.description?.toLowerCase().includes(search) ||
         item?.PenanggungJawab?.toLowerCase().includes(search) ||
@@ -73,7 +84,9 @@ const PemeliharaanPage = () => {
     });
   }, [expenses, searchTerm, activeTab, dateFilter]);
 
+  // ===============================
   // PAGINATION
+  // ===============================
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const startIdx = (currentPage - 1) * rowsPerPage;
   const paginatedData = filteredData.slice(startIdx, startIdx + rowsPerPage);
@@ -88,7 +101,9 @@ const PemeliharaanPage = () => {
     0
   );
 
+  // ===============================
   // PDF DOWNLOAD
+  // ===============================
   const handleDownloadPDF = async () => {
     const element = document.getElementById("report-pdf-pemeliharaan");
     if (!element) return;
@@ -111,45 +126,30 @@ const PemeliharaanPage = () => {
   return (
     <div className="min-h-screen flex flex-col gap-10 items-center py-7">
 
-      {/* ===================== */}
       {/* HIDDEN PDF TEMPLATE */}
-      {/* ===================== */}
-      <div className="hidden" >
+      <div className="hidden">
         <div id="report-pdf-pemeliharaan">
-
-        <ReportPdfTemplate
-          title="LAPORAN PEMELIHARAAN SEKOLAH"
-          sectionLabel={`Detail Pemeliharaan (${activeTab})`}
-          headerLogoUrl="/img/Logo.png"
-          sekolah={{
-            nama: "SMK MADINATUL QURAN",
-            alamat: "KP KEBON KELAPA, JAWA BARAT",
-          }}
-          tahunAjaranMulai={2024}
-          data={filteredData}
-          totalPengeluaran={totalJumlah}
-          tanggalCetak={dayjs().format("DD MMMM YYYY")}
-        />
+          <ReportPdfTemplate
+            title="LAPORAN PEMELIHARAAN SEKOLAH"
+            sectionLabel={`Detail Pemeliharaan (${activeTab})`}
+            headerLogoUrl="/img/Logo.png"
+            sekolah={{
+              nama: "SMK MADINATUL QURAN",
+              alamat: "KP KEBON KELAPA, JAWA BARAT",
+            }}
+            tahunAjaranMulai={2024}
+            data={filteredData}         // ← filteredData sudah array, aman
+            totalPengeluaran={totalJumlah}
+            tanggalCetak={dayjs().format("DD MMMM YYYY")}
+          />
         </div>
       </div>
 
-      {/* ===================================================== */}
-      {/* 🔥 PREVIEW MODAL PDF — FIXED */}
-      {/* ===================================================== */}
+      {/* PREVIEW MODAL */}
       <AnimatePresence>
         {showPreview && (
-          <motion.div
-            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
-            >
+          <motion.div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+            <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]">
               <div className="flex justify-between items-center p-4 border-b">
                 <h2 className="text-lg font-semibold">Preview Laporan</h2>
                 <button
@@ -179,17 +179,10 @@ const PemeliharaanPage = () => {
               </div>
 
               <div className="p-4 flex justify-end gap-3 border-t">
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="px-4 py-2 border rounded-lg"
-                >
+                <button onClick={() => setShowPreview(false)} className="px-4 py-2 border rounded-lg">
                   Batal
                 </button>
-
-                <button
-                  onClick={handleDownloadPDF}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                >
+                <button onClick={handleDownloadPDF} className="px-4 py-2 bg-red-500 text-white rounded-lg">
                   Download PDF
                 </button>
               </div>
@@ -198,14 +191,12 @@ const PemeliharaanPage = () => {
         )}
       </AnimatePresence>
 
-      {/* ===================== */}
       {/* CARDS */}
-      {/* ===================== */}
       <section className="w-full grid grid-cols-2 gap-4">
         <CardInformation
           color="blue"
           title="Total Data"
-          value={expenses?.data?.length ?? 0}
+          value={normalizeRows(expenses).length}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
@@ -220,8 +211,8 @@ const PemeliharaanPage = () => {
       <div className="w-full rounded-3xl">
         <div className="px-3 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-800">
-              Data Pengeluaran Pemeliharaan Sekolah
+            <h1 className="text-2xl font-semibold text-gray-800 mb-1">
+              Data Pengeluaran Pemeliharaan
             </h1>
             <p className="text-gray-500 mb-6">
               Data Pengeluaran Sekolah Management.
@@ -258,10 +249,10 @@ const PemeliharaanPage = () => {
             ))}
           </div>
 
-          {/* CARD WRAPPER */}
+          {/* TABLE CARD */}
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
 
-            {/* SEARCH + DATE FILTER */}
+            {/* SEARCH + FILTER */}
             <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
               <div className="w-full md:flex-1">
                 <SearchInput
@@ -286,13 +277,9 @@ const PemeliharaanPage = () => {
                 Memuat data...
               </div>
             ) : isError ? (
-              <p className="text-center text-red-500 py-6">
-                Gagal memuat data pemeliharaan.
-              </p>
+              <p className="text-center text-red-500 py-6">Gagal memuat data pemeliharaan.</p>
             ) : filteredData.length === 0 ? (
-              <p className="text-center text-gray-400 py-6">
-                Tidak ada data ditemukan.
-              </p>
+              <p className="text-center text-gray-400 py-6">Tidak ada data ditemukan.</p>
             ) : (
               <TablePengeluaran
                 title="Pemeliharaan"
@@ -304,7 +291,7 @@ const PemeliharaanPage = () => {
             {/* PAGINATION */}
             {filteredData.length > 0 && (
               <div className="flex w-full justify-between items-center mt-6 flex-wrap gap-4">
-
+                {/* ROWS PER PAGE */}
                 <div className="flex items-center gap-2">
                   <label className="text-sm">Tampil:</label>
                   <select
@@ -319,6 +306,7 @@ const PemeliharaanPage = () => {
                   <span className="text-sm">per halaman</span>
                 </div>
 
+                {/* BUTTONS */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
@@ -360,7 +348,6 @@ const PemeliharaanPage = () => {
                 <div className="text-sm text-gray-600">
                   Halaman {currentPage} dari {totalPages} ({filteredData.length} data)
                 </div>
-
               </div>
             )}
 

@@ -19,7 +19,6 @@ import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTempla
 import { AnimatePresence, motion } from "framer-motion";
 import dayjs from "dayjs";
 
-// 🔥 modern date filter
 import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
 
 const OperasionalPage = () => {
@@ -29,7 +28,6 @@ const OperasionalPage = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showPreview, setShowPreview] = useState(false);
 
-  // 🔥 state tanggal
   const [dateFilter, setDateFilter] = useState({
     startDate: "",
     endDate: "",
@@ -49,40 +47,56 @@ const OperasionalPage = () => {
     return [];
   }, [expenses]);
 
-  // ========================================
-  // FILTERING (pakai safeList)
-  // ========================================
+  // Normalizer
+  const normalizeRows = (exp: any) => {
+    if (!exp) return [];
+    if (Array.isArray(exp)) return exp;
+    if (Array.isArray(exp?.data)) return exp.data;
+    if (Array.isArray(exp?.data?.data)) return exp.data.data;
+    return [];
+  };
+
+  // ======================================================
+  // FILTERING + SORT NEWEST FIRST
+  // ======================================================
   const filteredData = useMemo(() => {
+    const rows = normalizeRows(expenses);
     const search = searchTerm.toLowerCase();
 
-    return safeList.filter((item: any) => {
-      const matchSearch =
-        item?.description?.toLowerCase().includes(search) ||
-        item?.PenanggungJawab?.toLowerCase().includes(search) ||
-        item?.category?.name?.toLowerCase().includes(search);
+    return rows
+      .filter((item: any) => {
+        const matchSearch =
+          item?.description?.toLowerCase().includes(search) ||
+          item?.PenanggungJawab?.toLowerCase().includes(search) ||
+          item?.category?.name?.toLowerCase().includes(search);
 
-      const matchTab =
-        activeTab === "Pembangunan"
-          ? item?.subCategoryId === 1
-          : item?.subCategoryId === 2;
+        const matchTab =
+          activeTab === "Pembangunan"
+            ? item?.subCategoryId === 1
+            : item?.subCategoryId === 2;
 
-      const itemDate = new Date(item.createdAt);
+        const itemDate = new Date(item.createdAt);
 
-      const matchStart = dateFilter.startDate
-        ? itemDate >= new Date(dateFilter.startDate)
-        : true;
+        const matchStart = dateFilter.startDate
+          ? itemDate >= new Date(dateFilter.startDate)
+          : true;
 
-      const matchEnd = dateFilter.endDate
-        ? itemDate <= new Date(dateFilter.endDate)
-        : true;
+        const matchEnd = dateFilter.endDate
+          ? itemDate <= new Date(dateFilter.endDate)
+          : true;
 
-      return matchSearch && matchTab && matchStart && matchEnd;
-    });
-  }, [safeList, searchTerm, activeTab, dateFilter]);
+        return matchSearch && matchTab && matchStart && matchEnd;
+      })
+      // SORT → DATA TERBARU DI ATAS
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+  }, [expenses, searchTerm, activeTab, dateFilter]);
 
-  // ========================================
-  // PAGINATION LOGIC
-  // ========================================
+  // ======================================================
+  // PAGINATION
+  // ======================================================
   const totalPages = Math.ceil(filteredData.length / rowsPerPage);
   const startIdx = (currentPage - 1) * rowsPerPage;
   const endIdx = startIdx + rowsPerPage;
@@ -93,34 +107,16 @@ const OperasionalPage = () => {
     setCurrentPage(1);
   };
 
-  // ========================================
-  // PDF DATA PER BULAN
-  // ========================================
-  const dataPerBulan: Record<string, any> = {};
-  filteredData.forEach((row: any) => {
-    const d = new Date(row.createdAt);
-    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-      2,
-      "0"
-    )}`;
-
-    dataPerBulan[key] = {
-      tanggal: row.createdAt,
-      nominal: (dataPerBulan[key]?.nominal || 0) + row.amount,
-      jenis: row.category?.name,
-    };
-  });
-
   const totalJumlah = filteredData.reduce(
     (acc: number, curr: any) => acc + curr.amount,
     0
   );
 
-  // ========================================
+  // ======================================================
   // PDF DOWNLOAD
-  // ========================================
+  // ======================================================
   const handleDownloadPDF = async () => {
-    const element = document.getElementById("report-pdf");
+    const element = document.getElementById("report-pdf-operasional");
     if (!element) return;
 
     const html2pdf = (await import("html2pdf.js")).default;
@@ -140,28 +136,44 @@ const OperasionalPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col gap-10 items-center py-7">
+      {/* ===================================== */}
       {/* HIDDEN PDF TEMPLATE */}
-      <div className="hidden" id="report-pdf">
-        <ReportPdfTemplate
-          title="LAPORAN PENGELUARAN OPERASIONAL"
-          sectionLabel={`Detail Pengeluaran (${activeTab})`}
-          headerLogoUrl="/img/Logo.png"
-          sekolah={{
-            nama: "SMK MADINATUL QURAN",
-            alamat: "KP KEBON KELAPA, JAWA BARAT",
-          }}
-          tahunAjaranMulai={2024}
-          data={paginatedData}
-          totalPengeluaran={totalJumlah}
-          tanggalCetak={dayjs().format("DD MMMM YYYY")}
-        />
+      {/* ===================================== */}
+      <div className="hidden">
+        <div id="report-pdf-operasional">
+          <ReportPdfTemplate
+            title="LAPORAN PENGELUARAN OPERASIONAL"
+            sectionLabel={`Detail Pengeluaran (${activeTab})`}
+            headerLogoUrl="/img/Logo.png"
+            sekolah={{
+              nama: "SMK MADINATUL QURAN",
+              alamat: "KP KEBON KELAPA, JAWA BARAT",
+            }}
+            tahunAjaranMulai={2024}
+            data={filteredData} // sesuai table
+            totalPengeluaran={totalJumlah}
+            tanggalCetak={dayjs().format("DD MMMM YYYY")}
+          />
+        </div>
       </div>
 
-      {/* MODAL PREVIEW PDF */}
+      {/* ===================================== */}
+      {/* PREVIEW MODAL (SAMA POLA DENGAN PEMELIHARAAN) */}
+      {/* ===================================== */}
       <AnimatePresence>
         {showPreview && (
-          <motion.div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-            <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]">
+          <motion.div
+            className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]"
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+            >
               <div className="flex justify-between items-center p-4 border-b">
                 <h2 className="text-lg font-semibold">Preview Laporan</h2>
                 <button
@@ -183,7 +195,7 @@ const OperasionalPage = () => {
                       alamat: "KP KEBON KELAPA, JAWA BARAT",
                     }}
                     tahunAjaranMulai={2024}
-                    data={paginatedData}
+                    data={filteredData}
                     totalPengeluaran={totalJumlah}
                     tanggalCetak={dayjs().format("DD MMMM YYYY")}
                   />
@@ -210,12 +222,14 @@ const OperasionalPage = () => {
         )}
       </AnimatePresence>
 
-      {/* INFO CARD */}
+      {/* ===================================== */}
+      {/* INFO CARDS */}
+      {/* ===================================== */}
       <section className="w-full grid grid-cols-2 gap-4">
         <CardInformation
           color="blue"
           title="Total Data"
-          value={safeList?.length}
+          value={normalizeRows(expenses).length}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
 
@@ -223,20 +237,21 @@ const OperasionalPage = () => {
         <CardInformation
           color="green"
           title="Data Terfilter"
-          value={filteredData?.length}
+          value={filteredData.length}
           icon={<Users size={32} className="text-green-500" />}
         />
       </section>
 
+      {/* ===================================== */}
       {/* MAIN CONTENT */}
+      {/* ===================================== */}
       <div className="w-full rounded-3xl">
-        {/* HEADER */}
-        <div className="pl-2 flex justify-between items-center mb-4">
+        <div className="px-3 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-800">
-              Data Pengeluaran Operasional Sekolah
+            <h1 className="text-2xl font-semibold text-gray-800 mb-1">
+              Data Pengeluaran Operasional
             </h1>
-            <p className="text-gray-500 mb-2">
+            <p className="text-gray-500 mb-6">
               Data Pengeluaran Sekolah Management.
             </p>
           </div>
@@ -250,8 +265,8 @@ const OperasionalPage = () => {
           />
         </div>
 
-        {/* TABS */}
         <div className="flex flex-col gap-2 p-2">
+          {/* TABS */}
           <div className="flex gap-2 mb-[-7px]">
             {tabs.map((tab) => (
               <button
@@ -271,9 +286,9 @@ const OperasionalPage = () => {
             ))}
           </div>
 
-          {/* TABLE CARD */}
+          {/* TABLE WRAPPER */}
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
-            {/* SEARCH + FILTER */}
+            {/* SEARCH + DATE FILTER */}
             <div className="w-full flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
               <div className="w-full md:flex-1">
                 <SearchInput
@@ -295,7 +310,7 @@ const OperasionalPage = () => {
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
                 <Loader2 className="animate-spin w-6 h-6 text-gray-500 mr-3" />
-                <span className="text-gray-500">Memuat data...</span>
+                Memuat data...
               </div>
             ) : isError ? (
               <p className="text-center text-red-500 py-6">
@@ -314,6 +329,8 @@ const OperasionalPage = () => {
             )}
 
             {/* PAGINATION */}
+
+            {/* PAGINATION */}
             {filteredData.length > 0 && (
               <div className="flex w-full justify-between items-center mt-6 flex-wrap gap-4">
                 {/* ROWS PER PAGE */}
@@ -324,7 +341,7 @@ const OperasionalPage = () => {
                   <select
                     value={rowsPerPage}
                     onChange={handleRowsPerPageChange}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium"
                   >
                     <option value={5}>5</option>
                     <option value={10}>10</option>
@@ -334,12 +351,14 @@ const OperasionalPage = () => {
                   <span className="text-sm text-gray-600">per halaman</span>
                 </div>
 
-                {/* PAGINATION BUTTONS */}
+                {/* BUTTONS */}
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    onClick={() =>
+                      setCurrentPage(Math.max(1, currentPage - 1))
+                    }
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    className="p-2 rounded-lg border border-gray-300"
                   >
                     <ChevronLeft size={18} />
                   </button>
@@ -350,10 +369,10 @@ const OperasionalPage = () => {
                         <button
                           key={num}
                           onClick={() => setCurrentPage(num)}
-                          className={`px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                          className={`px-3 py-2 rounded-lg border text-sm ${
                             currentPage === num
-                              ? "bg-blue-500 text-white border-blue-500"
-                              : "bg-white border-gray-300 text-gray-600 hover:bg-blue-50"
+                              ? "bg-blue-500 text-white"
+                              : "bg-white"
                           }`}
                         >
                           {num}
@@ -367,16 +386,14 @@ const OperasionalPage = () => {
                       setCurrentPage(Math.min(totalPages, currentPage + 1))
                     }
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                    className="p-2 rounded-lg border border-gray-300"
                   >
                     <ChevronRight size={18} />
                   </button>
                 </div>
 
-                {/* INFO */}
                 <div className="text-sm text-gray-600">
-                  Halaman {currentPage} dari {totalPages} (
-                  {filteredData.length} data)
+                  Halaman {currentPage} dari {totalPages} ({filteredData.length} data)
                 </div>
               </div>
             )}

@@ -2,6 +2,7 @@
 
 import { Calendar, ChevronDown } from "lucide-react";
 import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function DateRangeFilterModern({
   startDate,
@@ -12,100 +13,98 @@ export default function DateRangeFilterModern({
   endDate: string;
   onChange: (value: { startDate: string; endDate: string }) => void;
 }) {
-  const [openPreset, setOpenPreset] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth() + 1).padStart(2, "0");
-  const dd = String(today.getDate()).padStart(2, "0");
+  const applyFilter = () => {
+    setOpen(false);
+  };
 
-  const todayStr = `${yyyy}-${mm}-${dd}`;
-  const firstDayOfMonth = `${yyyy}-${mm}-01`;
-  const firstDayOfYear = `${yyyy}-01-01`;
-
-  const presets = [
-    { label: "Hari ini", start: todayStr, end: todayStr },
-    { label: "Bulan ini", start: firstDayOfMonth, end: todayStr },
-    { label: "Tahun ini", start: firstDayOfYear, end: todayStr },
-  ];
+  const resetFilter = () => {
+    onChange({ startDate: "", endDate: "" });
+    setOpen(false);
+  };
 
   return (
-    <div
-      className="
-        inline-flex flex-wrap items-end gap-4 mb-4 p-3 
-        bg-gray-50 border rounded-xl shadow-sm 
-        max-w-max
-      "
-    >
-      {/* Start Date */}
-      <div className="flex flex-col">
-        <label className="text-xs text-gray-600 mb-1">Tanggal Mulai</label>
-        <div className="flex items-center border px-3 py-2 rounded-lg bg-white shadow-sm">
-          <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) =>
-              onChange({ startDate: e.target.value, endDate })
-            }
-            className="text-sm bg-transparent outline-none"
-          />
-        </div>
-      </div>
-
-      {/* End Date */}
-      <div className="flex flex-col">
-        <label className="text-xs text-gray-600 mb-1">Tanggal Akhir</label>
-        <div className="flex items-center border px-3 py-2 rounded-lg bg-white shadow-sm">
-          <Calendar className="w-4 h-4 text-gray-500 mr-2" />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) =>
-              onChange({ startDate, endDate: e.target.value })
-            }
-            className="text-sm bg-transparent outline-none"
-          />
-        </div>
-      </div>
-
-      {/* Presets */}
-      <div className="relative">
-        <button
-          onClick={() => setOpenPreset(!openPreset)}
-          className="flex items-center gap-2 px-3 py-2 bg-white border rounded-lg shadow-sm hover:bg-gray-100 text-sm"
+    <div className="relative inline-block mb-4">
+      {/* BUTTON UTAMA */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg shadow-sm 
+        hover:bg-gray-100 transition-all text-sm"
+      >
+        <Calendar className="w-4 h-4" />
+        Filter Tanggal
+        <motion.div
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: 0.2 }}
         >
-          Presets
           <ChevronDown className="w-4 h-4" />
-        </button>
+        </motion.div>
+      </button>
 
-        {openPreset && (
-          <div className="absolute bg-white border rounded-lg shadow-lg mt-2 z-10 w-40 p-2">
-            {presets.map((p) => (
-              <button
-                key={p.label}
-                className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm"
-                onClick={() => {
-                  onChange({ startDate: p.start, endDate: p.end });
-                  setOpenPreset(false);
-                }}
-              >
-                {p.label}
-              </button>
-            ))}
+      {/* DROPDOWN */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.96, y: -4 }}
+            transition={{ duration: 0.18 }}
+            className="absolute mt-2 right-0 bg-white border rounded-xl shadow-lg w-64 p-4 z-20"
+          >
+            <h4 className="text-xs font-semibold text-gray-500 mb-3">
+              Pilih Rentang Tanggal
+            </h4>
 
+            {/* DATE INPUTS */}
+            <div className="space-y-3 mb-4">
+              <div>
+                <label className="text-xs text-gray-600">Mulai</label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) =>
+                    onChange({ startDate: e.target.value, endDate })
+                  }
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm outline-none 
+                  shadow-sm bg-white hover:border-gray-400 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs text-gray-600">Sampai</label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) =>
+                    onChange({ startDate, endDate: e.target.value })
+                  }
+                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm outline-none 
+                  shadow-sm bg-white hover:border-gray-400 transition-all"
+                />
+              </div>
+            </div>
+
+            {/* BUTTON TERAPKAN */}
             <button
-              className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 text-sm text-red-600"
-              onClick={() => {
-                onChange({ startDate: "", endDate: "" });
-                setOpenPreset(false);
-              }}
+              onClick={applyFilter}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm 
+              hover:bg-blue-700 transition-all shadow-sm"
+            >
+              Terapkan Filter
+            </button>
+
+            {/* RESET */}
+            <button
+              onClick={resetFilter}
+              className="w-full mt-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm 
+              hover:bg-red-100 transition-all"
             >
               Reset Filter
             </button>
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

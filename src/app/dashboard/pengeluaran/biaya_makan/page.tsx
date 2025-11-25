@@ -31,15 +31,23 @@ const BiayaMakanPage = () => {
   const { useGetExpense } = useExpenseModule();
   const { data: expenses } = useGetExpense("Makan");
 
+  // ⭐ NORMALIZER: agar `.filter` tidak error
+  const normalizeRows = (exp: any) => {
+    if (!exp) return [];
+    if (Array.isArray(exp)) return exp;
+    if (Array.isArray(exp?.data)) return exp.data;
+    if (Array.isArray(exp?.data?.data)) return exp.data.data;
+    return [];
+  };
+
   // ==========================
   // FILTERING
   // ==========================
   const filteredData = useMemo(() => {
-    if (!expenses?.data) return [];
-
+    const rows = normalizeRows(expenses);
     const search = searchTerm.toLowerCase();
 
-    return expenses.data.filter((item: any) => {
+    return rows.filter((item: any) => {
       const matchSearch =
         item?.description?.toLowerCase().includes(search) ||
         item?.PenanggungJawab?.toLowerCase().includes(search) ||
@@ -105,22 +113,21 @@ const BiayaMakanPage = () => {
       {/* ========================== */}
       {/* HIDDEN PDF TEMPLATE */}
       {/* ========================== */}
-      <div className="hidden" >
+      <div className="hidden">
         <div id="report-pdf-makan">
-        <ReportPdfTemplate
-          title="LAPORAN BIAYA MAKAN"
-          sectionLabel="Detail Pengeluaran Biaya Makan"
-          headerLogoUrl="/img/Logo.png"
-          sekolah={{
-            nama: "SMK MADINATUL QURAN",
-            alamat: "KP KEBON KELAPA, JAWA BARAT",
-          }}
-          tahunAjaranMulai={2024}
-          data={filteredData}    // << FIX BENAR
-          totalPengeluaran={totalJumlah}
-          tanggalCetak={dayjs().format("DD MMMM YYYY")}
-        />
-
+          <ReportPdfTemplate
+            title="LAPORAN BIAYA MAKAN"
+            sectionLabel="Detail Pengeluaran Biaya Makan"
+            headerLogoUrl="/img/Logo.png"
+            sekolah={{
+              nama: "SMK MADINATUL QURAN",
+              alamat: "KP KEBON KELAPA, JAWA BARAT",
+            }}
+            tahunAjaranMulai={2024}
+            data={filteredData}
+            totalPengeluaran={totalJumlah}
+            tanggalCetak={dayjs().format("DD MMMM YYYY")}
+          />
         </div>
       </div>
 
@@ -131,6 +138,7 @@ const BiayaMakanPage = () => {
         {showPreview && (
           <motion.div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
             <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]">
+              
               <div className="flex justify-between items-center p-4 border-b">
                 <h2 className="text-lg font-semibold">Preview Laporan</h2>
                 <button
@@ -174,6 +182,7 @@ const BiayaMakanPage = () => {
                   Download PDF
                 </button>
               </div>
+
             </motion.div>
           </motion.div>
         )}
@@ -186,7 +195,7 @@ const BiayaMakanPage = () => {
         <CardInformation
           color={"blue"}
           title={"Total Data"}
-          value={expenses?.data?.length ?? 0}
+          value={normalizeRows(expenses).length}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
@@ -201,10 +210,10 @@ const BiayaMakanPage = () => {
       {/* MAIN CONTENT */}
       {/* ========================== */}
       <div className="w-full rounded-3xl">
-        <div className="pl-2 flex justify-between items-center">
+        <div className="px-3 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-800">
-              Data Pengeluaran Biaya Makan Sekolah
+            <h1 className="text-2xl font-semibold text-gray-800 mb-1">
+              Data Pengeluaran Biaya Makan  
             </h1>
             <p className="text-gray-500 mb-6">
               Data Pengeluaran Sekolah Management.
@@ -287,10 +296,12 @@ const BiayaMakanPage = () => {
                 );
               })}
             </div>
+
           </div>
         </div>
       </div>
     </div>
   );
 };
+
 export default BiayaMakanPage;

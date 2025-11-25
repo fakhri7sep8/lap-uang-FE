@@ -8,30 +8,37 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+
 import CardInformation from "@/components/fragments/dashboard/card-information";
 import TablePengeluaran from "@/components/fragments/pengeluaran/table";
 import SearchInput from "@/components/fragments/pengeluaran/seraach_andinput";
 import { useExpenseModule } from "@/hooks/expense/useExpense";
+
 import ExportPDFButton from "@/components/fragments/ExportPDFButton";
 import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTemplate";
 import { AnimatePresence, motion } from "framer-motion";
 import dayjs from "dayjs";
-// 🔥 filter tanggal modern
+
 import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
+
 const UpahKariawanPage = () => {
   const [activeTab, setActiveTab] = useState("Guru");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [showPreview, setShowPreview] = useState(false);
-  // 🔥 date filter
+
   const [dateFilter, setDateFilter] = useState({
     startDate: "",
     endDate: "",
   });
+
   const { useGetExpense } = useExpenseModule();
-  const { data: expenses, isLoading, isError } = useGetExpense("Upah Karyawan");
+  const { data: expenses, isLoading, isError } =
+    useGetExpense("Upah Karyawan");
+
   const tabs = ["Guru", "Staf", "Satpam", "Tukang", "Dapur", "Laundry"];
+
   const subCategoryMap: Record<string, number> = {
     Guru: 7,
     Staf: 8,
@@ -40,35 +47,53 @@ const UpahKariawanPage = () => {
     Dapur: 11,
     Laundry: 12,
   };
+
+  // ⭐ NORMALIZER — agar tidak error `.filter is not a function`
+  const normalizeRows = (exp: any) => {
+    if (!exp) return [];
+    if (Array.isArray(exp)) return exp;
+    if (Array.isArray(exp?.data)) return exp.data;
+    if (Array.isArray(exp?.data?.data)) return exp.data.data;
+    return [];
+  };
+
   // =====================================================
-  // FILTER DATA (search + tab + tanggal)
+  // FILTER
   // =====================================================
   const filteredData = useMemo(() => {
-    if (!expenses?.data) return [];
+    const rows = normalizeRows(expenses);
     const search = searchTerm.toLowerCase();
-    return expenses.data.filter((item: any) => {
+
+    return rows.filter((item: any) => {
       const matchSearch =
         item?.description?.toLowerCase().includes(search) ||
         item?.PenanggungJawab?.toLowerCase().includes(search) ||
         item?.category?.name?.toLowerCase().includes(search);
+
       const matchTab = item?.subCategoryId === subCategoryMap[activeTab];
+
       const itemDate = new Date(item.createdAt);
+
       const matchStart = dateFilter.startDate
         ? itemDate >= new Date(dateFilter.startDate)
         : true;
+
       const matchEnd = dateFilter.endDate
         ? itemDate <= new Date(dateFilter.endDate)
         : true;
+
       return matchSearch && matchTab && matchStart && matchEnd;
     });
   }, [expenses, searchTerm, activeTab, dateFilter]);
+
   // =====================================================
-  // TOTAL PEMELIHARAAN
+  // TOTAL UPAH
   // =====================================================
   const totalJumlah = filteredData.reduce(
     (acc: number, curr: any) => acc + curr.amount,
     0
   );
+
   // =====================================================
   // PAGINATION
   // =====================================================
@@ -76,17 +101,21 @@ const UpahKariawanPage = () => {
   const startIdx = (currentPage - 1) * rowsPerPage;
   const endIdx = startIdx + rowsPerPage;
   const paginatedData = filteredData.slice(startIdx, endIdx);
+
   const handleRowsPerPageChange = (e: any) => {
     setRowsPerPage(Number(e.target.value));
     setCurrentPage(1);
   };
+
   // =====================================================
-  // PDF DOWNLOAD
+  // PDF
   // =====================================================
   const handleDownloadPDF = async () => {
     const element = document.getElementById("report-pdf-upah");
     if (!element) return;
+
     const html2pdf = (await import("html2pdf.js")).default;
+
     html2pdf()
       .set({
         margin: 10,
@@ -96,11 +125,16 @@ const UpahKariawanPage = () => {
       })
       .from(element)
       .save();
+
     setShowPreview(false);
   };
+
   return (
     <div className="min-h-screen flex flex-col gap-10 items-center py-7">
-      {/* PDF TEMPLATE HIDDEN */}
+
+      {/* ======================= */}
+      {/* TEMPLATE PDF (hidden) */}
+      {/* ======================= */}
       <div className="hidden">
         <div id="report-pdf-upah">
           <ReportPdfTemplate
@@ -112,25 +146,31 @@ const UpahKariawanPage = () => {
               alamat: "KP KEBON KELAPA, JAWA BARAT",
             }}
             tahunAjaranMulai={2024}
-            data={filteredData}     
+            data={filteredData} 
             totalPengeluaran={totalJumlah}
             tanggalCetak={dayjs().format("DD MMMM YYYY")}
           />
         </div>
       </div>
+
+      {/* ======================= */}
       {/* PREVIEW MODAL */}
+      {/* ======================= */}
       <AnimatePresence>
         {showPreview && (
           <motion.div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
             <motion.div className="bg-white w-full max-w-4xl rounded-xl overflow-auto max-h-[90vh]">
+
               <div className="flex justify-between items-center p-4 border-b">
                 <h2 className="text-lg font-semibold">Preview Laporan</h2>
                 <button
                   onClick={() => setShowPreview(false)}
-                  className="text-gray-500 text-xl">
+                  className="text-gray-500 text-xl"
+                >
                   ✕
                 </button>
               </div>
+
               <div className="p-5 bg-gray-50">
                 <div className="bg-white shadow-md mx-auto border border-gray-200">
                   <ReportPdfTemplate
@@ -142,36 +182,37 @@ const UpahKariawanPage = () => {
                       alamat: "KP KEBON KELAPA, JAWA BARAT",
                     }}
                     tahunAjaranMulai={2024}
-                    data={filteredData}     
+                    data={filteredData}
                     totalPengeluaran={totalJumlah}
                     tanggalCetak={dayjs().format("DD MMMM YYYY")}
                   />
                 </div>
               </div>
+
               <div className="p-4 flex justify-end gap-3 border-t">
-                <button
-                  onClick={() => setShowPreview(false)}
-                  className="px-4 py-2 border rounded-lg"
-                >
+                <button onClick={() => setShowPreview(false)}
+                  className="px-4 py-2 border rounded-lg">
                   Batal
                 </button>
-                <button
-                  onClick={handleDownloadPDF}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                >
+                <button onClick={handleDownloadPDF}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg">
                   Download PDF
                 </button>
               </div>
+
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ======================= */}
       {/* CARDS */}
+      {/* ======================= */}
       <section className="w-full grid grid-cols-2 gap-4">
         <CardInformation
           color="blue"
           title="Total Data"
-          value={expenses?.data?.length ?? 0}
+          value={normalizeRows(expenses).length}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
@@ -181,8 +222,12 @@ const UpahKariawanPage = () => {
           icon={<Users size={32} className="text-green-500" />}
         />
       </section>
+
+      {/* ======================= */}
       {/* MAIN CONTENT */}
+      {/* ======================= */}
       <div className="w-full rounded-3xl">
+
         <div className="px-3 flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-semibold text-gray-800 mb-1">
@@ -192,6 +237,7 @@ const UpahKariawanPage = () => {
               Data Pengeluaran Sekolah Management.
             </p>
           </div>
+
           <ExportPDFButton
             label="Export PDF"
             onExport={async () => {
@@ -200,8 +246,12 @@ const UpahKariawanPage = () => {
             }}
           />
         </div>
+
         <div className="flex flex-col gap-2 p-2">
+
+          {/* ======================= */}
           {/* TABS */}
+          {/* ======================= */}
           <div className="flex gap-2 mb-[-7px]">
             {tabs.map((tab) => (
               <button
@@ -214,14 +264,19 @@ const UpahKariawanPage = () => {
                   activeTab === tab
                     ? "bg-white text-gray-800 shadow-md"
                     : "bg-[#dfe6f4] text-gray-600 hover:bg-[#e6ebf7]"
-                }`}>
+                }`}
+              >
                 {tab}
               </button>
             ))}
           </div>
+
+          {/* ======================= */}
           {/* TABLE CARD */}
+          {/* ======================= */}
           <div className="bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl">
-            {/* SEARCH + FILTER */}
+
+            {/* SEARCH + DATE FILTER */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
               <div className="flex-1">
                 <SearchInput
@@ -232,6 +287,7 @@ const UpahKariawanPage = () => {
                   searchTerm={searchTerm}
                 />
               </div>
+
               <div className="w-full md:w-auto flex justify-end">
                 <DateRangeFilterModern
                   startDate={dateFilter.startDate}
@@ -239,7 +295,9 @@ const UpahKariawanPage = () => {
                   onChange={setDateFilter}
                 />
               </div>
+
             </div>
+
             {/* TABLE */}
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
@@ -261,9 +319,13 @@ const UpahKariawanPage = () => {
                 menu="upah_karyawan"
               />
             )}
+
+            {/* ======================= */}
             {/* PAGINATION */}
+            {/* ======================= */}
             {filteredData.length > 0 && (
               <div className="flex w-full justify-between items-center mt-6 flex-wrap gap-4">
+
                 {/* ROWS PER PAGE */}
                 <div className="flex items-center gap-2">
                   <label className="text-sm font-medium text-gray-600">
@@ -272,7 +334,8 @@ const UpahKariawanPage = () => {
                   <select
                     value={rowsPerPage}
                     onChange={handleRowsPerPageChange}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
                     <option value={5}>5</option>
                     <option value={10}>10</option>
                     <option value={20}>20</option>
@@ -280,14 +343,17 @@ const UpahKariawanPage = () => {
                   </select>
                   <span className="text-sm text-gray-600">per halaman</span>
                 </div>
+
                 {/* PAGINATION BUTTONS */}
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                    className="p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
                     <ChevronLeft size={18} />
                   </button>
+
                   <div className="flex gap-1">
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                       (num) => (
@@ -298,12 +364,14 @@ const UpahKariawanPage = () => {
                             currentPage === num
                               ? "bg-blue-500 text-white border-blue-500"
                               : "bg-white border-gray-300 text-gray-600 hover:bg-blue-50"
-                          }`}>
+                          }`}
+                        >
                           {num}
                         </button>
                       )
                     )}
                   </div>
+
                   <button
                     onClick={() =>
                       setCurrentPage(Math.min(totalPages, currentPage + 1))
@@ -314,15 +382,21 @@ const UpahKariawanPage = () => {
                     <ChevronRight size={18} />
                   </button>
                 </div>
+
                 <div className="text-sm text-gray-600">
-                  Halaman {currentPage} dari {totalPages} (
-                  {filteredData.length} data)
+                  Halaman {currentPage} dari {totalPages} ({filteredData.length}{" "}
+                  data)
                 </div>
+
               </div>
             )}
+
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 };

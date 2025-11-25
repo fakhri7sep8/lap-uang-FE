@@ -30,29 +30,23 @@ export default function TablePengeluaran2({
       jumlah: 2500000,
       status: "Selesai",
     },
-    {
-      id: 3,
-      tanggal: "2025-10-29",
-      nama: "Langganan Internet",
-      penanggungJawab: "Bu Sinta",
-      kategori: "Pemeliharaan",
-      jumlah: 450000,
-      status: "Proses",
-    },
   ];
 
-  const data = propData ?? internalData;
+  const rawData = propData ?? internalData;
 
-  // Helper format tanggal
-  const formatTanggal = (value: string) => {
-    return dayjs(value).format("DD/MM/YYYY");
-  };
+  // 🔥 SORT DATA BASED ON TANGGAL OR createdAt
+  const data = [...rawData].sort((a, b) => {
+    const dateA = new Date(a.tanggal ?? a.createdAt);
+    const dateB = new Date(b.tanggal ?? b.createdAt);
+    return dateB.getTime() - dateA.getTime();
+  });
+
+  const formatTanggal = (val: string) =>
+    dayjs(val).format("DD/MM/YYYY");
 
   return (
     <div className="p-6 bg-white rounded-2xl shadow-md border border-gray-200 w-full">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-        Data {title}
-      </h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Data {title}</h2>
 
       {/* DESKTOP TABLE */}
       <div className="hidden sm:block overflow-x-auto">
@@ -78,7 +72,6 @@ export default function TablePengeluaran2({
               >
                 <td className="py-4 px-4 text-center">{index + 1}</td>
 
-                {/* 🔥 TANGGAL DIFORMAT */}
                 <td className="py-4 px-4">
                   {formatTanggal(item.tanggal ?? item.createdAt)}
                 </td>
@@ -108,9 +101,11 @@ export default function TablePengeluaran2({
                     <button className="p-2 hover:bg-blue-50 rounded-lg border">
                       <Pencil size={18} className="text-blue-600" />
                     </button>
+
                     <button className="p-2 hover:bg-green-50 rounded-lg border">
                       <Eye size={18} className="text-green-600" />
                     </button>
+
                     <button className="p-2 hover:bg-orange-50 rounded-lg border">
                       <Download size={18} className="text-orange-600" />
                     </button>
@@ -122,7 +117,7 @@ export default function TablePengeluaran2({
         </table>
       </div>
 
-      {/* MOBILE VERSION */}
+      {/* MOBILE TABLE */}
       <div className="sm:hidden flex flex-col gap-4">
         {data.map((item, index) => (
           <div
@@ -138,9 +133,7 @@ export default function TablePengeluaran2({
 
             <div className="flex justify-between">
               <span className="font-semibold">Tanggal:</span>
-
-              {/* 🔥 MOBILE FORMAT JUGA */}
-              <span >{formatTanggal(item.tanggal ?? item.createdAt)}</span>
+              <span>{formatTanggal(item.tanggal)}</span>
             </div>
 
             <div className="flex justify-between">
@@ -155,12 +148,12 @@ export default function TablePengeluaran2({
 
             <div className="flex justify-between">
               <span className="font-semibold">Jumlah:</span>
-              <span>Rp {item.jumlah?.toLocaleString("id-ID")}</span>
+              <span>Rp {item.jumlah.toLocaleString("id-ID")}</span>
             </div>
 
-            <div className="mt-3 flex justify-between items-center">
+            <div className="flex justify-between items-center mt-3">
               <span
-                className={`px-3 py-1 text-xs rounded-full ${
+                className={`px-3 py-1 rounded-full text-xs ${
                   item.status === "Selesai"
                     ? "bg-green-100 text-green-700"
                     : "bg-yellow-100 text-yellow-700"
