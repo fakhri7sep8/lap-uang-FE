@@ -68,8 +68,6 @@ export const useSchoolModule = () => {
     queryKey: ["get-school"],
     queryFn: getSchoolData,
     refetchOnWindowFocus: false,
-    staleTime: 1000 * 60 * 2, // data fresh 2 menit
-    gcTime: 1000 * 60 * 10, // disimpan di cache 10 menit
     select: (res) => res.data,
   });
 

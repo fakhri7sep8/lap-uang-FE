@@ -64,8 +64,6 @@ export const useArrearsModule = () => {
       queryKey: ["arrears"],
       queryFn: getArrears,
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 2,
-      gcTime: 1000 * 60 * 10,
       select: (res) => res.data,
     });
 

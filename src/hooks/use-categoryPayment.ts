@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 
 export const useCategoryPaymentModule = () => {
   const getCategory = async () => {
-    return await axiosClient.get("/payment-types/").then((res) => res.data);
+    return await axiosClient.get("/payment-types/with-status").then((res) => res.data);
   };
 
   const createCategory = async (payload: createCategoryPembayaran) => {
@@ -34,8 +34,6 @@ export const useCategoryPaymentModule = () => {
       queryFn: getCategory,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      staleTime: 1000 * 60 * 2, // data dianggap fresh 2 menit
-      gcTime: 1000 * 60 * 10, // disimpan di cache 10 menit
       select: (res) => res.data,
     });
 
@@ -60,7 +58,7 @@ export const useCategoryPaymentModule = () => {
         });
 
         // 🔄 Langsung refresh data kategori agar muncul tanpa reload
-        await queryClient.invalidateQueries({ queryKey: ["categoryPayment"] });
+        await queryClient.refetchQueries({ queryKey: ["categoryPayment"], exact: true });
       },
       onError: (error) => {
         Swal.fire({

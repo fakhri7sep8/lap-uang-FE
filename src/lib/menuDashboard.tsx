@@ -73,8 +73,7 @@ export function generateMenuDashboard({
         {
           name: 'Input Pembayaran',
           icon: <History className='mr-2' size={16} />,
-          link: '/dashboard/pembayaran/input',
-          children: null
+          link: '/dashboard/pembayaran/input/inputSPP'
         },
         {
           name: 'Data SPP',
