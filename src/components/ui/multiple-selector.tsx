@@ -12,7 +12,7 @@ interface MultipleSelectorProps {
   defaultOptions: Option[];
   value: Option[];
   onChange: (selected: Option[]) => void;
-  selectAll?: boolean;          // controlled dari parent
+  selectAll?: boolean; // controlled dari parent
   onSelectAllChange?: (val: boolean) => void;
   placeholder?: string;
   emptyIndicator?: React.ReactNode;
@@ -40,8 +40,17 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
 
   const toggleOption = (option: Option) => {
     if (option.value === "__ALL__") {
-      onSelectAllChange?.(!selectAll); // toggle di parent
-      onChange([]); // kosongin selected kalau pilih semua
+      const newState = !selectAll;
+      onSelectAllChange?.(newState);
+
+      if (newState) {
+        // Set semua siswa ke selected
+        onChange(defaultOptions);
+      } else {
+        // Reset semua
+        onChange([]);
+      }
+
       return;
     }
 
@@ -82,25 +91,28 @@ const MultipleSelector: React.FC<MultipleSelectorProps> = ({
         className="border border-slate-300 rounded-md p-2 flex flex-wrap gap-1 cursor-text min-h-[44px] items-center"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {value.map((v) => (
-          <span
-            key={v.value}
-            className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-sm flex items-center gap-1"
-          >
-            {v.label}
-            <button
-              type="button"
-              className="ml-1 text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-50 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleOption(v);
-              }}
+        {/* Badge */}
+        {!selectAll &&
+          value.map((v) => (
+            <span
+              key={v.value}
+              className="bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded-md text-sm flex items-center gap-1"
             >
-              ×
-            </button>
-          </span>
-        ))}
+              {v.label}
+              <button
+                type="button"
+                className="ml-1 text-slate-500 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-50 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleOption(v);
+                }}
+              >
+                ×
+              </button>
+            </span>
+          ))}
 
+        {/* Badge pilih semua */}
         {selectAll && (
           <span className="bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-2 py-1 rounded-md text-sm">
             Semua siswa dipilih
