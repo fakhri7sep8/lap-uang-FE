@@ -1,10 +1,8 @@
 'use client'
-import { useMemo, useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { useEffect, useMemo, useState } from 'react'
+import { GraduationCap, Users } from 'lucide-react'
 import CardInformation from '@/components/fragments/dashboard/card-information'
-import { GraduationCap, SquarePen, Trash2, Users } from 'lucide-react'
 import TablePengeluaran from '@/components/fragments/pengeluaran/table'
-import TablePengeluaran2 from '@/components/fragments/pengeluaran/table'
 import SearchInput from '@/components/fragments/pengeluaran/seraach_andinput'
 import { useExpenseModule } from '@/hooks/expense/useExpense'
 
@@ -12,72 +10,70 @@ const LainLainPage = () => {
   const [activeTab, setActiveTab] = useState('Lain-Lain')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const limit = 10
 
   const tabs = ['Lain-Lain']
   const { useGetExpense } = useExpenseModule()
   const { data: expenses, isLoading, isError } = useGetExpense('Other')
-  const data = [
-    {
-      id: 1,
-      tanggal: '2025-10-29',
-      nama: 'Bayar Listrik',
-      penanggungJawab: 'Pak Dimas',
-      kategori: 'Pemeliharaan',
-      subKategori: 'Listrik',
-      jumlah: 500000,
-      status: 'Selesai'
-    },
-    {
-      id: 2,
-      tanggal: '2025-10-29',
-      nama: 'Gaji Guru Honorer',
-      penanggungJawab: 'Pak Hadi',
-      kategori: 'Upah Karyawan',
-      subKategori: 'Guru',
-      jumlah: 2500000,
-      status: 'Selesai'
-    },
-    {
-      id: 3,
-      tanggal: '2025-10-29',
-      nama: 'Langganan Internet',
-      penanggungJawab: 'Bu Sinta',
-      kategori: 'Pemeliharaan',
-      subKategori: 'Internet',
-      jumlah: 450000,
-      status: 'Proses'
-    }
-  ]
 
+  // Date states
+  const [fromDate, setFromDate] = useState<Date | null>(null)
+  const [toDate, setToDate] = useState<Date | null>(null)
+
+  // ========================= FILTERING =========================
   const filteredData = useMemo(() => {
     if (!expenses?.data) return []
 
     return expenses?.data?.data?.filter((item: any) => {
       const search = searchTerm.toLowerCase()
 
-      // Search matching
+      // ==== ASUMSI FIELD TANGGAL ====
+      const itemDate = item?.createdAt ? new Date(item.createdAt) : ""
+
+      // Search filter
       const matchSearch =
         item?.description?.toLowerCase().includes(search) ||
         item?.PenanggungJawab?.toLowerCase().includes(search) ||
         item?.category?.name?.toLowerCase().includes(search)
 
-      // Subcategory filter berdasarkan tab
+      // Tab filter
       const matchTab =
         activeTab === 'Lain-Lain'
           ? item?.subCategoryId === 14
           : item?.subCategoryId === 14
 
-      return matchSearch && matchTab
+      // Date filter
+      const matchFromDate = fromDate ? itemDate >= fromDate : true
+      const matchToDate = toDate ? itemDate <= toDate : true
+
+      return matchSearch && matchTab && matchFromDate && matchToDate
     })
-  }, [expenses, searchTerm, activeTab])
+  }, [expenses, searchTerm, activeTab, fromDate, toDate])
+
+  // Pagination
+  const startIndex = (currentPage - 1) * limit
+  const endIndex = startIndex + limit
+  const paginatedData = filteredData.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(filteredData.length / limit)
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, activeTab, fromDate, toDate])
+
+  // Handlers for SearchInput
+  const handleSearchChange = (e: any) => setSearchTerm(e.target.value)
+  const handleFromDateChange = (date: any) => setFromDate(date)
+  const handleToDateChange = (date: any) => setToDate(date)
 
   return (
     <div className='min-h-screen flex flex-col gap-10 items-center py-7'>
+      {/* Summary Cards */}
       <section className='w-full grid grid-cols-2 gap-4'>
         <CardInformation
           color={'blue'}
           title={'Total Data'}
-          value={0}
+          value={expenses?.data?.data?.length || 0}
           icon={<GraduationCap size={32} className='text-blue-500' />}
         />
         <CardInformation
@@ -87,19 +83,21 @@ const LainLainPage = () => {
           icon={<Users size={32} className='text-green-500' />}
         />
       </section>
+
+      {/* Main Container */}
       <div className='w-full max-w-6xl rounded-3xl'>
         <div className='px-3'>
           <h1 className='text-2xl font-semibold text-gray-800 mb-2'>
-            Data Pengeluaran Sekolah
+            Pengeluaran Lain-lain
           </h1>
           <p className='text-gray-500 mb-6'>
-            Data Pengeluaran Sekolah Management.
+            Data pengeluaran kategori lainnya.
           </p>
         </div>
 
         {/* Tabs */}
         <div className='flex flex-col gap-2 p-2'>
-          <div className=' flex gap-2 mb-[-7]'>
+          <div className='flex gap-2 mb-[-7]'>
             {tabs.map(tab => (
               <button
                 key={tab}
@@ -116,11 +114,17 @@ const LainLainPage = () => {
           </div>
 
           <div className='bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl'>
-            {/* Search */}
+            {/* Search & Date Filter */}
             <SearchInput
-              onChange={(e: any) => setSearchTerm(e.target.value)}
               searchTerm={searchTerm}
+              fromDate={fromDate}
+              toDate={toDate}
+              onSearchChange={handleSearchChange}
+              onFromDateChange={handleFromDateChange}
+              onToDateChange={handleToDateChange}
             />
+
+            {/* Table / Loading / Error States */}
             {isLoading ? (
               <p className='text-center text-gray-500 py-6'>Memuat data...</p>
             ) : isError ? (
@@ -132,11 +136,16 @@ const LainLainPage = () => {
                 Tidak ada data ditemukan.
               </p>
             ) : (
-              <TablePengeluaran title='Pengeluaran Lainnya' data={filteredData} menu={'lain_lain'} />
+              <TablePengeluaran
+                title='Pengeluaran Lainnya'
+                data={paginatedData}
+                menu={'lain_lain'}
+              />
             )}
+
             {/* Pagination */}
             <div className='flex justify-center items-center gap-2 mt-6'>
-              {[1, 2, 3, 4, 5, 6].map(num => (
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
                 <button
                   key={num}
                   onClick={() => setCurrentPage(num)}
@@ -156,4 +165,5 @@ const LainLainPage = () => {
     </div>
   )
 }
+
 export default LainLainPage

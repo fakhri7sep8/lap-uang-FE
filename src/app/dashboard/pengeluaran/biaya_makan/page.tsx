@@ -1,74 +1,70 @@
 'use client'
-import { useMemo, useState } from 'react'
-import { Button } from '@/components/ui/button'
+import { useEffect, useMemo, useState } from 'react'
+import { GraduationCap, Users } from 'lucide-react'
+
 import CardInformation from '@/components/fragments/dashboard/card-information'
-import { GraduationCap, SquarePen, Trash2, Users } from 'lucide-react'
-import TablePengeluaran from '@/components/fragments/pengeluaran/table'
-import TablePengeluaran2 from '@/components/fragments/pengeluaran/table2'
 import SearchInput from '@/components/fragments/pengeluaran/seraach_andinput'
+import TablePengeluaran from '@/components/fragments/pengeluaran/table'
 import { useExpenseModule } from '@/hooks/expense/useExpense'
-// import SearchInput2 from "@/components/fragments/pengeluaran/seraach_andinput2";
 
 const BiayaMakanPage = () => {
   const [activeTab, setActiveTab] = useState('Semua')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const limit = 10
 
   const tabs = ['Semua']
   const { useGetExpense } = useExpenseModule()
   const { data: expenses } = useGetExpense('Makan')
-  // console.log(expenses)
-  const data = [
-    {
-      id: 1,
-      tanggal: '2025-10-29',
-      nama: 'Bayar Listrik',
-      penanggungJawab: 'Pak Dimas',
-      kategori: 'Pemeliharaan',
-      jumlah: 500000,
-      status: 'Selesai'
-    },
-    {
-      id: 2,
-      tanggal: '2025-10-29',
-      nama: 'Gaji Guru Honorer',
-      penanggungJawab: 'Pak Hadi',
-      kategori: 'Upah Karyawan',
-      jumlah: 2500000,
-      status: 'Selesai'
-    },
-    {
-      id: 3,
-      tanggal: '2025-10-29',
-      nama: 'Langganan Internet',
-      penanggungJawab: 'Bu Sinta',
-      kategori: 'Pemeliharaan',
-      jumlah: 450000,
-      status: 'Proses'
-    }
-  ]
 
-   const filteredData = useMemo(() => {
+  // ====== DATE FILTER STATES ======
+  const [fromDate, setFromDate] = useState<Date | null>(null)
+  const [toDate, setToDate] = useState<Date | null>(null)
+
+  // ====== FILTER + DATE RANGE LOGIC ======
+  const filteredData = useMemo(() => {
     if (!expenses?.data) return []
-  
+
     return expenses?.data?.data?.filter((item: any) => {
       const search = searchTerm.toLowerCase()
-  
+
+      // ====== FIELD TANGGAL – GANTI SESUAI API KAMU ======
+      const itemDate = item?.createdAt ? new Date(item.createdAt) : ""
+
       // Search matching
       const matchSearch =
         item?.description?.toLowerCase().includes(search) ||
         item?.PenanggungJawab?.toLowerCase().includes(search) ||
         item?.category?.name?.toLowerCase().includes(search)
-  
-      // Subcategory filter berdasarkan tab
+
+      // Tab filter
       const matchTab =
-        activeTab === 'semua'
+        activeTab === 'Semua'
           ? item?.subCategoryId === 13
           : item?.subCategoryId === 13
-  
-      return matchSearch && matchTab
+
+      // Date filtering
+      const matchFromDate = fromDate ? itemDate >= fromDate : true
+      const matchToDate = toDate ? itemDate <= toDate : true
+
+      return matchSearch && matchTab && matchFromDate && matchToDate
     })
-  }, [expenses, searchTerm, activeTab])
+  }, [expenses, searchTerm, activeTab, fromDate, toDate])
+
+  // Pagination
+  const startIndex = (currentPage - 1) * limit
+  const endIndex = startIndex + limit
+  const paginatedData = filteredData.slice(startIndex, endIndex)
+  const totalPages = Math.ceil(filteredData.length / limit)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, activeTab, fromDate, toDate])
+
+  // Handlers untuk SearchInput
+  const handleSearchChange = (e: any) => setSearchTerm(e.target.value)
+  const handleFromDateChange = (date: any) => setFromDate(date)
+  const handleToDateChange = (date: any) => setToDate(date)
 
   return (
     <div className='min-h-screen flex flex-col gap-10 items-center py-7'>
@@ -76,16 +72,17 @@ const BiayaMakanPage = () => {
         <CardInformation
           color={'blue'}
           title={'Total Data'}
-          value={0}
+          value={expenses?.data?.data?.length || 0}
           icon={<GraduationCap size={32} className='text-blue-500' />}
         />
         <CardInformation
           color={'green'}
           title={'Data Terfilter'}
-          value={filteredData?.length}
+          value={filteredData.length}
           icon={<Users size={32} className='text-green-500' />}
         />
       </section>
+
       <div className='w-full max-w-6xl rounded-3xl'>
         <div className='px-3'>
           <h1 className='text-2xl font-semibold text-gray-800 mb-2'>
@@ -115,16 +112,26 @@ const BiayaMakanPage = () => {
           </div>
 
           <div className='bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl'>
-            {/* Search */}
+            {/* Search + Date Filter Input */}
             <SearchInput
-              onChange={(e: any) => setSearchTerm(e.target.value)}
               searchTerm={searchTerm}
+              fromDate={fromDate}
+              toDate={toDate}
+              onSearchChange={handleSearchChange}
+              onFromDateChange={handleFromDateChange}
+              onToDateChange={handleToDateChange}
             />
-            <TablePengeluaran title={'Oprasional'} data={filteredData} menu={'biaya_makan'} />
+
+            {/* Table */}
+            <TablePengeluaran
+              title={'Biaya Makan'}
+              data={paginatedData}
+              menu={'biaya_makan'}
+            />
 
             {/* Pagination */}
             <div className='flex justify-center items-center gap-2 mt-6'>
-              {[1, 2, 3, 4, 5, 6].map(num => (
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
                 <button
                   key={num}
                   onClick={() => setCurrentPage(num)}
@@ -144,4 +151,5 @@ const BiayaMakanPage = () => {
     </div>
   )
 }
+
 export default BiayaMakanPage
