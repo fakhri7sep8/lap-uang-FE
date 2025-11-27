@@ -30,7 +30,7 @@ const subCategoryMap: Record<string, number> = {
  const filteredData = useMemo(() => {
   if (!expenses?.data) return []
 
-  return expenses.data.filter((item: any) => {
+  return expenses?.data?.data?.filter((item: any) => {
     const search = searchTerm.toLowerCase()
 
     const matchSearch =

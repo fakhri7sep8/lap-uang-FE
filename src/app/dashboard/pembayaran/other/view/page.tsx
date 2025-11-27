@@ -156,6 +156,7 @@ const DataSelainSpp = () => {
         {/* === CAROUSEL FIXED (NORMAL + INSTALLMENT = SAME MECHANISM) === */}
         <div className="w-full flex items-center">
           <button
+            title='button'
             onClick={handlePrev}
             disabled={startIndex === 0}
             className='p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40'
@@ -199,6 +200,7 @@ const DataSelainSpp = () => {
           </div>
 
           <button
+            title='button'
             onClick={handleNext}
             disabled={startIndex >= categories.length - maxVisible}
             className='p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40'

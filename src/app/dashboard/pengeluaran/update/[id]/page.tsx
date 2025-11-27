@@ -1,13 +1,18 @@
 "use client"
-import { useParams } from 'next/navigation'
 import React from 'react'
+import InputPengeluaran from '@/components/fragments/pengeluaran/input_pengeluaran'
+import { useParams } from 'next/navigation';
+import SubmitUpdateExpense from '@/components/fragments/pengeluaran/input_update';
 
-const UpdatePengeluaran = () => {
-    const { id } = useParams()
-    console.log(id);
+// export const metadata = {
+//   title: 'Input Pengeluaran'
+// }
+
+export default function Page() {
+  const {id} = useParams();
   return (
-    <div>UpdatePengeluaran</div>
+    <div className='p-6'>
+      <SubmitUpdateExpense id={id as string} />
+    </div>
   )
 }
-
-export default UpdatePengeluaran

@@ -8,16 +8,16 @@ export const useExpenseModule = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const getAll = async (ct:string) => axiosClient.get(`/expense/${ct}`);
+  const getAll = async (ct: string) => axiosClient.get(`/expense/${ct}`);
   const create = async (data: any) => axiosClient.post("/expense", data);
   const update = async (id: string, data: any) =>
-    axiosClient.patch(`/expense/${id}`, data);
+    axiosClient.patch(`/expense/update/${id}`, data);
   const softDelete = async (id: string, isDelete: boolean) =>
     axiosClient.patch(`/expense/${id}/isdelete?isDelete=${isDelete}`);
   const remove = async (id: string) => axiosClient.delete(`/expense/${id}`);
-  const detail = async (id: string) => axiosClient.get(`/expense/${id}`);
+  const detail = async (id: string) => axiosClient.get(`/expense/detail/${id}`);
 
-  const useGetExpense = (ct:string) =>
+  const useGetExpense = (ct: string) =>
     useQuery({
       queryKey: ["get-expense"],
       queryFn: () => getAll(ct),
@@ -45,14 +45,18 @@ export const useExpenseModule = () => {
       },
     });
 
-  const useUpdateExpense = (id: string) =>
-    useMutation({
-      mutationFn: (data: any) => update(id, data),
-      onSuccess: () => {
+  const useUpdateExpense = () => {
+   return useMutation({
+      mutationFn: (payload: any) => update(payload.idExpense, payload.data),
+      onSuccess: (data) => {
         Swal.fire({ icon: "success", title: "Data pengeluaran diperbarui" });
-        router.push("/dashboard/expense");
+        console.log(data);
+        // queryClient.invalidateQueries({ queryKey: ["detail-expense", data.data] });
+        // router.push("/dashboard/expense");
       },
     });
+  }
+    
 
   const useDeleteExpense = () =>
     useMutation({
@@ -73,7 +77,15 @@ export const useExpenseModule = () => {
       },
     });
 
+  const useDetailExpense = (id: string) =>
+    useQuery({
+      queryKey: ["detail-expense", id],
+      queryFn: () => detail(id),
+      select: (res) => res.data,
+    });
+
   return {
+    useDetailExpense,
     useGetExpense,
     useCreateExpense,
     useUpdateExpense,

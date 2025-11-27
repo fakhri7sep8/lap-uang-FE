@@ -63,12 +63,12 @@ export default function TablePengeluaran ({
             <tr className='bg-gray-100 text-gray-600 text-left font-medium'>
               <th className='py-2 px-2 text-center w-[3%]'>No</th>
               <th className='py-2 px-2 w-[10%]'>Tanggal Pengeluaran</th>
-              <th className='py-2 px-2 w-[12%]'>Nama</th>
-              <th className='py-2 px-2 w-[12%]'>Penanggung Jawab</th>
+              <th className='py-2 px-2 w-[18%]'>Nama</th>
+              <th className='py-2 px-2 w-[10%]'>Penanggung Jawab</th>
               <th className='py-2 px-2 w-[10%]'>Kategori</th>
-              <th className='py-2 px-2 w-[12%]'>Prioritas</th>
+              <th className='py-2 px-2 w-[10%]'>Prioritas</th>
               <th className='py-2 px-2 w-[10%] text-right'>Jumlah (Rp)</th>
-              <th className='py-2 px-2 w-[8%] text-center'>Status</th>
+              <th className='py-2 px-2 w-[10%] text-center'>Sumber Dana</th>
               <th className='py-2 px-2 w-[15%] text-center'>Aksi</th>
             </tr>
           </thead>
@@ -89,18 +89,14 @@ export default function TablePengeluaran ({
                 <td className='py-2 px-2'>{item?.PenanggungJawab}</td>
                 <td className='py-2 px-2'>{item?.category?.name}</td>
                 <td className='py-2 px-2'>{item?.Prioritas}</td>
-                <td className='py-2 px-2 text-right'>
+                <td className='py-2 px-2 text-left'>
                   Rp {item?.amount?.toLocaleString('id-ID')}
                 </td>
                 <td className='py-2 px-2 text-center'>
                   <span
-                    className={`inline-block px-3 py-0.5 text-[11px] font-semibold rounded-full ${
-                      item.status === 'Selesai'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}
+                    className={`inline-block px-3 py-0.5 text-[11px] font-semibold rounded-full `}
                   >
-                    {item.status}
+                    {item.sumber_dana}
                   </span>
                 </td>
                 <td className='py-2 px-2'>
