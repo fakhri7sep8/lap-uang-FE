@@ -114,6 +114,7 @@ export default function TablePengeluaran ({
                       </button>
 
                       <button
+                      onClick={() =>router.push(`detail/${item?.id}`)}
                         title='Detail'
                         className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
                       >
