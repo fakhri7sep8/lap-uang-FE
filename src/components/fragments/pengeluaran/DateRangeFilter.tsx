@@ -1,104 +1,230 @@
 "use client";
 
-import { Calendar, ChevronDown } from "lucide-react";
-import React, { useState } from "react";
+import {
+  CalendarIcon,
+  ChevronsDown,
+  Calendar,
+} from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Calendar as ShadCalendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import dayjs from "dayjs";
+
+type Props = {
+  startDate: string;
+  endDate: string;
+  onChange: (value: { startDate: string; endDate: string }) => void;
+};
 
 export default function DateRangeFilterModern({
   startDate,
   endDate,
   onChange,
-}: {
-  startDate: string;
-  endDate: string;
-  onChange: (value: { startDate: string; endDate: string }) => void;
-}) {
+}: Props) {
   const [open, setOpen] = useState(false);
+  const [showStartCal, setShowStartCal] = useState(false);
+  const [showEndCal, setShowEndCal] = useState(false);
 
-  const applyFilter = () => {
-    setOpen(false);
+  // ✅ TEMP STATE (UNTUK UI)
+  const [tempStartDate, setTempStartDate] = useState(startDate);
+  const [tempEndDate, setTempEndDate] = useState(endDate);
+
+  const [startMonth, setStartMonth] = useState<Date>(new Date());
+  const [endMonth, setEndMonth] = useState<Date>(new Date());
+
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const startDateObj = tempStartDate
+    ? new Date(tempStartDate)
+    : null;
+
+  /* ===== Outside Click ===== */
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+        setShowStartCal(false);
+        setShowEndCal(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () =>
+      document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  /* ===== Sinkron bulan end ===== */
+  useEffect(() => {
+    if (startDateObj) {
+      setEndMonth(startDateObj);
+    }
+  }, [tempStartDate]);
+
+  /* ===== Calendar UI ===== */
+  const calendarClassNames = {
+    caption: "hidden",
+    table: "w-full mt-2",
+    head_row:
+      "grid grid-cols-7 text-center text-xs text-neutral-500 font-medium",
+    head_cell: "py-1",
+    row: "grid grid-cols-7 text-center",
+    cell: "relative",
+    day: `
+      h-9 w-9 mx-auto flex items-center justify-center
+      rounded-full text-sm font-medium text-neutral-700
+      hover:bg-neutral-200 transition cursor-pointer
+    `,
+    day_selected: `
+      bg-neutral-300 text-neutral-900 font-semibold
+    `,
+    day_today: "border border-neutral-400 font-semibold",
+    day_outside: "text-neutral-300",
+    day_disabled: "text-neutral-300 opacity-40 cursor-not-allowed",
   };
 
-  const resetFilter = () => {
-    onChange({ startDate: "", endDate: "" });
+  /* ===== APPLY FILTER (INI YANG DIPAKAI PARENT) ===== */
+  const applyFilter = () => {
+    if (!tempStartDate || !tempEndDate) return;
+    if (dayjs(tempEndDate).isBefore(dayjs(tempStartDate))) return;
+
+    onChange({
+      startDate: tempStartDate,
+      endDate: tempEndDate,
+    });
+
     setOpen(false);
+    setShowStartCal(false);
+    setShowEndCal(false);
   };
 
   return (
-    <div className="relative inline-block mb-4">
-      {/* BUTTON UTAMA */}
+    <div ref={containerRef} className="relative inline-block w-full mb-4">
+      {/* BUTTON */}
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg shadow-sm 
-        hover:bg-gray-100 transition-all text-sm"
+        className="flex items-center gap-2 px-4 py-2 bg-white border rounded-lg shadow-sm hover:bg-gray-100 text-sm"
       >
-        <Calendar className="w-4 h-4" />
+        <CalendarIcon className="w-4 h-4" />
         Filter Tanggal
-        <motion.div
-          animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          <ChevronDown className="w-4 h-4" />
-        </motion.div>
+        <motion.span animate={{ rotate: open ? 180 : 0 }}>
+          <ChevronsDown className="w-4 h-4" />
+        </motion.span>
       </button>
 
-      {/* DROPDOWN */}
       <AnimatePresence>
         {open && (
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: -4 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -4 }}
-            transition={{ duration: 0.18 }}
-            className="absolute mt-2 right-0 bg-white border rounded-xl shadow-lg w-64 p-4 z-20"
+            className="absolute right-0 z-50 mt-2 w-80 bg-white border rounded-xl shadow-lg p-4"
           >
             <h4 className="text-xs font-semibold text-gray-500 mb-3">
               Pilih Rentang Tanggal
             </h4>
 
-            {/* DATE INPUTS */}
-            <div className="space-y-3 mb-4">
-              <div>
-                <label className="text-xs text-gray-600">Mulai</label>
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) =>
-                    onChange({ startDate: e.target.value, endDate })
-                  }
-                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm outline-none 
-                  shadow-sm bg-white hover:border-gray-400 transition-all"
-                />
+            <div className="space-y-5">
+              {/* START */}
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    "flex justify-between items-center px-3 py-2 border rounded-lg cursor-pointer text-sm",
+                    !tempStartDate && "text-gray-400"
+                  )}
+                  onClick={() => {
+                    setShowStartCal(!showStartCal);
+                    setShowEndCal(false);
+                  }}
+                >
+                  {tempStartDate
+                    ? dayjs(tempStartDate).format("DD MMM YYYY")
+                    : "Mulai"}
+                  <Calendar className="w-4 h-4" />
+                </div>
+
+                {showStartCal && (
+                  <ShadCalendar
+                    mode="single"
+                    month={startMonth}
+                    onMonthChange={setStartMonth}
+                    selected={
+                      tempStartDate
+                        ? new Date(tempStartDate)
+                        : undefined
+                    }
+                    onSelect={(date) => {
+                      if (!date) return;
+                      setTempStartDate(
+                        dayjs(date).format("YYYY-MM-DD")
+                      );
+                      setShowStartCal(false);
+                    }}
+                    classNames={calendarClassNames}
+                  />
+                )}
               </div>
 
-              <div>
-                <label className="text-xs text-gray-600">Sampai</label>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) =>
-                    onChange({ startDate, endDate: e.target.value })
-                  }
-                  className="w-full mt-1 px-3 py-2 border rounded-lg text-sm outline-none 
-                  shadow-sm bg-white hover:border-gray-400 transition-all"
-                />
+              {/* END */}
+              <div className="space-y-2">
+                <div
+                  className={cn(
+                    "flex justify-between items-center px-3 py-2 border rounded-lg cursor-pointer text-sm",
+                    !tempEndDate && "text-gray-400"
+                  )}
+                  onClick={() => {
+                    setShowEndCal(!showEndCal);
+                    setShowStartCal(false);
+                  }}
+                >
+                  {tempEndDate
+                    ? dayjs(tempEndDate).format("DD MMM YYYY")
+                    : "Sampai"}
+                  <Calendar className="w-4 h-4" />
+                </div>
+
+                {showEndCal && (
+                  <ShadCalendar
+                    mode="single"
+                    month={endMonth}
+                    selected={
+                      tempEndDate
+                        ? new Date(tempEndDate)
+                        : undefined
+                    }
+                    disabled={(date) =>
+                      startDateObj ? date < startDateObj : false
+                    }
+                    onSelect={(date) => {
+                      if (!date) return;
+                      setTempEndDate(
+                        dayjs(date).format("YYYY-MM-DD")
+                      );
+                      setShowEndCal(false);
+                    }}
+                    classNames={calendarClassNames}
+                  />
+                )}
               </div>
             </div>
 
-            {/* BUTTON TERAPKAN */}
             <button
               onClick={applyFilter}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg text-sm 
-              hover:bg-blue-700 transition-all shadow-sm"
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm"
             >
               Terapkan Filter
             </button>
 
-            {/* RESET */}
             <button
-              onClick={resetFilter}
-              className="w-full mt-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg text-sm 
-              hover:bg-red-100 transition-all"
+              onClick={() => {
+                setTempStartDate("");
+                setTempEndDate("");
+                onChange({ startDate: "", endDate: "" });
+                setOpen(false);
+              }}
+              className="w-full mt-2 bg-red-50 hover:bg-red-100 text-red-600 py-2 rounded-lg text-sm"
             >
               Reset Filter
             </button>

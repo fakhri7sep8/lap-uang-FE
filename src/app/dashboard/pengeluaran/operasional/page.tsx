@@ -34,6 +34,10 @@ const OperasionalPage = () => {
   });
 
   const tabs = ["Pembangunan", "Sarana"];
+    const subCategoryMap: Record<string, number> = {
+    Pemabangunan:1,
+    Sarana:2
+  };
 
   const { useGetExpense } = useExpenseModule();
   const { data: expenses, isLoading, isError } = useGetExpense("operasional");
@@ -60,39 +64,40 @@ const OperasionalPage = () => {
   // FILTERING + SORT NEWEST FIRST
   // ======================================================
   const filteredData = useMemo(() => {
-    const rows = normalizeRows(expenses);
-    const search = searchTerm.toLowerCase();
-
-    return rows
-      .filter((item: any) => {
-        const matchSearch =
-          item?.description?.toLowerCase().includes(search) ||
-          item?.PenanggungJawab?.toLowerCase().includes(search) ||
-          item?.category?.name?.toLowerCase().includes(search);
-
-        const matchTab =
-          activeTab === "Pembangunan"
-            ? item?.subCategoryId === 1
-            : item?.subCategoryId === 2;
-
-        const itemDate = new Date(item.createdAt);
-
-        const matchStart = dateFilter.startDate
-          ? itemDate >= new Date(dateFilter.startDate)
-          : true;
-
-        const matchEnd = dateFilter.endDate
-          ? itemDate <= new Date(dateFilter.endDate)
-          : true;
-
-        return matchSearch && matchTab && matchStart && matchEnd;
-      })
-      // SORT → DATA TERBARU DI ATAS
-      .sort(
-        (a: any, b: any) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-  }, [expenses, searchTerm, activeTab, dateFilter]);
+        const rows = normalizeRows(expenses);
+        const search = searchTerm.toLowerCase();
+    
+        // 💡 PERBAIKAN: Siapkan tanggal filter dengan waktu yang benar (00:00:00 untuk start, 23:59:59 untuk end)
+        const filterStartDayjs = dateFilter.startDate 
+          ? dayjs(dateFilter.startDate).startOf('day') 
+          : null;
+    
+        const filterEndDayjs = dateFilter.endDate 
+          ? dayjs(dateFilter.endDate).endOf('day') 
+          : null;
+    
+        return rows.filter((item: any) => {
+          const matchSearch =
+            item?.description?.toLowerCase().includes(search) ||
+            item?.PenanggungJawab?.toLowerCase().includes(search) ||
+            item?.category?.name?.toLowerCase().includes(search);
+    
+          const matchTab = item?.subCategoryId === subCategoryMap[activeTab];
+    
+          const itemDate = dayjs(item.PayDate); // Gunakan dayjs untuk item.createdAt
+    
+          // 💡 Perbandingan inklusif menggunakan Dayjs plugins
+          const matchStart = filterStartDayjs
+            ? itemDate.isSameOrAfter(filterStartDayjs) 
+            : true;
+    
+          const matchEnd = filterEndDayjs
+            ? itemDate.isSameOrBefore(filterEndDayjs) 
+            : true;
+    
+          return matchSearch && matchTab && matchStart && matchEnd;
+        });
+      }, [expenses, searchTerm, activeTab, dateFilter]);
 
   // ======================================================
   // PAGINATION

@@ -255,4 +255,13 @@ input[type='date']::-moz-calendar-picker-indicator {
     clip-path: inset(0 0 0 100%);
   }
 }
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.before\:animate-pulse-slow::before {
+  animation: pulse-slow 2s linear infinite;
+}
  

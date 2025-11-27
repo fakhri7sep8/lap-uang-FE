@@ -18,6 +18,13 @@ import ExportPDFButton from "@/components/fragments/ExportPDFButton";
 import ReportPdfTemplate from "@/components/template/pengeluaran/ReportPdfTemplate";
 import { AnimatePresence, motion } from "framer-motion";
 import dayjs from "dayjs";
+// Impor dan extend Dayjs plugins untuk perbandingan inklusif
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+
+dayjs.extend(isSameOrBefore);
+dayjs.extend(isSameOrAfter);
+
 
 import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
 
@@ -48,6 +55,8 @@ const UpahKariawanPage = () => {
     Laundry: 12,
   };
 
+  
+
   // ⭐ NORMALIZER — agar tidak error `.filter is not a function`
   const normalizeRows = (exp: any) => {
     if (!exp) return [];
@@ -58,11 +67,20 @@ const UpahKariawanPage = () => {
   };
 
   // =====================================================
-  // FILTER
+  // FILTER (LOGIKA TANGGAL DIPERBAIKI)
   // =====================================================
   const filteredData = useMemo(() => {
     const rows = normalizeRows(expenses);
     const search = searchTerm.toLowerCase();
+
+    // 💡 PERBAIKAN: Siapkan tanggal filter dengan waktu yang benar (00:00:00 untuk start, 23:59:59 untuk end)
+    const filterStartDayjs = dateFilter.startDate 
+      ? dayjs(dateFilter.startDate).startOf('day') 
+      : null;
+
+    const filterEndDayjs = dateFilter.endDate 
+      ? dayjs(dateFilter.endDate).endOf('day') 
+      : null;
 
     return rows.filter((item: any) => {
       const matchSearch =
@@ -72,14 +90,15 @@ const UpahKariawanPage = () => {
 
       const matchTab = item?.subCategoryId === subCategoryMap[activeTab];
 
-      const itemDate = new Date(item.createdAt);
+      const itemDate = dayjs(item.PayDate); // Gunakan dayjs untuk item.createdAt
 
-      const matchStart = dateFilter.startDate
-        ? itemDate >= new Date(dateFilter.startDate)
+      // 💡 Perbandingan inklusif menggunakan Dayjs plugins
+      const matchStart = filterStartDayjs
+        ? itemDate.isSameOrAfter(filterStartDayjs) 
         : true;
 
-      const matchEnd = dateFilter.endDate
-        ? itemDate <= new Date(dateFilter.endDate)
+      const matchEnd = filterEndDayjs
+        ? itemDate.isSameOrBefore(filterEndDayjs) 
         : true;
 
       return matchSearch && matchTab && matchStart && matchEnd;
@@ -146,7 +165,7 @@ const UpahKariawanPage = () => {
               alamat: "KP KEBON KELAPA, JAWA BARAT",
             }}
             tahunAjaranMulai={2024}
-            data={filteredData} 
+            data={filteredData}
             totalPengeluaran={totalJumlah}
             tanggalCetak={dayjs().format("DD MMMM YYYY")}
           />

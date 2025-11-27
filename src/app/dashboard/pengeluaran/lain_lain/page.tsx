@@ -7,69 +7,65 @@ import TablePengeluaran from '@/components/fragments/pengeluaran/table'
 import TablePengeluaran2 from '@/components/fragments/pengeluaran/table'
 import SearchInput from '@/components/fragments/pengeluaran/seraach_andinput'
 import { useExpenseModule } from '@/hooks/expense/useExpense'
+import dayjs from 'dayjs'
 
 const LainLainPage = () => {
   const [activeTab, setActiveTab] = useState('Lain-Lain')
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-
+    const [dateFilter, setDateFilter] = useState({
+    startDate: "",
+    endDate: "",
+  });
   const tabs = ['Lain-Lain']
+  const subCategoryMap: Record<string, number> = {
+    "Lain-Lain":14
+  };
   const { useGetExpense } = useExpenseModule()
   const { data: expenses, isLoading, isError } = useGetExpense('Other')
-  const data = [
-    {
-      id: 1,
-      tanggal: '2025-10-29',
-      nama: 'Bayar Listrik',
-      penanggungJawab: 'Pak Dimas',
-      kategori: 'Pemeliharaan',
-      subKategori: 'Listrik',
-      jumlah: 500000,
-      status: 'Selesai'
-    },
-    {
-      id: 2,
-      tanggal: '2025-10-29',
-      nama: 'Gaji Guru Honorer',
-      penanggungJawab: 'Pak Hadi',
-      kategori: 'Upah Karyawan',
-      subKategori: 'Guru',
-      jumlah: 2500000,
-      status: 'Selesai'
-    },
-    {
-      id: 3,
-      tanggal: '2025-10-29',
-      nama: 'Langganan Internet',
-      penanggungJawab: 'Bu Sinta',
-      kategori: 'Pemeliharaan',
-      subKategori: 'Internet',
-      jumlah: 450000,
-      status: 'Proses'
-    }
-  ]
+    const normalizeRows = (exp: any) => {
+    if (!exp) return [];
+    if (Array.isArray(exp)) return exp;
+    if (Array.isArray(exp?.data)) return exp.data;
+    if (Array.isArray(exp?.data?.data)) return exp.data.data;
+    return [];
+  };
 
   const filteredData = useMemo(() => {
-    if (!expenses?.data) return []
-
-    return expenses.data.filter((item: any) => {
-      const search = searchTerm.toLowerCase()
-
-      // Search matching
-      const matchSearch =
-        item?.description?.toLowerCase().includes(search) ||
-        item?.PenanggungJawab?.toLowerCase().includes(search) ||
-        item?.category?.name?.toLowerCase().includes(search)
-
-      // Subcategory filter berdasarkan tab
-      const matchTab =
-        activeTab === 'Lain-Lain'
-          ? item?.subCategoryId === 14
-          : item?.subCategoryId === 14
-
-      return matchSearch && matchTab
-    })
-  }, [expenses, searchTerm, activeTab])
+          const rows = normalizeRows(expenses);
+          const search = searchTerm.toLowerCase();
+      
+          // 💡 PERBAIKAN: Siapkan tanggal filter dengan waktu yang benar (00:00:00 untuk start, 23:59:59 untuk end)
+          const filterStartDayjs = dateFilter.startDate 
+            ? dayjs(dateFilter.startDate).startOf('day') 
+            : null;
+      
+          const filterEndDayjs = dateFilter.endDate 
+            ? dayjs(dateFilter.endDate).endOf('day') 
+            : null;
+      
+          return rows.filter((item: any) => {
+            const matchSearch =
+              item?.description?.toLowerCase().includes(search) ||
+              item?.PenanggungJawab?.toLowerCase().includes(search) ||
+              item?.category?.name?.toLowerCase().includes(search);
+      
+            const matchTab = item?.subCategoryId === subCategoryMap[activeTab];
+      
+            const itemDate = dayjs(item.PayDate); // Gunakan dayjs untuk item.createdAt
+      
+            // 💡 Perbandingan inklusif menggunakan Dayjs plugins
+            const matchStart = filterStartDayjs
+              ? itemDate.isSameOrAfter(filterStartDayjs) 
+              : true;
+      
+            const matchEnd = filterEndDayjs
+              ? itemDate.isSameOrBefore(filterEndDayjs) 
+              : true;
+      
+            return matchSearch && matchTab && matchStart && matchEnd;
+          });
+        }, [expenses, searchTerm, activeTab, dateFilter]);
 
   return (
     <div className='min-h-screen flex flex-col gap-10 items-center py-7'>
@@ -104,11 +100,10 @@ const LainLainPage = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-3 font-medium rounded-t-xl transition-all duration-300 shadow-sm ${
-                  activeTab === tab
+                className={`px-5 py-3 font-medium rounded-t-xl transition-all duration-300 shadow-sm ${activeTab === tab
                     ? 'bg-white text-gray-800 shadow-md'
                     : 'bg-[#dfe6f4] text-gray-600 hover:bg-[#e6ebf7]'
-                }`}
+                  }`}
               >
                 {tab}
               </button>
@@ -140,11 +135,10 @@ const LainLainPage = () => {
                 <button
                   key={num}
                   onClick={() => setCurrentPage(num)}
-                  className={`px-4 py-2 rounded-lg border text-sm font-medium ${
-                    currentPage === num
+                  className={`px-4 py-2 rounded-lg border text-sm font-medium ${currentPage === num
                       ? 'bg-blue-500 text-white border-blue-500'
                       : 'bg-white border-gray-300 text-gray-600 hover:bg-blue-50'
-                  }`}
+                    }`}
                 >
                   {num}
                 </button>

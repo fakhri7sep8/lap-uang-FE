@@ -106,14 +106,6 @@ export default function TablePengeluaran({
                     </button>
 
                     <button
-                      onClick={() => router.push(`${basePath}/detail/${item.id}`)}
-                      title="Detail"
-                      className="p-1.5 border border-gray-200 rounded bg-white hover:bg-green-50"
-                    >
-                      <Eye size={16} className="text-green-600" />
-                    </button>
-
-                    <button
                       onClick={() =>
                         router.push(`${basePath}/receipt/${item.id}`)
                       }
