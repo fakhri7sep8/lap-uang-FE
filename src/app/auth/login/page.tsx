@@ -6,6 +6,7 @@ import * as Yup from "yup";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import Link from "next/link";
 import { useAuthModule } from "@/hooks/useAuthModule";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
@@ -27,10 +28,9 @@ const LoginPage = () => {
   useEffect(() => {
     const token = Cookies.get("x-auth");
     if (token) {
-      router.replace("/dashboard"); 
+      router.replace("/dashboard");
     }
   }, [router]);
-
 
   const formik = useFormik({
     initialValues: {
@@ -108,9 +108,14 @@ const LoginPage = () => {
                 >
                   {isPending ? "Loading..." : "Log in"}
                 </button>
-                <p className="text-[#17A590] text-right text-sm">
-                  Lupa password?
-                </p>
+                <div className="text-right">
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-[#17A590] text-sm font-medium hover:underline"
+                  >
+                    Lupa password?
+                  </Link>
+                </div>
               </div>
             </form>
           </div>
