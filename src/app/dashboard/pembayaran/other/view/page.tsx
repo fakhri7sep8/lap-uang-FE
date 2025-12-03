@@ -69,7 +69,7 @@ const DataSelainSpp = () => {
       console.log("Error:", err);
     } finally {
       setLoading(false);
-    }
+    } 
   };
 
   useEffect(() => {
