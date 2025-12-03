@@ -20,8 +20,9 @@ import {
 import { useSubCategoryExpenseModule } from '@/hooks/expense/useSubCategoryExpense'
 import { useCategoryExpenseModule } from '@/hooks/expense/useCategoryExpense'
 import { useExpenseModule } from '@/hooks/expense/useExpense'
+import DatePicker from './datePicker'
 
-export default function SubmitRequestPage () {
+export default function SubmitRequestPage() {
   const [dataList, setDataList] = useState([])
 
   const { useGetSubCategory } = useSubCategoryExpenseModule()
@@ -87,6 +88,10 @@ export default function SubmitRequestPage () {
     }
   })
   // console.log(dataList);
+
+  const inputClass =
+    "h-12 px-4 rounded-lg border border-gray-300 bg-white " +
+    "hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-green-300 transition-all";
   return (
     <div className='min-h-screen w-full bg-gray-50 flex justify-center'>
       <div className='bg-white w-full  rounded-xl p-8 shadow-sm'>
@@ -133,13 +138,19 @@ export default function SubmitRequestPage () {
             {/* DATE */}
             <div className='space-y-2'>
               <Label>Tanggal Pembayaran</Label>
-              <Input
+              <DatePicker
+                name='PayDate'
+                value={formik.values.PayDate}
+                onChange={formik.handleChange}
+                className={inputClass}
+              />
+              {/* <Input
                 type='date'
                 name='PayDate'
                 className='h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'
                 value={formik.values.PayDate}
                 onChange={formik.handleChange}
-              />
+              /> */}
               {formik.errors.PayDate && (
                 <p className='text-red-500 text-sm'>{formik.errors.PayDate}</p>
               )}

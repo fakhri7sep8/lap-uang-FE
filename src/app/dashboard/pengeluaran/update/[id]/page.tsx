@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import dayjs from "dayjs";
 import { useExpenseModule } from "@/hooks/expense/useExpense";
+import DateRangeFilterModern from "@/components/fragments/pengeluaran/DateRangeFilter";
+import DatePicker from "@/components/fragments/pengeluaran/datePicker";
 
 export default function UpdatePengeluaranPage() {
   const { id } = useParams();
@@ -14,6 +16,7 @@ export default function UpdatePengeluaranPage() {
 
   const { data: expenseData } = useGetExpense("");
   const { mutate } = useUpdateExpense(id as string);
+
 
   const [form, setForm] = useState({
     categoryId: "",
@@ -112,12 +115,17 @@ export default function UpdatePengeluaranPage() {
         {/* Tanggal */}
         <div className="flex flex-col gap-1">
           <label className="text-sm font-medium text-gray-700">Tanggal Pembayaran</label>
-          <input
+          <DatePicker
+            value={form.PayDate}
+            onChange={(e) => setForm({...form,PayDate: e.target.value})}
+            className={inputClass}
+          />
+          {/* <input
             type="date"
             value={form.PayDate}
             onChange={(e) => setForm({ ...form, PayDate: e.target.value })}
             className={inputClass}
-          />
+          /> */}
         </div>
 
         {/* Pihak Penerima */}
