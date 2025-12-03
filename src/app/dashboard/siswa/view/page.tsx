@@ -34,6 +34,7 @@ const LihatSemuaSiswa = () => {
   const [draftJurusan, setDraftJurusan] = useState("");
   const [draftAsrama, setDraftAsrama] = useState("");
   const [draftAngkatan, setDraftAngkatan] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Ambil data siswa dari API
   const { useGetStudent, useDeleteStudent } = useStudentModule();
@@ -62,19 +63,18 @@ const LihatSemuaSiswa = () => {
     currentPage * showCount
   );
 
-const getStatusBadgeClass = (status: string) => {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-green-100 text-green-700";
-    case "GRADUATION":
-      return "bg-yellow-100 text-yellow-700";
-    case "OUT":
-      return "bg-red-100 text-red-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
-};
-
+  const getStatusBadgeClass = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return "bg-green-100 text-green-700";
+      case "GRADUATION":
+        return "bg-yellow-100 text-yellow-700";
+      case "OUT":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -90,16 +90,28 @@ const getStatusBadgeClass = (status: string) => {
       });
 
       if (result.isConfirmed) {
-        await deleteStudent(id);
+        setIsDeleting(true);
+
+        await deleteStudent(id); // hapus data
         await Swal.fire("Terhapus!", "Data berhasil dihapus.", "success");
       }
     } catch (error) {
       console.error(error);
       Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
+    } finally {
+      setIsDeleting(false); // 🔚 matikan loader
     }
   };
 
   if (isLoading) {
+    return (
+      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
+
+  if (isDeleting) {
     return (
       <div className="p-6 w-full h-[89vh] flex justify-center items-center">
         <Loader />
@@ -146,11 +158,13 @@ const getStatusBadgeClass = (status: string) => {
               <TableRow>
                 <TableHead>No</TableHead>
                 <TableHead>Nama</TableHead>
+                <TableHead>NIS</TableHead>
                 <TableHead>No. Induk</TableHead>
                 <TableHead>Asrama</TableHead>
                 <TableHead>Angkatan</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Jurusan</TableHead>
+                <TableHead>Tipe Program</TableHead>
                 <TableHead>Dibuat</TableHead>
                 <TableHead>Aksi</TableHead>
               </TableRow>
@@ -166,8 +180,11 @@ const getStatusBadgeClass = (status: string) => {
               ) : (
                 paginatedData.map((s: any, idx: number) => (
                   <TableRow key={s.id}>
-                    <TableCell>{(currentPage - 1) * showCount + (idx + 1)}</TableCell>
+                    <TableCell>
+                      {(currentPage - 1) * showCount + (idx + 1)}
+                    </TableCell>
                     <TableCell className="font-medium">{s.name}</TableCell>
+                    <TableCell className="font-medium">{s.NIS}</TableCell>
                     <TableCell>{s.InductNumber}</TableCell>
                     <TableCell>{s.dorm}</TableCell>
                     <TableCell>{s.generation}</TableCell>
@@ -181,7 +198,25 @@ const getStatusBadgeClass = (status: string) => {
                       </span>
                     </TableCell>
                     <TableCell>{s.major}</TableCell>
-                    <TableCell>{dayjs(s.createdAt).format("DD MMM YYYY")}</TableCell>
+                    <TableCell>
+                      {/* 👇 tambahan kolom baru */}
+                      {s.tipeProgram ? (
+                        <span
+                          className={`${
+                            s.tipeProgram === "FULLDAY"
+                              ? "bg-blue-100 text-blue-700"
+                              : "bg-purple-100 text-purple-700"
+                          } px-3 py-1 rounded-full text-xs font-medium`}
+                        >
+                          {s.tipeProgram}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400 italic">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {dayjs(s.createdAt).format("DD MMM YYYY")}
+                    </TableCell>
                     <TableCell className="flex gap-2 justify-center">
                       <Link href={`/dashboard/siswa/update/${s.id}`}>
                         <Button className="bg-blue-400 text-white">
@@ -254,7 +289,7 @@ const getStatusBadgeClass = (status: string) => {
                   Jurusan
                   <select
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
-                    value={filterJurusan}
+                    value={draftJurusan}
                     onChange={(e) => setDraftJurusan(e.target.value)}
                   >
                     <option value="">Semua</option>

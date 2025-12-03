@@ -1,6 +1,6 @@
 import { createCategoryPembayaran } from "@/interface/use-category-pembayaran";
 import { axiosClient } from "@/lib/axiosClient";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Swal from "sweetalert2";
 
 export const useCategoryPaymentModule = () => {
@@ -22,33 +22,43 @@ export const useCategoryPaymentModule = () => {
     return await axiosClient.patch(`/payment-types/update/${id}`, payload);
   };
 
-  const detailCategory = async (id:string) => {
-    return await axiosClient.get(`/payment-types/detail/${id}`)
-  }
+  const detailCategory = async (id: string) => {
+    return await axiosClient.get(`/payment-types/detail/${id}`);
+  };
 
   const useGetCategory = () => {
-    const { data, isLoading, isError } = useQuery({
+    const queryClient = useQueryClient();
+
+    const { data, isLoading, isError, refetch } = useQuery({
       queryKey: ["categoryPayment"],
-      queryFn: () => getCategory(),
+      queryFn: getCategory,
       refetchOnWindowFocus: false,
       refetchOnReconnect: false,
-      select: (data) => data.data,
+      select: (res) => res.data,
     });
-    return { data, isLoading, isError };
+
+    // fungsi manual untuk refresh data
+    const refreshCategory = () =>
+      queryClient.invalidateQueries({ queryKey: ["categoryPayment"] });
+
+    return { data, isLoading, isError, refetch, refreshCategory };
   };
 
   const useCreateCategory = () => {
+    const queryClient = useQueryClient(); // ✅ tambahkan ini
+
     const mutate = useMutation({
       mutationFn: (payload: any) => createCategory(payload),
-      onSuccess: (data) => {
+      onSuccess: async () => {
         Swal.fire({
           title: "Berhasil",
           text: "Kategori pembayaran berhasil dibuat",
           icon: "success",
           confirmButtonText: "OK",
-        }).then(() => {
-          window.location.href = "/dashboard/pembayaran/kategori";
         });
+
+        // 🔄 Langsung refresh data kategori agar muncul tanpa reload
+        await queryClient.refetchQueries({ queryKey: ["categoryPayment"], exact: true });
       },
       onError: (error) => {
         Swal.fire({
@@ -58,24 +68,26 @@ export const useCategoryPaymentModule = () => {
           confirmButtonText: "OK",
         });
       },
-      
     });
 
     return { mutate };
   };
 
   const useDeleteCategory = () => {
+    const queryClient = useQueryClient(); // ✅ tambahkan ini
+
     const mutate = useMutation({
-      mutationFn: (id:string) => deleteCategory(id),
-      onSuccess: () => {
+      mutationFn: (id: string) => deleteCategory(id),
+      onSuccess: async () => {
         Swal.fire({
           title: "Berhasil",
           text: "Kategori pembayaran berhasil dihapus",
           icon: "success",
           confirmButtonText: "OK",
-        }).then(() => {
-          window.location.href = "/dashboard/pembayaran/kategori";
         });
+
+        // 🔄 Langsung refresh data tanpa reload halaman
+        await queryClient.invalidateQueries({ queryKey: ["categoryPayment"] });
       },
       onError: () => {
         Swal.fire({
@@ -115,15 +127,22 @@ export const useCategoryPaymentModule = () => {
 
     return { mutate };
   };
-  const useDetailCategory = (id:string) => {
-    const { data, isLoading } = useQuery({
-      queryFn: () => detailCategory(id),
-      queryKey: ["categoryPaymentDetail", id],
-      select: (data) => data.data
-    })
+  const useDetailCategory = (id?: string) => {
+  const { data, isLoading } = useQuery({
+    queryFn: () => detailCategory(id!),
+    queryKey: ["categoryPaymentDetail", id],
+    enabled: !!id, // ✅ hanya jalan kalau id ada (tidak undefined/null/empty)
+    select: (data) => data.data,
+  });
 
-    return { data, isLoading }
-  }
+  return { data, isLoading };
+};
 
-  return { useGetCategory, useCreateCategory, useDeleteCategory, useUpdateCategory, useDetailCategory };
+  return {
+    useGetCategory,
+    useCreateCategory,
+    useDeleteCategory,
+    useUpdateCategory,
+    useDetailCategory,
+  };
 };

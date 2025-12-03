@@ -29,13 +29,21 @@ const deleteCategory = async (id: string) => {
 
 // ✅ Hooks
 export const useCategoryExpense = () => {
+
   const useGetCategories = () => {
-    return useQuery({
+    const queryClient = useQueryClient();
+
+    const { data, isLoading, isError, refetch } = useQuery({
       queryKey: ["expenseCategories"],
       queryFn: getCategories,
       refetchOnWindowFocus: false,
-      select: (data) => data.data, // asumsi API response { data: [...] }
+      select: (res) => res.data, 
     });
+
+    // fungsi manual buat invalidasi data
+    const refreshCategories = () => queryClient.invalidateQueries({ queryKey: ["expenseCategories"] });
+
+    return { data, isLoading, isError, refetch, refreshCategories };
   };
 
   const useGetCategoryById = (id: string) => {

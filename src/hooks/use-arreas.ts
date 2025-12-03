@@ -19,38 +19,59 @@ export const useArrearsModule = () => {
   };
 
   const detailArrear = async (id: string) => {
-    return await axiosClient.get(`/arrears/detail/${id}`).then((res) => res.data);
+    return await axiosClient
+      .get(`/arrears/detail/${id}`)
+      .then((res) => res.data);
   };
 
   const createArrear = async (payload: CreateArrearDto) => {
-    return await axiosClient.post("/arrears/tambah", payload).then((res) => res.data);
+    return await axiosClient
+      .post("/arrears/tambah", payload)
+      .then((res) => res.data);
   };
 
   const createBulkArrears = async (payload: CreateArrearDto[]) => {
-    return await axiosClient.post("/arrears/tambah-banyak", payload).then((res) => res.data);
+    return await axiosClient
+      .post("/arrears/tambah-banyak", payload)
+      .then((res) => res.data);
   };
 
-  const updateArrear = async (id: string, payload: Partial<CreateArrearDto>) => {
-    return await axiosClient.put(`/arrears/update/${id}`, payload).then((res) => res.data);
+  const updateArrear = async (
+    id: string,
+    payload: Partial<CreateArrearDto>
+  ) => {
+    return await axiosClient
+      .put(`/arrears/update/${id}`, payload)
+      .then((res) => res.data);
   };
 
   const deleteArrear = async (id: string) => {
-    return await axiosClient.delete(`/arrears/hapus/${id}`).then((res) => res.data);
+    return await axiosClient
+      .delete(`/arrears/hapus/${id}`)
+      .then((res) => res.data);
   };
 
   const deleteBulkArrears = async (ids: string[]) => {
-    return await axiosClient.delete(`/arrears/hapus-banyak`, { data: { ids } }).then((res) => res.data);
+    return await axiosClient
+      .delete(`/arrears/hapus-banyak`, { data: { ids } })
+      .then((res) => res.data);
   };
 
-  // hooks query
   const useGetArrears = () => {
-    const { data, isLoading, isError } = useQuery({
+    const queryClient = useQueryClient(); // supaya bisa invalidate manual juga
+
+    const { data, isLoading, isError, refetch } = useQuery({
       queryKey: ["arrears"],
       queryFn: getArrears,
       refetchOnWindowFocus: false,
       select: (res) => res.data,
     });
-    return { data, isLoading, isError };
+
+    // fungsi tambahan kalau mau refetch manual
+    const refreshArrears = () =>
+      queryClient.invalidateQueries({ queryKey: ["arrears"] });
+
+    return { data, isLoading, isError, refetch, refreshArrears };
   };
 
   const useDetailArrear = (id: string) => {
@@ -83,11 +104,19 @@ export const useArrearsModule = () => {
     return useMutation({
       mutationFn: (payload: CreateArrearDto[]) => createBulkArrears(payload),
       onSuccess: () => {
-        Swal.fire("Berhasil", "Tunggakan banyak berhasil ditambahkan", "success");
+        Swal.fire(
+          "Berhasil",
+          "Tunggakan banyak berhasil ditambahkan",
+          "success"
+        );
         queryClient.invalidateQueries({ queryKey: ["arrears"] });
       },
       onError: (error: any) => {
-        Swal.fire("Error", "Gagal menambahkan banyak: " + error.message, "error");
+        Swal.fire(
+          "Error",
+          "Gagal menambahkan banyak: " + error.message,
+          "error"
+        );
       },
     });
   };
@@ -95,8 +124,13 @@ export const useArrearsModule = () => {
   const useUpdateArrear = () => {
     const queryClient = useQueryClient();
     return useMutation({
-      mutationFn: ({ id, payload }: { id: string; payload: Partial<CreateArrearDto> }) =>
-        updateArrear(id, payload),
+      mutationFn: ({
+        id,
+        payload,
+      }: {
+        id: string;
+        payload: Partial<CreateArrearDto>;
+      }) => updateArrear(id, payload),
       onSuccess: () => {
         Swal.fire("Berhasil", "Tunggakan berhasil diupdate", "success");
         queryClient.invalidateQueries({ queryKey: ["arrears"] });

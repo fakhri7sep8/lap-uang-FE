@@ -39,7 +39,7 @@ const DataPembayaran = () => {
   const [tempFilterSemester, setTempFilterSemester] = useState("");
   const [tempFilterTipeKategori, setTempFilterTipeKategori] = useState("");
   const [tempFilterNominal, setTempFilterNominal] = useState("");
-
+  const [isDeleting, setIsDeleting] = useState(false);
   const { useGetStudent } = useStudentModule();
   const { useGetCategory, useDeleteCategory } = useCategoryPaymentModule();
   const { data: kategori, isLoading, isError } = useGetCategory();
@@ -83,25 +83,37 @@ const DataPembayaran = () => {
   ]);
 
   const handleDelete = async (id: string) => {
-    try {
-      const result = await Swal.fire({
-        title: "Apakah kamu yakin?",
-        text: "Data yang dihapus tidak bisa dikembalikan!",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
-        confirmButtonText: "Ya, hapus!",
-        cancelButtonText: "Batal",
-      });
+  const result = await Swal.fire({
+    title: "Apakah kamu yakin?",
+    text: "Data yang dihapus tidak bisa dikembalikan!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#3085d6",
+    confirmButtonText: "Ya, hapus!",
+    cancelButtonText: "Batal",
+  });
 
-      if (result.isConfirmed) {
-        await deleteCategory.mutate(id);
-      }
+  if (result.isConfirmed) {
+    try {
+      setIsDeleting(true); // cuma loader FE aja yang aktif
+      await deleteCategory.mutateAsync(id);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsDeleting(false);
     }
-  };
+  }
+};
+
+
+  if (isDeleting) {
+    return (
+      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
+        <Loader />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -275,7 +287,7 @@ const DataPembayaran = () => {
                   >
                     <option value="">Semua</option>
                     <option value="NORMAL">Normal</option>
-                    <option value="INSTALLMENT">Cicilan</option>
+                    <option value="INSTALLMENT">Installment</option>
                   </select>
                 </label>
 
@@ -302,11 +314,15 @@ const DataPembayaran = () => {
                     setTempFilterSemester("");
                     setTempFilterTipeKategori("");
                     setTempFilterNominal("");
+                    setFilterSemester("");
+                    setFilterTipeKategori("");
+                    setFilterNominal("");
                   }}
                   className="w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-red-600"
                 >
                   Reset Filter
                 </button>
+
                 <button
                   onClick={() => {
                     setFilterSemester(tempFilterSemester);

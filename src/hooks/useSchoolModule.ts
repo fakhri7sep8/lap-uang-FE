@@ -62,14 +62,21 @@ export const useSchoolModule = () => {
 
   
   const useGetSchool = () => {
-    const {isLoading, isError, data} = useQuery({
-      queryKey: ["get-school"],
-      queryFn: () => getSchoolData(),
-      select: (data) => data.data,
-    });
+  const queryClient = useQueryClient();
 
-    return {isLoading, isError, data}
-  };
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ["get-school"],
+    queryFn: getSchoolData,
+    refetchOnWindowFocus: false,
+    select: (res) => res.data,
+  });
+
+  const refreshSchool = () =>
+    queryClient.invalidateQueries({ queryKey: ["get-school"] });
+
+  return { data, isLoading, isError, refetch, refreshSchool };
+};
+
 
   return { useCreateSchool, useGetSchool , useDeleteSchool , useUpdateSchool };
 };

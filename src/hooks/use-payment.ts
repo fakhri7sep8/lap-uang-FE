@@ -36,7 +36,7 @@ export const usePaymentModule = () => {
 
   const getRecapPayments = async () => {
     return await axiosClient
-      .get("/payments/rekap/2025")
+      .get(`/payments/rekap/${new Date().getFullYear()}`)
       .then((res) => res.data);
   };
 
@@ -65,23 +65,35 @@ export const usePaymentModule = () => {
   };
 
   const useGetPayments = () => {
-    const { data, isLoading, isError } = useQuery({
+    const queryClient = useQueryClient();
+
+    const { data, isLoading, isError, refetch } = useQuery({
       queryKey: ["payments"],
       queryFn: getPayments,
       refetchOnWindowFocus: false,
-      select: (res) => res.data, // asumsi BaseResponse { data: ... }
+      select: (res) => res.data,
     });
-    return { data, isLoading, isError };
+
+    const refreshPayments = () =>
+      queryClient.invalidateQueries({ queryKey: ["payments"] });
+
+    return { data, isLoading, isError, refetch, refreshPayments };
   };
 
   const useGetRecapPayments = () => {
-    const { data, isLoading, isError } = useQuery({
+    const queryClient = useQueryClient();
+
+    const { data, isLoading, isError, refetch } = useQuery({
       queryKey: ["payments-recap"],
       queryFn: getRecapPayments,
       refetchOnWindowFocus: false,
       select: (res) => res.data,
     });
-    return { data, isLoading, isError };
+
+    const refreshRecapPayments = () =>
+      queryClient.invalidateQueries({ queryKey: ["payments-recap"] });
+
+    return { data, isLoading, isError, refetch, refreshRecapPayments };
   };
 
   const useDetailPayment = (id: string) => {
@@ -106,10 +118,17 @@ export const usePaymentModule = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: (payload: CreatePaymentDto) => createPayment(payload),
-      onSuccess: () => {
+      onSuccess: async (_data, payload) => {
         Swal.fire("Berhasil", "Pembayaran berhasil ditambahkan", "success");
-        queryClient.invalidateQueries({ queryKey: ["payments"] });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["payments"] }),
+          queryClient.invalidateQueries({ queryKey: ["categoryPayment"] }),
+          queryClient.invalidateQueries({
+            queryKey: ["payments-by-cns", payload.studentId, payload.typeId],
+          }),
+        ]);
       },
+
       onError: (error: any) => {
         Swal.fire("Error", "Gagal menambahkan: " + error.message, "error");
       },
@@ -135,10 +154,15 @@ export const usePaymentModule = () => {
     return useMutation({
       mutationFn: (payload: any) =>
         updatePayment(payload.studentId, payload, payload.typeId),
-      onSuccess: () => {
+      onSuccess: async (_data, payload) => {
         Swal.fire("Berhasil", "Pembayaran berhasil diupdate", "success");
-        queryClient.invalidateQueries({ queryKey: ["payments"] });
-        queryClient.invalidateQueries({ queryKey: ["payment-detail"] });
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["payments"] }),
+          queryClient.invalidateQueries({
+            queryKey: ["payments-by-cns", payload.studentId, payload.typeId],
+          }),
+          queryClient.invalidateQueries({ queryKey: ["payment-detail"] }),
+        ]);
       },
       onError: (error: any) => {
         Swal.fire("Error", "Gagal mengupdate: " + error.message, "error");
@@ -159,17 +183,23 @@ export const usePaymentModule = () => {
       },
     });
   };
-
   const useGetPaymentsByCNS = (ids: string, idc: string) => {
-    const { data, isLoading, isError } = useQuery({
+    const queryClient = useQueryClient();
+
+    const { data, isLoading, isError, refetch } = useQuery({
       queryKey: ["payments-by-cns", ids, idc],
       queryFn: () => getPaymentsByCNS(ids, idc),
-      enabled: !!ids && !!idc, // hanya jalan kalau ada param
+      enabled: !!ids && !!idc,
       refetchOnWindowFocus: false,
-      select: (res) => res.data, // asumsi res = { data: ... }
+      select: (res) => res.data?.payments || [],
     });
 
-    return { data, isLoading, isError };
+    const refreshPaymentsByCNS = () =>
+      queryClient.invalidateQueries({
+        queryKey: ["payments-by-cns", ids, idc],
+      });
+
+    return { data, isLoading, isError, refetch, refreshPaymentsByCNS };
   };
 
   return {

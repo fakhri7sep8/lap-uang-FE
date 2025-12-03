@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 // type interface untuk create / update expense
 export interface CreateExpense {
   categoryId: string;
-  date: string; // format ISO string "2025-09-10T00:00:00Z"
+  date: string; 
   amount: number;
   description: string;
 }
@@ -64,13 +64,16 @@ export const useExpenseModule = () => {
   };
   // React Query hooks
   const useGetExpenses = () => {
+    const queryClient = useQueryClient();
     const { data, isLoading, isError } = useQuery({
       queryKey: ["expenses"],
       queryFn: getExpenses,
       refetchOnWindowFocus: false,
-      select: (data) => data.data, // sesuai BaseResponse -> { data: ... }
+      select: (data) => data.data,
     });
-    return { data, isLoading, isError };
+    const refreshExpense = () =>
+      queryClient.invalidateQueries({ queryKey: ["expenses"] });
+    return { data, isLoading, isError, refreshExpense };
   };
 
   const useCreateManyExpenses = () => {
@@ -126,6 +129,6 @@ export const useExpenseModule = () => {
     useGetExpenses,
     useCreateManyExpenses,
     useUpdateExpense,
-    useCreateExpense
+    useCreateExpense,
   };
 };

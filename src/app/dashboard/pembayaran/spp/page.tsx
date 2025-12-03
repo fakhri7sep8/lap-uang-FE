@@ -1,118 +1,123 @@
-'use client'
+"use client";
 
-import { Download, GraduationCap, Users } from 'lucide-react'
-import React, { useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { Download, GraduationCap, Users } from "lucide-react";
+import React, { useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
-  TableRow
-} from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import CardInformation from '@/components/fragments/dashboard/card-information'
-import Swal from 'sweetalert2'
-import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
-import Loader from '@/components/ui/loader'
-import SearchDataTableSPP from '@/components/fragments/dashboard/search-data-table-spp'
-import { useSppPaymentModule } from '@/hooks/use-spp-payment'
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import CardInformation from "@/components/fragments/dashboard/card-information";
+import Swal from "sweetalert2";
+import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
+import Loader from "@/components/ui/loader";
+import SearchDataTableSPP from "@/components/fragments/dashboard/search-data-table-spp";
+import { useSppPaymentModule } from "@/hooks/use-spp-payment";
 
 // daftar bulan global biar konsisten
 const months = [
-  'Juli',
-  'Agustus',
-  'September',
-  'Oktober',
-  'November',
-  'Desember',
-  'Januari',
-  'Februari',
-  'Maret',
-  'April',
-  'Mei',
-  'Juni'
-]
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+];
 
 const SPP = () => {
-  const [showFilter, setShowFilter] = useState(false)
-  const [showCount, setShowCount] = useState(10)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterBulan, setFilterBulan] = useState('')
-  const [filterTahun, setFilterTahun] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [draftBulan, setDraftBulan] = useState('')
+  const [showFilter, setShowFilter] = useState(false);
+  const [showCount, setShowCount] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterBulan, setFilterBulan] = useState("");
+  const [filterTahun, setFilterTahun] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [draftBulan, setDraftBulan] = useState("");
+  const [filterAngkatan, setFilterAngkatan] = useState("");
+  const [draftAngkatan, setDraftAngkatan] = useState("");
 
   // ambil hooks dari module
-  const { useGetRecapPayments, useDeletePayment } = useSppPaymentModule()
-  const { data: payments, isLoading, isError } = useGetRecapPayments()
-  const { mutate: deletePayment } = useDeletePayment()
+  const { useGetRecapPayments, useDeletePayment } = useSppPaymentModule();
+  const { data: payments, isLoading, isError } = useGetRecapPayments();
+  const angkatanList = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+  const { mutate: deletePayment } = useDeletePayment();
 
-  const filteredData = payments
+  const filteredData = (payments ?? [])
     ?.filter((s: any) =>
       s?.nama?.toLowerCase().includes(searchTerm.toLowerCase())
     )
     ?.filter((s: any) =>
       filterBulan ? s[filterBulan.toLowerCase()] !== undefined : true
-    ) || []
+    )
+    ?.filter((s: any) =>
+      filterAngkatan ? s?.generation?.toString() === filterAngkatan : true
+    );
 
-
-  const totalPages = Math.ceil(filteredData.length / showCount)
+  const totalPages = Math.ceil(filteredData.length / showCount);
   const paginatedData = filteredData.slice(
     (currentPage - 1) * showCount,
     currentPage * showCount
-  )
+  );
 
   const getPaymentBadge = (status: string) => {
     const baseClass =
-      'inline-block min-w-[90px] px-2 py-1 rounded-full text-xs font-medium text-center'
-    if (status?.toUpperCase() === 'LUNAS') {
+      "inline-block min-w-[90px] px-2 py-1 rounded-full text-xs font-medium text-center";
+    if (status?.toUpperCase() === "LUNAS") {
       return (
         <span className={`${baseClass} bg-green-100 text-green-500`}>
           {status}
         </span>
-      )
+      );
     }
     return (
       <span className={`${baseClass} bg-yellow-100 text-yellow-500`}>
-        {status || 'Belum Lunas'}
+        {status || "Belum Lunas"}
       </span>
-    )
-  }
+    );
+  };
 
   const handleDelete = async (id: string) => {
     try {
       const result = await Swal.fire({
-        title: 'Apakah kamu yakin?',
-        text: 'Data yang dihapus tidak bisa dikembalikan!',
-        icon: 'warning',
+        title: "Apakah kamu yakin?",
+        text: "Data yang dihapus tidak bisa dikembalikan!",
+        icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: '#d33',
-        cancelButtonColor: '#3085d6',
-        confirmButtonText: 'Ya, hapus!',
-        cancelButtonText: 'Batal'
-      })
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#3085d6",
+        confirmButtonText: "Ya, hapus!",
+        cancelButtonText: "Batal",
+      });
 
       if (result.isConfirmed) {
-        deletePayment(id)
+        deletePayment(id);
       }
     } catch (error) {
-      console.error(error)
-      Swal.fire('Error', 'Terjadi kesalahan saat menghapus data.', 'error')
+      console.error(error);
+      Swal.fire("Error", "Terjadi kesalahan saat menghapus data.", "error");
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="p-6 w-full h-[89vh] flex justify-center items-center">
         <Loader />
       </div>
-    )
+    );
   }
 
   if (isError) {
-    return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>
+    return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
   }
 
   return (
@@ -120,15 +125,15 @@ const SPP = () => {
       {/* Kartu informasi */}
       <section className="grid grid-cols-2 gap-4">
         <CardInformation
-          color={'blue'}
-          title={'Total Data'}
+          color={"blue"}
+          title={"Total Data"}
           value={filteredData.length}
           icon={<GraduationCap size={32} className="text-blue-500" />}
         />
         <CardInformation
-          color={'green'}
-          title={'Lunas'}
-          value={filteredData.filter((s: any) => s.status === 'LUNAS').length}
+          color={"green"}
+          title={"Lunas"}
+          value={filteredData.filter((s: any) => s.status === "LUNAS").length}
           icon={<Users size={32} className="text-green-500" />}
         />
       </section>
@@ -136,12 +141,12 @@ const SPP = () => {
       {/* Table */}
       <section className="w-full flex flex-col gap-6 h-full pb-6">
         <SearchDataTableSPP
-          title={'Data Pembayaran Spp'}
+          title={"Data Pembayaran Spp"}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           setShowFilter={setShowFilter}
           setShowCount={setShowCount}
-          type={'normal'}
+          type={"normal"}
         />
 
         <div className="w-full h-full rounded-xl overflow-x-auto bg-white px-1 pt-2 pb-4">
@@ -150,10 +155,11 @@ const SPP = () => {
               <TableRow>
                 <TableHead>No</TableHead>
                 <TableHead>Nama</TableHead>
-                {filterBulan
-                  ? <TableHead>{filterBulan}</TableHead>
-                  : months.map(m => <TableHead key={m}>{m}</TableHead>)
-                }
+                {filterBulan ? (
+                  <TableHead>{filterBulan}</TableHead>
+                ) : (
+                  months.map((m) => <TableHead key={m}>{m}</TableHead>)
+                )}
                 <TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -168,21 +174,22 @@ const SPP = () => {
               ) : (
                 paginatedData.map((s: any, idx: number) => (
                   <TableRow key={s.id} className="hover:bg-gray-50 transition">
-                    <TableCell>{(currentPage - 1) * showCount + idx + 1}</TableCell>
+                    <TableCell>
+                      {(currentPage - 1) * showCount + idx + 1}
+                    </TableCell>
                     <TableCell className="font-medium">{s.nama}</TableCell>
 
-                    {filterBulan
-                      ? (
-                        <TableCell>
-                          {getPaymentBadge(s[filterBulan.toLowerCase()])}
-                        </TableCell>
-                      )
-                      : months.map(m => (
+                    {filterBulan ? (
+                      <TableCell>
+                        {getPaymentBadge(s[filterBulan.toLowerCase()])}
+                      </TableCell>
+                    ) : (
+                      months.map((m) => (
                         <TableCell key={m}>
                           {getPaymentBadge(s[m.toLowerCase()])}
                         </TableCell>
                       ))
-                    }
+                    )}
 
                     <TableCell className="flex gap-2 justify-center">
                       <Button
@@ -236,10 +243,10 @@ const SPP = () => {
             />
             <motion.div
               className="fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 shadow-lg p-6 flex flex-col gap-6"
-              initial={{ x: '100%' }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold">Filter</h3>
@@ -256,24 +263,35 @@ const SPP = () => {
                   <select
                     className="mt-1 border border-gray-300 rounded-md px-3 py-2"
                     value={draftBulan}
-                    onChange={e => setDraftBulan(e.target.value)}
+                    onChange={(e) => setDraftBulan(e.target.value)}
                   >
                     <option value="">Semua</option>
-                    {months.map(m => (
+                    {months.map((m) => (
                       <option key={m} value={m}>
                         {m}
                       </option>
                     ))}
                   </select>
                 </label>
-
+                <label className="flex flex-col text-sm">
+                  Angkatan
+                  <input
+                    type="text"
+                    className="mt-1 border border-gray-300 rounded-md px-3 py-2"
+                    placeholder="Contoh: 2025"
+                    value={draftAngkatan}
+                    onChange={(e) => setDraftAngkatan(e.target.value)}
+                  />
+                </label>
               </div>
               <div className="mt-auto flex flex-col gap-2">
                 <button
                   onClick={() => {
-                    setDraftBulan('')
-                    setFilterBulan('')
-                    setFilterTahun('')
+                    setDraftBulan("");
+                    setFilterBulan("");
+                    setFilterTahun("");
+                    setDraftAngkatan("");
+                    setFilterAngkatan("");
                   }}
                   className="w-full py-2 px-4 bg-red-500 text-white rounded-md hover:bg-gray-300"
                 >
@@ -281,9 +299,10 @@ const SPP = () => {
                 </button>
                 <button
                   onClick={() => {
-                    setFilterBulan(draftBulan)
-                    setShowFilter(false)
-                    setCurrentPage(1)
+                    setFilterBulan(draftBulan);
+                    setFilterAngkatan(draftAngkatan);
+                    setShowFilter(false);
+                    setCurrentPage(1);
                   }}
                   className="w-full py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
                 >
@@ -295,7 +314,7 @@ const SPP = () => {
         )}
       </AnimatePresence>
     </section>
-  )
-}
+  );
+};
 
-export default SPP
+export default SPP;
