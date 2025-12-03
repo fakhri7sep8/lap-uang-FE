@@ -5,7 +5,7 @@ import Swal from "sweetalert2";
 
 export const useCategoryPaymentModule = () => {
   const getCategory = async () => {
-    return await axiosClient.get("/payment-types/").then((res) => res.data);
+    return await axiosClient.get("/payment-types/with-status").then((res) => res.data);
   };
 
   const createCategory = async (payload: createCategoryPembayaran) => {
