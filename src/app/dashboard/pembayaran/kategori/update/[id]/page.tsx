@@ -18,7 +18,7 @@ import { useCategoryPaymentModule } from "@/hooks/use-categoryPayment";
 import { useStudentModule } from "@/hooks/useStudentModule";
 import { useFormik } from "formik";
 import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import * as Yup from "yup";
 import currency from "currency.js";
 
@@ -65,11 +65,15 @@ const UpdateKategori = () => {
   const [selectedSiswa, setSelectedSiswa] = useState<Option[]>([]);
   const [selectAll, setSelectAll] = useState(false);
 
-  const siswaOptions: Option[] =
+ const siswaOptions = useMemo(() => {
+  return (
     siswaMQ?.map((s: any) => ({
       label: s.name,
       value: s.id,
-    })) || [];
+    })) || []
+  );
+}, [siswaMQ]);
+
 
   const formik = useFormik({
     initialValues: {
@@ -93,7 +97,7 @@ const UpdateKategori = () => {
   });
 
   useEffect(() => {
-    if (data?.data) {
+    if (data?.data && siswaOptions.length > 0) {
       formik.setValues({
         name: data.data.name,
         semester: data.data.semester,
@@ -103,23 +107,23 @@ const UpdateKategori = () => {
         status: data.data.status,
       });
 
-      if (data.data.students) {
-        const allSelected =
-          data.data.students.length === siswaMQ?.length && siswaMQ?.length > 0;
+      const selected = data.data.students || [];
 
-        setSelectedSiswa(
-          allSelected
-            ? []
-            : data.data.students.map((s: any) => ({
-                label: s.name,
-                value: s.id,
-              }))
-        );
+      const allSelected =
+        selected.length === siswaOptions.length && siswaOptions.length > 0;
 
-        setSelectAll(allSelected); // ⬅️ ini penting
-      }
+      setSelectAll(allSelected);
+
+      setSelectedSiswa(
+        allSelected
+          ? siswaOptions
+          : selected.map((s: any) => ({
+              label: s.name,
+              value: s.id,
+            }))
+      );
     }
-  }, [data, siswaMQ]);
+  }, [data, siswaOptions]);
 
   if (isLoading && !data) {
     return (

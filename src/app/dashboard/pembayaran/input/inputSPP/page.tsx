@@ -29,6 +29,9 @@ import * as XLSX from "xlsx";
 import Swal from "sweetalert2";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { readerExcel } from "@/helper/excelReader";
+
+
 
 const bulanList = [
   "Juli",
@@ -69,6 +72,7 @@ const InputSPPPage = () => {
     refetch: refetchSppPayments,
     isLoading: isLoadingSpp,
   } = useGetByStudentID(siswa?.id, yearSPP);
+  
 
   useEffect(() => {
     setSelectedMonths([]);
@@ -173,6 +177,178 @@ const InputSPPPage = () => {
     }
   };
 
+  const handleReadExcel = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    try {
+      const result = await readerExcel(event);
+      if (!result) return;
+
+      console.log("📘 [STEP 1] Data Excel Diterima:", result.json);
+
+      const siswaList = siswaMQ?.map((s: any) => s.name.toLowerCase().trim());
+      const invalidRows = result.json.filter(
+        (row: any) => !siswaList.includes((row.Nama || "").toLowerCase().trim())
+      );
+
+      if (invalidRows.length > 0) {
+        console.warn("❌ [STEP 1.5] Nama siswa tidak ditemukan:", invalidRows);
+        Swal.fire({
+          icon: "error",
+          title: "Nama siswa tidak ditemukan",
+          text: invalidRows.map((r: any) => r.Nama).join(", "),
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: "Mengimpor data...",
+        text: "Mohon tunggu, sedang memproses file Excel kamu",
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+      });
+
+      const bulanOrder = [
+        "juli",
+        "agustus",
+        "september",
+        "oktober",
+        "november",
+        "desember",
+        "januari",
+        "februari",
+        "maret",
+        "april",
+        "mei",
+        "juni",
+      ];
+
+      const skippedRows: string[] = [];
+      const blockedRows: string[] = [];
+      const successRows: string[] = [];
+
+      console.log("📆 [STEP 2] Mulai proses import...");
+
+      // cache lunas sementara
+      const tempPaid = new Set<string>();
+
+      for (const row of result.json) {
+        const namaExcel = (row.Nama || "").trim().toLowerCase();
+        const bulanExcel = (row.Bulan || "").trim().toLowerCase();
+        const nominalExcel = Number(row.Nominal);
+        const statusExcel = (row.Status || "LUNAS").trim().toLowerCase();
+
+        const siswaMatch = siswaMQ.find(
+          (s: any) => s.name.toLowerCase() === namaExcel
+        );
+        if (!siswaMatch) continue;
+
+        const bulanIdx = bulanOrder.indexOf(bulanExcel);
+        if (bulanIdx === -1) continue;
+
+        const paymentsForStudent = sppPayments?.spp?.filter(
+          (p: any) => p.studentId === siswaMatch.id
+        );
+
+        // --- CEK BULAN SUDAH LUNAS (DB + TEMP) ---
+        const sudahLunas =
+          paymentsForStudent?.some(
+            (p: any) =>
+              p.month.toLowerCase() === bulanExcel && p.status === "LUNAS"
+          ) || tempPaid.has(`${siswaMatch.id}-${bulanExcel}`);
+
+        if (sudahLunas) {
+          skippedRows.push(`${row.Nama} - ${row.Bulan} (Sudah Lunas)`);
+          continue;
+        }
+
+        // --- CEK BULAN SEBELUMNYA ---
+        const bulanSebelumnya = bulanOrder.slice(0, bulanIdx);
+        const belumLunasSebelumnya = bulanSebelumnya.filter((bulan) => {
+          const paidInDB = paymentsForStudent?.some(
+            (p: any) => p.month.toLowerCase() === bulan && p.status === "LUNAS"
+          );
+          const paidInTemp = tempPaid.has(`${siswaMatch.id}-${bulan}`);
+          return !(paidInDB || paidInTemp);
+        });
+
+        if (belumLunasSebelumnya.length > 0) {
+          blockedRows.push(
+            `${row.Nama} - ${
+              row.Bulan
+            } (Belum bayar ${belumLunasSebelumnya.join(", ")})`
+          );
+          continue;
+        }
+
+        // --- ✅ SUDAH VALID, KIRIM ---
+        await createSPPPayment({
+          payload: {
+            studentId: siswaMatch.id,
+            month: capitalize(bulanExcel),
+            year: yearSPP,
+            nominal: nominalExcel,
+            status: statusExcel.toUpperCase(),
+          },
+          silent: true,
+        });
+
+        // simpan ke cache
+        tempPaid.add(`${siswaMatch.id}-${bulanExcel}`);
+        successRows.push(`${row.Nama} - ${row.Bulan}`);
+      }
+
+      console.log("📊 [STEP 3] Hasil akhir import:", {
+        successRows,
+        skippedRows,
+        blockedRows,
+      });
+
+      await refetchSppPayments();
+      Swal.close();
+
+      if (blockedRows.length > 0 || skippedRows.length > 0) {
+        let message = "";
+        if (skippedRows.length > 0) {
+          message += `❗ Dilewati karena sudah lunas:\n${skippedRows.join(
+            "\n"
+          )}\n\n`;
+        }
+        if (blockedRows.length > 0) {
+          message += `🚫 Tidak bisa diimpor karena bulan sebelumnya belum lunas:\n${blockedRows.join(
+            "\n"
+          )}`;
+        }
+
+        Swal.fire({
+          icon: "warning",
+          title: "Sebagian Data Tidak Diimpor",
+          text: message,
+          customClass: { popup: "text-left whitespace-pre-wrap" },
+        });
+      } else {
+        Swal.fire({
+          icon: "success",
+          title: "Berhasil!",
+          text: "Semua data pembayaran berhasil diimpor.",
+        });
+      }
+
+      event.target.value = "";
+    } catch (error) {
+      console.error("❌ [ERROR] Import Excel gagal:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Gagal Membaca File",
+        text: "Pastikan format Excel sesuai template (Nama, Bulan, Nominal, Status)!",
+      });
+    }
+  };
+
+  function capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+
   return (
     <div className="p-8 w-full flex justify-center flex-col">
       {/* Navigation Buttons */}
@@ -216,7 +392,7 @@ const InputSPPPage = () => {
             <Combobox
               options={siswaMQ?.map((s: any) => ({
                 label: s.InductNumber,
-                value: s.name,
+                value: s.InductNumber,
               }))}
               value={siswa?.InductNumber}
               onChange={setSelectedSiswa}
@@ -411,7 +587,7 @@ const InputSPPPage = () => {
             })}
           </div>
           {/* Total Nominal */}
-          <div className="flex flex-col mb-4">
+          <div className="flex flex-col mt-4">
             <label className="text-sm font-medium mb-1">Total Nominal</label>
             <div className="w-full border rounded-md p-4 border-slate-300">
               <p className="font-semibold text-lg">
@@ -427,9 +603,10 @@ const InputSPPPage = () => {
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col items-end gap-4 mt-4">
             {/* Submit Button */}
+
             <button
               type="submit"
-              disabled={!siswa || isSubmitting} // disable kalau belum pilih siswa atau sedang submit
+              disabled={!siswa || isSubmitting}
               className={`w-full py-5 border text-lg flex items-center justify-center gap-2 rounded-xl transition-all ${
                 !siswa || isSubmitting
                   ? "cursor-not-allowed bg-gray-200 text-gray-600 border-gray-300"
@@ -439,9 +616,7 @@ const InputSPPPage = () => {
               <Send size={24} />
               {isSubmitting
                 ? "Sedang menyimpan..."
-                : sppPayments?.spp?.every((p: any) => p.status === "LUNAS")
-                ? "Semua bulan sudah lunas"
-                : "Simpan"}
+                : "Simpan Pembayaran"}
             </button>
 
             {/* Download Template */}
@@ -470,15 +645,9 @@ const InputSPPPage = () => {
               type="file"
               accept=".xlsx, .xls"
               className="hidden"
-              // onChange={handleReadExcel}
+              onChange={handleReadExcel}
             />
-            <Link
-              href="/dashboard/pembayaran/input/inputNonSpp"
-              className="w-full py-5 hover:bg-orange-500 hover:text-white transition-all cursor-pointer border border-orange-500 text-orange-500 text-lg flex items-center justify-center gap-2 rounded-xl"
-            >
-              <ArrowRightCircle size={24} />
-              Input Pembayaran Non SPP
-            </Link>
+           
           </div>
         </form>
       </section>
