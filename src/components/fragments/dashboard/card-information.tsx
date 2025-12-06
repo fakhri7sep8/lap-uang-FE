@@ -16,7 +16,7 @@ const CardInformation = ({
       <div className='rounded-xl p-9 bg-blue-400  text-white h-40 flex justify-between items-center shadow-md'>
         <div className='flex flex-col gap-2'>
           <h2 className='font-medium text-2xl'>{title}</h2>
-          <p className='text-6xl font-medium'>{value}</p>
+          <p className='text-5xl font-medium'>{value}</p>
         </div>
         <div className='bg-blue-100 rounded-full w-20 h-20 flex justify-center items-center'>
           {icon}
@@ -30,7 +30,7 @@ const CardInformation = ({
       <div className='rounded-xl p-9 bg-green-400  text-white h-40 flex justify-between items-center shadow-md'>
         <div className='flex flex-col gap-2'>
           <h2 className='font-medium text-2xl'>{title}</h2>
-          <p className='text-6xl font-medium'>{value}</p>
+          <p className='text-5xl font-medium'>{value}</p>
         </div>
         <div className='bg-green-100 rounded-full w-20 h-20 flex justify-center items-center'>
           {icon}
@@ -44,7 +44,7 @@ const CardInformation = ({
       <div className='rounded-xl p-9 bg-red-400  text-white h-40 flex justify-between items-center shadow-md'>
         <div className='flex flex-col gap-2'>
           <h2 className='font-medium text-2xl'>{title}</h2>
-          <p className='text-6xl font-medium'>{value}</p>
+          <p className='text-5xl font-medium'>{value}</p>
         </div>
         <div className='bg-red-100 rounded-full w-20 h-20 flex justify-center items-center'>
           {icon}
@@ -58,7 +58,7 @@ const CardInformation = ({
       <div className='rounded-xl p-9 bg-yellow-400  text-white h-40 flex justify-between items-center shadow-md'>
         <div className='flex flex-col gap-2'>
           <h2 className='font-medium text-2xl'>{title}</h2>
-          <p className='text-6xl font-medium'>{value}</p>
+          <p className='text-5xl font-medium'>{value}</p>
         </div>
         <div className='bg-yellow-100 rounded-full w-20 h-20 flex justify-center items-center'>
           {icon}
@@ -72,7 +72,7 @@ const CardInformation = ({
       <div className='rounded-xl p-9 bg-purple-400  text-white h-40 flex justify-between items-center shadow-md'>
         <div className='flex flex-col gap-2'>
           <h2 className='font-medium text-2xl'>{title}</h2>
-          <p className='text-6xl font-medium'>{value}</p>
+          <p className='text-5xl font-medium'>{value}</p>
         </div>
         <div className='bg-purple-100 rounded-full w-20 h-20 flex justify-center items-center'>
           {icon}

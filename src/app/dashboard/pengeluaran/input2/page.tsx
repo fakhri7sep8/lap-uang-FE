@@ -1,5 +1,5 @@
 import React from 'react'
-import InputPengeluaran from '@/components/fragments/pengeluaran/input_pengeluaran'
+import InputPengeluaran from '@/components/fragments/pengeluaran/input_pengeluaran2'
 
 export const metadata = {
   title: 'Input Pengeluaran',
@@ -8,7 +8,7 @@ export const metadata = {
 export default function Page() {
   return (
     <div className="p-6">
-      <InputPengeluaran />
+      <InputPengeluaran/>
     </div>
   )
 }

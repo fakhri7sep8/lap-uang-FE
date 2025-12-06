@@ -34,7 +34,6 @@ export const useStudentModule = () => {
           title: "Berhasil",
         })
       },
-      
       onError: (error) => { 
         if (axios.isAxiosError(error)) {
           Swal.fire({

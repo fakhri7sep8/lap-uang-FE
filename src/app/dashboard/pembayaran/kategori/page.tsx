@@ -124,7 +124,7 @@ const DataPembayaran = () => {
   }
 
   if (isError) {
-    return <div className="p-6 text-red-500">Gagal memuat data siswa.</div>;
+    return <div className="p-6 text-red-500">Gagal memuat data Kategori</div>;
   }
 
   return (

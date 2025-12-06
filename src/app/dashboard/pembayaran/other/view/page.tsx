@@ -1,13 +1,13 @@
-"use client";
+'use client'
 
 import {
   ChevronLeft,
   ChevronRight,
   Download,
   GraduationCap,
-  Users,
-} from "lucide-react";
-import React, { useState, useEffect } from "react";
+  Users
+} from 'lucide-react'
+import React, { useState, useEffect } from 'react'
 import {
   Table,
   TableBody,
@@ -92,7 +92,7 @@ const DataSelainSpp = () => {
   const paginatedData: any[] = filteredData.slice(
     (currentPage - 1) * showCount,
     currentPage * showCount
-  );
+  )
 
   const getStatusBadgeClass = (status: string) => {
     const baseStyle =
@@ -110,7 +110,7 @@ const DataSelainSpp = () => {
       default:
         return `${baseStyle} bg-gray-50 text-gray-500`;
     }
-  };
+  }
 
   const handlePrev = () => startIndex > 0 && setStartIndex(startIndex - 1);
   const handleNext = () =>
@@ -119,20 +119,20 @@ const DataSelainSpp = () => {
 
   if (loading) {
     return (
-      <div className="p-6 w-full h-[89vh] flex justify-center items-center">
+      <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
         <Loader />
       </div>
-    );
+    )
   }
 
   return (
-    <section className="flex flex-col gap-10 w-full">
-      <section className="grid grid-cols-2 gap-4">
+    <section className='flex flex-col gap-10 w-full'>
+      <section className='grid grid-cols-2 gap-4'>
         <CardInformation
-          color="blue"
-          title="Total Data"
+          color='blue'
+          title='Total Data'
           value={recap.length}
-          icon={<GraduationCap size={32} className="text-blue-500" />}
+          icon={<GraduationCap size={32} className='text-blue-500' />}
         />
         <CardInformation
           color="green"
@@ -144,39 +144,41 @@ const DataSelainSpp = () => {
 
       <section className="w-full flex flex-col gap-6 h-full pb-6">
         <SearchDataTable
-          title={"Data Pembayaran"}
+          title={'Data Pembayaran'}
           searchTerm={searchTerm}
           setSearchTerm={setSearchTerm}
           setShowFilter={setShowFilter}
           setShowCount={setShowCount}
-          type={"normal"}
+          type={'normal'}
         />
+
 
         {/* === CAROUSEL FIXED (NORMAL + INSTALLMENT = SAME MECHANISM) === */}
         <div className="w-full flex items-center">
           <button
+            title='button'
             onClick={handlePrev}
             disabled={startIndex === 0}
-            className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
+            className='p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40'
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className='w-5 h-5' />
           </button>
 
           <div className="overflow-hidden flex-1 mx-2">
             <div
-              className="flex gap-4 transition-transform duration-500"
+              className='flex gap-4 transition-transform duration-500'
               style={{
-                transform: `translateX(-${startIndex * (100 / maxVisible)}%)`,
+                transform: `translateX(-${startIndex * (100 / maxVisible)}%)`
               }}
             >
               {/* tombol Semua */}
               <div
                 onClick={() => setSelectedCategory(null)}
                 className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-12 rounded-xl cursor-pointer ${
-                  !selectedCategory ? "bg-blue-700" : "bg-blue-500"
+                  !selectedCategory ? 'bg-blue-700' : 'bg-blue-500'
                 }`}
               >
-                <p className="text-white font-semibold text-base">Semua</p>
+                <p className='text-white font-semibold text-base'>Semua</p>
               </div>
 
               {categories.map((kat: any) => (
@@ -185,8 +187,8 @@ const DataSelainSpp = () => {
                   onClick={() => setSelectedCategory(kat)}
                   className={`flex-[0_0_calc(100%/4-1rem)] flex justify-center items-center h-12 rounded-xl cursor-pointer ${
                     selectedCategory?.id === kat.id
-                      ? "bg-blue-700"
-                      : "bg-blue-500"
+                      ? 'bg-blue-700'
+                      : 'bg-blue-500'
                   }`}
                 >
                   <p className="text-white font-semibold text-base">
@@ -198,11 +200,12 @@ const DataSelainSpp = () => {
           </div>
 
           <button
+            title='button'
             onClick={handleNext}
             disabled={startIndex >= categories.length - maxVisible}
-            className="p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40"
+            className='p-2 bg-white shadow rounded-full hover:bg-gray-100 disabled:opacity-40'
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className='w-5 h-5' />
           </button>
         </div>
 
@@ -251,7 +254,7 @@ const DataSelainSpp = () => {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Button className="bg-blue-500 text-white">
+                          <Button className='bg-blue-500 text-white'>
                             <Download size={16} />
                           </Button>
                         </TableCell>
@@ -286,7 +289,7 @@ const DataSelainSpp = () => {
               <TableBody>
                 {paginatedData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-gray-400">
+                    <TableCell colSpan={5} className='py-8 text-gray-400'>
                       Data not found
                     </TableCell>
                   </TableRow>
@@ -416,7 +419,7 @@ const DataSelainSpp = () => {
         )}
       </AnimatePresence>
     </section>
-  );
-};
+  )
+}
 
-export default DataSelainSpp;
+export default DataSelainSpp
