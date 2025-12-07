@@ -9,10 +9,10 @@ import SubmitUpdateExpense from '@/components/fragments/pengeluaran/input_update
 // }
 
 export default function Page() {
-  const {id} = useParams();
+  const {idExpense} = useParams();
   return (
     <div className='p-6'>
-      <SubmitUpdateExpense id={id as string} />
+      <SubmitUpdateExpense idExpense={idExpense as string} />
     </div>
   )
 }

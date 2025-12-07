@@ -116,6 +116,7 @@ const LainLainPage = () => {
           <div className='bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl'>
             {/* Search & Date Filter */}
             <SearchInput
+              category='Olther'
               searchTerm={searchTerm}
               fromDate={fromDate}
               toDate={toDate}

@@ -16,6 +16,7 @@ interface SearchInputProps {
   searchTerm: string
   fromDate: Date | null
   toDate: Date | null
+  category: string
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onFromDateChange: (date: Date | null) => void
   onToDateChange: (date: Date | null) => void
@@ -25,6 +26,7 @@ const SearchInput = ({
   searchTerm,
   fromDate,
   toDate,
+  category,
   onSearchChange,
   onFromDateChange,
   onToDateChange
@@ -109,7 +111,7 @@ const SearchInput = ({
       {/* BUTTONS */}
       <div className='flex gap-4 items-center'>
         <Button
-          onClick={() => router.push('/dashboard/pengeluaran/input')}
+          onClick={() => router.push(`/dashboard/pengeluaran/input/${category}`)}
           className='relative bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 shadow-md transition-transform duration-200 ease-in-out transform hover:scale-105 group'
           aria-label='Tambah Pengeluaran'
         >

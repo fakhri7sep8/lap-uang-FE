@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Send } from 'lucide-react'
+import { CalendarIcon, Send } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -20,8 +20,21 @@ import {
 import { useSubCategoryExpenseModule } from '@/hooks/expense/useSubCategoryExpense'
 import { useCategoryExpenseModule } from '@/hooks/expense/useCategoryExpense'
 import { useExpenseModule } from '@/hooks/expense/useExpense'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger
+} from '@/components/ui/popover'
+import { Calendar } from '@/components/ui/calendar'
+import { format } from 'date-fns'
+import { id } from 'date-fns/locale'
+import { formatRupiah } from '@/lib/format-rupiah'
 
-export default function SubmitUpdateExpense ({ id }: { id: string }) {
+export default function SubmitUpdateExpense ({
+  idExpense
+}: {
+  idExpense: string
+}) {
   const [dataList, setDataList] = useState([])
 
   const { useGetSubCategory } = useSubCategoryExpenseModule()
@@ -31,13 +44,22 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
   const { useDetailExpense, useUpdateExpense } = useExpenseModule()
 
   const mutate = useUpdateExpense()
-  const { data: detailExpense } = useDetailExpense(id)
+  const { data: detailExpense } = useDetailExpense(idExpense)
+  const [categorySelectedId, setCategorySelectedId] = useState(
+    detailExpense?.data?.categoryId || ''
+  )
 
-  console.log(detailExpense?.data)
+  // console.log(detailExpense?.data)
+
+  const filter = category?.data?.find((d: any) => d.id === idExpense)
+  const filterSub = subCategories?.data?.filter(
+    (d: any) => d.category_id == categorySelectedId
+  )
 
   // console.log(subCategories)
   // console.log(category)
   const formik = useFormik({
+    enableReinitialize: true,
     initialValues: {
       id: detailExpense?.data?.id || '',
       categoryId: detailExpense?.data?.categoryId || '',
@@ -53,7 +75,7 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
       kwitansiUrl: detailExpense?.data?.kwitansiUrl || '',
       amount: detailExpense?.data?.amount || '',
       description: detailExpense?.data?.description || '',
-      subCategoryId: detailExpense?.data?.subCategoryId ?? ''
+      subCategoryId: detailExpense?.data?.subCategoryId ?? null
     },
     validationSchema: Yup.object({
       categoryId: Yup.string().required('Kategori wajib diisi'),
@@ -85,12 +107,17 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
         subCategoryId: Number(values.subCategoryId)
         // PayDateFormatted: tanggal
       }
-      mutate.mutate({ idExpense: id, data: item })
+      mutate.mutate({ idExpense: idExpense, data: item })
       // console.log({:id, data:item})
       // setDataList(prev => [...prev, item] as any)
       // resetForm()
     }
   })
+
+//   useEffect(() => {
+//   formik.setFieldValue('subCategoryId', '')
+// }, [formik, formik.values.categoryId])
+
   // console.log(dataList);
   return (
     <div className='min-h-screen w-full bg-gray-50 flex justify-center'>
@@ -106,23 +133,22 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
               <Label>Kategori</Label>
 
               <Select
-                onValueChange={value =>
+                onValueChange={value => {
                   formik.setFieldValue('categoryId', value)
-                }
-                value={formik.values.categoryId}
+                  setCategorySelectedId(value)
+                }}
+                value={formik.values.categoryId || filter?.id || ''} // ⬅ SET DEFAULT DARI FILTER
               >
                 <SelectTrigger className='h-12 py-6 w-full text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'>
                   <SelectValue placeholder='Pilih Kategori' />
                 </SelectTrigger>
 
                 <SelectContent className='border-slate-300 bg-white'>
-                  {category?.data?.map((item: any) => (
-                    <SelectItem
-                      className='hover:bg-slate-100'
-                      key={item.id}
-                      value={item.id}
-                    >
-                      {item.name}
+                  {/* Tampilkan HANYA kategori sesuai filter */}
+                  {/* Hanya tampilkan sub kategori sesuai filter */}
+                  {category?.data?.map((sub: any) => (
+                    <SelectItem key={sub.id} value={String(sub.id)}>
+                      {sub.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -138,13 +164,43 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
             {/* DATE */}
             <div className='space-y-2'>
               <Label>Tanggal Pembayaran</Label>
-              <Input
-                type='date'
-                name='PayDate'
-                className='h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'
-                value={formik.values.PayDate}
-                onChange={formik.handleChange}
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant='outline'
+                    className='w-full h-12 justify-start text-left font-normal border-gray-300 rounded-lg'
+                  >
+                    <CalendarIcon className='mr-2 h-4 w-4' />
+                    {formik.values.PayDate
+                      ? format(
+                          new Date(formik.values.PayDate),
+                          'dd MMMM yyyy',
+                          {
+                            locale: id
+                          }
+                        )
+                      : 'Pilih tanggal'}
+                  </Button>
+                </PopoverTrigger>
+
+                <PopoverContent className='w-auto p-0'>
+                  <Calendar
+                    mode='single'
+                    selected={
+                      formik.values.PayDate
+                        ? new Date(formik.values.PayDate)
+                        : undefined
+                    }
+                    onSelect={date => {
+                      if (date) {
+                        formik.setFieldValue('PayDate', date.toISOString())
+                      }
+                    }}
+                    locale={id as any}
+                  />
+                </PopoverContent>
+              </Popover>
+
               {formik.errors.PayDate && (
                 <p className='text-red-500 text-sm'>
                   {formik.errors.PayDate as any}
@@ -299,11 +355,18 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
               <Label>Nominal (Rp)</Label>
               <Input
                 name='amount'
-                type='number'
-                placeholder='1500000'
+                type='text'
+                placeholder='Rp 0'
                 className='h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'
-                value={formik.values.amount}
-                onChange={formik.handleChange}
+                value={formatRupiah(Number(formik.values.amount || 0))}
+                onChange={e => {
+                  let raw = e.target.value.replace(/[^0-9]/g, '')
+
+                  // Jika kosong → set 0 aman
+                  if (!raw) raw = '0'
+
+                  formik.setFieldValue('amount', Number(raw))
+                }}
               />
             </div>
 
@@ -318,7 +381,7 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
                 value={
                   formik.values.subCategoryId
                     ? String(formik.values.subCategoryId)
-                    : ''
+                    : ""
                 }
               >
                 <SelectTrigger className='w-full py-6 h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'>
@@ -326,7 +389,8 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
                 </SelectTrigger>
 
                 <SelectContent className='border-slate-300 bg-white'>
-                  {subCategories?.data?.map((sub: any) => (
+                  {/* Hanya tampilkan sub kategori sesuai filter */}
+                  {filterSub?.map((sub: any) => (
                     <SelectItem
                       key={sub.subCategoryId}
                       value={String(sub.subCategoryId)}
@@ -371,8 +435,8 @@ export default function SubmitUpdateExpense ({ id }: { id: string }) {
           >
             <Send className='h-6 w-6 text-green-500' />
             {mutate.isPending
-                ? 'Sedang Menyimpan Data...'
-                : 'Simpan Pengeluaran'}
+              ? 'Sedang Menyimpan Data...'
+              : 'Simpan Pengeluaran'}
           </button>
         </form>
       </div>
