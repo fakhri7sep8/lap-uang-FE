@@ -72,7 +72,7 @@ export const MainDashboard = () => {
   const allSpp = normalizeSPP(sppPayments);
 
   // ==============================
-  // ⭐ PAKAI HELPER UNTUK HITUNG SEMUA
+  // HITUNG DENGAN HELPER
   // ==============================
   const {
     saldoSaatIni,
@@ -86,7 +86,7 @@ export const MainDashboard = () => {
     monthlyData,
     percentageExpense,
     percentageIncome,
-    percentageSurplus
+    percentageSurplus,
   } = calculateFinance({
     expenses: allExpenses,
     payments: allPayments,
@@ -94,15 +94,15 @@ export const MainDashboard = () => {
     saldoAwalTahun: 1300000,
   });
 
-
   const loading = loadSPP || loadNonSPP || loadingExpenses;
 
   // ==============================
   // RENDER
   // ==============================
   return (
-    <div className={"flex items-center flex-col gap-6 w-full pb-4"}>
+    <div className="flex items-center flex-col gap-6 w-full pb-4">
       <div className="w-full flex flex-col gap-4">
+        {/* Title */}
         <div className="w-full flex">
           <h2 className="text-2xl font-semibold text-[#25BF65]">
             Ringkasan Pengeluaran
@@ -110,42 +110,39 @@ export const MainDashboard = () => {
         </div>
 
         <div className="w-full flex flex-col gap-4">
-          <div className="w-full flex md:flex-row flex-col gap-4 md:h-[264px] h-screen">
+          {/* =========================== */}
+          {/* TOP SECTION (Panel + 2 Cards) */}
+          {/* =========================== */}
+          <div className="w-full flex md:flex-row flex-col gap-4 md:h-[264px] min-h-[360px]">
             {/* PANEL HITAM */}
-            <div className="md:w-1/2 w-full bg-finance rounded-2xl flex flex-col gap-2 px-2 py-4 ">
+            <div className="md:w-1/2 w-full bg-finance rounded-2xl flex flex-col gap-2 px-2 py-4 min-h-[250px]">
               <div className="w-full h-1/3">
-                <Image
-                  src={"/img/Logo.png"}
-                  alt="logo"
-                  width={150}
-                  height={150}
-                />
+                <Image src={"/img/Logo.png"} alt="logo" width={150} height={150} />
               </div>
 
-              <div className=" w-full h-1/3 flex justify-end items-center pr-6">
+              <div className="w-full h-1/3 flex justify-end items-center pr-6">
                 <span className="text-[#dedede] text-6xl font-semibold flex items-start">
                   <AnimatedCounter value={saldoSaatIni} />
                 </span>
               </div>
 
-              <div className=" w-full h-1/3 px-6">
+              <div className="w-full h-1/3 px-6">
                 <div className="w-full h-full flex justify-between items-center">
                   <div className="w-1/3 flex flex-col">
                     <span className="text-[#73F777] text-lg">owner</span>
                     <span className="text-[#b2b2b2] text-lg">Lap uang</span>
                   </div>
 
-                  <div className="text-xl w-2/3 text-[#b2b2b2] gap-2 flex justify-end items-end h-full pb-4">
-                    Saldo yang tersedia
-                    <span className="text-[#73f777]">saat ini</span>
+                  <div className="text-xl w-2/3 text-[#b2b2b2] flex justify-end items-end h-full pb-4">
+                    Saldo yang tersedia <span className="text-[#73f777] ml-1">saat ini</span>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* KARTU FINANSIAL */}
-            <div className="md:w-1/2 w-full flex gap-4">
-              <div className="w-1/2">
+            <div className="md:w-1/2 w-full flex gap-4 flex-col sm:flex-row">
+              <div className="sm:w-1/2 w-full">
                 <FinanceCard
                   title={"Pendapatan Tahun Ini"}
                   amount={totalPemasukan}
@@ -156,7 +153,7 @@ export const MainDashboard = () => {
                 />
               </div>
 
-              <div className="w-1/2">
+              <div className="sm:w-1/2 w-full">
                 <FinanceCard
                   title={"Pengeluaran Tahun Ini"}
                   amount={totalPengeluaran}
@@ -172,8 +169,8 @@ export const MainDashboard = () => {
           {/* =========================== */}
           {/* ROW KEDUA */}
           {/* =========================== */}
-          <div className="w-full flex gap-4 h-[250px] flex-row">
-            <div className="w-1/2 ">
+          <div className="w-full flex gap-4 flex-col sm:flex-row min-h-[250px]">
+            <div className="sm:w-1/2 w-full">
               <FinanceCard
                 title={"Surplus Tahun Ini"}
                 amount={surplus}
@@ -184,8 +181,8 @@ export const MainDashboard = () => {
               />
             </div>
 
-            <div className="w-1/2 flex gap-4">
-              <div className="w-1/2">
+            <div className="sm:w-1/2 w-full flex gap-4 flex-col sm:flex-row">
+              <div className="sm:w-1/2 w-full">
                 <FinanceCard
                   title={"Saldo Awal Tahun"}
                   amount={saldoAwalTahun}
@@ -195,7 +192,8 @@ export const MainDashboard = () => {
                   isLoading={loading}
                 />
               </div>
-              <div className="w-1/2">
+
+              <div className="sm:w-1/2 w-full">
                 <FinanceCard
                   title={"Saldo Akhir Tahun"}
                   amount={saldoAkhirTahun}
@@ -209,11 +207,11 @@ export const MainDashboard = () => {
           </div>
 
           {/* =========================== */}
-          {/* CHART */}
+          {/* CHART SECTION */}
           {/* =========================== */}
-          <div className="w-full flex gap-4 h-full flex-row">
-            <div className="w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out">
-              <h2 className=" text-center font-semibold text-2xl">
+          <div className="w-full flex gap-4 flex-col lg:flex-row">
+            <div className="lg:w-1/2 w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl">
+              <h2 className="text-center font-semibold text-2xl">
                 Perbandingan Tahunan
               </h2>
 
@@ -226,17 +224,10 @@ export const MainDashboard = () => {
             </div>
 
             <div className="w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl">
-              <h2 className=" text-center font-semibold text-2xl">
-                Ringkasan Bulanan
-              </h2>
+              <h2 className="text-center font-semibold text-2xl">Ringkasan Bulanan</h2>
 
               <MonthlyGroupedBarChart
-                categories={[
-                  "Penerimaan",
-                  "Pengeluaran",
-                  "Saldo awal",
-                  "Saldo akhir",
-                ]}
+                categories={["Penerimaan", "Pengeluaran", "Saldo awal", "Saldo akhir"]}
                 monthlyData={monthlyData}
               />
             </div>
@@ -245,12 +236,9 @@ export const MainDashboard = () => {
           {/* =========================== */}
           {/* BAR CHART TERAKHIR */}
           {/* =========================== */}
-          <div className="w-full flex gap-4 h-full flex-row">
+          <div className="w-full flex gap-4 flex-col">
             <div className="w-full bg-white rounded-2xl p-4 shadow-sm">
-              <BarChart
-                pemasukan={pemasukanBulanan}
-                pengeluaran={Object.values(monthlyExpense)}
-              />
+              <BarChart pemasukan={pemasukanBulanan} pengeluaran={Object.values(monthlyExpense)} />
             </div>
           </div>
         </div>
