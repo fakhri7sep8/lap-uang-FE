@@ -11,7 +11,6 @@ export const useExpenseModule = () => {
   const getAll = async (ct:string) => axiosClient.get(`/expense/${ct}`);
   const create = async (data: any) => axiosClient.post("/expense", data);
   // yang benar
-const getAllExpense = async () => axiosClient.get(`/expense`);
 
   const update = async (id: string, data: any) =>
     axiosClient.patch(`/updateExpense/${id}`, data);

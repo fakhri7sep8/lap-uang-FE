@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { Bar } from "react-chartjs-2";
 import {
@@ -12,29 +14,28 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const BarChart = () => {
+interface BarChartProps {
+  pemasukan: number[];
+  pengeluaran: number[];
+}
+
+const BarChart: React.FC<BarChartProps> = ({ pemasukan, pengeluaran }) => {
+  const months = [
+    "Jan","Feb","Mar","Apr","Mei","Jun",
+    "Jul","Agu","Sep","Okt","Nov","Des",
+  ];
+
   const data = {
-    labels: [
-      "Jan", "Feb", "Mar", "Apr", "Mei",
-      "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
-    ],
+    labels: months,
     datasets: [
       {
         label: "Pemasukan",
-        data: [
-          40000000000, 45000000000, 55000000000, 67000000000,
-          75000000000, 82000000000, 90000000000, 87000000000,
-          72000000000, 53000000000, 32000000000, 15000000000
-        ],
+        data: pemasukan,
         backgroundColor: "rgba(46, 204, 113, 0.8)", // hijau
       },
       {
         label: "Pengeluaran",
-        data: [
-          57000000000, 78000000000, 55000000000, 38000000000,
-          49000000000, 32000000000, 34000000000, 43000000000,
-          51000000000, 68000000000, 67000000000, 46000000000
-        ],
+        data: pengeluaran,
         backgroundColor: "rgba(231, 76, 60, 0.8)", // merah
       },
     ],
@@ -47,22 +48,18 @@ const BarChart = () => {
       legend: {
         position: "bottom" as const,
         labels: {
-          usePointStyle: true,   // biar jadi bulat/kotak kecil
-          boxWidth: 12,          // lebar box
-          boxHeight: 12,         // tinggi box
-          padding: 20,           // jarak antar label
+          usePointStyle: true,
+          boxWidth: 12,
+          boxHeight: 12,
+          padding: 20,
         },
-      },
-      title: {
-        display: false,
       },
     },
     scales: {
       y: {
         ticks: {
-          callback: function (value: any) {
-            return `Rp. ${value.toLocaleString("id-ID")}`;
-          },
+          callback: (value: any) =>
+            `Rp. ${value.toLocaleString("id-ID")}`,
         },
       },
     },

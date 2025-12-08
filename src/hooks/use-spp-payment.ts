@@ -16,7 +16,7 @@ export interface CreateSppPayment {
 export const useSppPaymentModule = () => {
   // API calls
   const getPayments = async () => {
-    return await axiosClient.get("/spp-payment/all").then((res) => res.data);
+    return await axiosClient.get("/spp-payment/semua").then((res) => res.data);
   };
 
   const getRecapSPPPayment = async () => {
