@@ -8,7 +8,7 @@ import {
   ChevronUp,
   LogOut
 } from 'lucide-react'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 
 import {
   Sidebar,
@@ -40,6 +40,7 @@ import { generateMenuDashboard } from '@/lib/menuDashboard'
 import Image from 'next/image'
 import Link from 'next/link'
 import Cookie from 'js-cookie'
+import { jwtDecode } from 'jwt-decode'
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -55,12 +56,23 @@ export function AppSidebar () {
   const [openReports, setOpenReports] = useState(false)
   const [openHelp, setOpenHelp] = useState(false)
   const [openSettings, setOpenSettings] = useState(false)
+  const [profile, setProfile] = useState({} as any)
 
   const handleLogout = () => {
-    Cookie.remove('x-auth');
-    window.location.href = '/auth/login';
+    Cookie.remove('x-auth')
+    window.location.href = '/auth/login'
   }
 
+  useEffect(() => {
+    const cookie = Cookie.get('x-auth')
+    if (cookie) {
+      const decode = jwtDecode(cookie)
+      setProfile(decode as any)
+      
+    } else {
+      return
+    }
+  }, [])
   const menuDashboard = generateMenuDashboard({
     openStudents,
     setOpenStudents,
@@ -75,7 +87,7 @@ export function AppSidebar () {
     openHelp,
     setOpenHelp
   })
-
+console.log(profile);
   return (
     <Sidebar
       className={` bg-white transition-all duration-300 ease-in-out border-r border-slate-200 `}
@@ -100,7 +112,7 @@ export function AppSidebar () {
                 <span
                   className={`${poppins.className} text-sm text-gray-500 leading-tight`}
                 >
-                  m@example.com
+                  {profile?.email}
                 </span>
               </div>
             </SidebarMenuButton>
@@ -269,7 +281,7 @@ export function AppSidebar () {
                       <span
                         className={`${poppins.className} text-sm text-gray-500 leading-tight`}
                       >
-                        m@example.com
+                        {profile?.email}
                       </span>
                     </div>
                     <ChevronUp className='ml-2 text-gray-400' size={18} />
@@ -277,7 +289,7 @@ export function AppSidebar () {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   side='top'
-                  className='w-[250px] bg-gray-200 backdrop-blur-md bg-opacity-30 border border-black rounded-lg shadow-lg p-0 ml-64'
+                  className='w-[300px] bg-gray-200 backdrop-blur-md bg-opacity-30 border border-black rounded-lg shadow-lg p-0 ml-64'
                 >
                   {/* Header: Avatar, Name, Email */}
                   <div className='flex items-center gap-3 px-4 py-3 border-b border-black'>
@@ -292,25 +304,27 @@ export function AppSidebar () {
                       <div
                         className={`${poppins.className} font-semibold text-black`}
                       >
-                        shadcn
+                        {profile?.username}
                       </div>
                       <div
                         className={`${poppins.className} text-sm text-gray-700`}
                       >
-                        m@example.com
+                        {profile?.email}
                       </div>
                     </div>
                   </div>
 
                   {/* Account */}
-                  <DropdownMenuItem className='px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2'>
+                  {/* <DropdownMenuItem className='px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2'>
                     <User2 size={18} className='text-gray-400' />
                     <span className={`${poppins.className}`}>Account</span>
-                  </DropdownMenuItem>
+                  </DropdownMenuItem> */}
                   {/* Divider */}
-                  <div className='border-t border-[#232329] my-1' />
                   {/* Log out */}
-                  <DropdownMenuItem onClick={()=> handleLogout()} className='px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2'>
+                  <DropdownMenuItem
+                    onClick={() => handleLogout()}
+                    className='px-4 py-2 text-black hover:bg-white hover:font-semibold cursor-pointer gap-2'
+                  >
                     <LogOut size={18} className='text-gray-400' />
                     <span className={`${poppins.className}`}>Log out</span>
                   </DropdownMenuItem>

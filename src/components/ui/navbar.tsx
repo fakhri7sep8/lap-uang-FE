@@ -25,9 +25,9 @@ export default function Navbar() {
                 />
                 <div className={`flex flex-col items-center gap-2 ${poppins.className}`}>
                     {/* <div className={`text-xs font-medium ${poppins.className}`}>Wednesday, 18 July 2025</div> */}
-                    <Button variant="outline" size="sm">
+                    {/* <Button variant="outline" size="sm">
                         <IoIosPaper /> Cetak Ringkasan
-                    </Button>
+                    </Button> */}
                 </div>
         </div>
     )

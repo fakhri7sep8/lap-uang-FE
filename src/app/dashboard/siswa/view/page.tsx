@@ -137,7 +137,7 @@ const columns: Column<any>[] = [
   { header: "generasi",  key: "generation" },       // angkatan/generasi
   { header: "jurusan",   key: "major" },            // jurusan
   { header: "status",    key: "status" },           // gunakan kode: ACTIVE/GRADUATION/OUT
-  { header: "NIS",       key: "NIS", value: (s) => s?.NIS ?? "" }, // kalau tidak ada di data, kosongkan
+  { header: "NISN",       key: "NISN", value: (s) => s?.NISN ?? "" }, // kalau tidak ada di data, kosongkan
 ];
 
 
@@ -200,7 +200,7 @@ const columns: Column<any>[] = [
                 </TableHead> */}
                 <TableHead>No</TableHead>
                 <TableHead>Nama</TableHead>
-                <TableHead>NIS</TableHead>
+                <TableHead>NIS/NISN</TableHead>
                 <TableHead>No. Induk</TableHead>
                 <TableHead>Asrama</TableHead>
                 <TableHead>Angkatan</TableHead>
@@ -226,7 +226,7 @@ const columns: Column<any>[] = [
                       {(currentPage - 1) * showCount + (idx + 1)}
                     </TableCell>
                     <TableCell className="font-medium">{s.name}</TableCell>
-                    <TableCell className="font-medium">{s.NIS}</TableCell>
+                    <TableCell className="font-medium">{s.NISN}</TableCell>
                     <TableCell>{s.InductNumber}</TableCell>
                     <TableCell>{s.dorm}</TableCell>
                     <TableCell>{s.generation}</TableCell>

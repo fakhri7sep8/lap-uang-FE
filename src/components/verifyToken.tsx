@@ -35,7 +35,7 @@ export default function VerifyTokenPage () {
     try {
       setLoading(true)
 
-      const res = await fetch('http://localhost:3232/auth/verify-reset-token', {
+      const res = await fetch('https://lap-uang-be.vercel.app/auth/verify-reset-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, token })

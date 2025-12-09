@@ -142,7 +142,7 @@ const DonutPieChart: React.FC<DonutPieChartProps> = ({ data, height = 400 }) => 
         graphic: {
           id: 'dynamicText',
           style: {
-            text: totalValue.toLocaleString()
+            text: `${totalValue.toLocaleString()}`
           }
         }
       });

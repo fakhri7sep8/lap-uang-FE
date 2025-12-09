@@ -1,3 +1,4 @@
+"use client"
 import Image from 'next/image'
 import FinanceCard from '@/components/fragments/financeCard'
 import { Wallet } from 'lucide-react'
@@ -7,31 +8,55 @@ import BarChart from '../candle-new'
 import { useDashboardModule } from '@/hooks/useDashboard'
 import Loader from '@/components/ui/loader'
 import currency from 'currency.js'
-
-
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select'
+import { useState } from 'react'
 
 export const MainDashboard = () => {
   const { useDataDashboard } = useDashboardModule()
-  
-  const { data, isLoading } = useDataDashboard()
-  console.log(data);
-  
+
+  const currentYear = new Date().getFullYear()
+  const [selectedYear, setSelectedYear] = useState<string>(`${new Date().getFullYear()}`)
+  const { data, isLoading } = useDataDashboard(selectedYear)
+  console.log(data)
+
+  // 3 tahun sebelumnya, tahun ini, 2 tahun setelahnya
+  const years = Array.from({ length: 6 }, (_, i) => currentYear - 3 + i)
+
   if (isLoading) {
-  return (
-    <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
-      <Loader />
-    </div>
-  )
-}
+    return (
+      <div className='p-6 w-full h-[89vh] flex justify-center items-center'>
+        <Loader />
+      </div>
+    )
+  }
 
   return (
     <div className={'flex items-center flex-col gap-6 w-full pb-4'}>
       <div className='w-full flex flex-col gap-4'>
-        <div className='w-full flex'>
+        <div className='w-full flex justify-between'>
           <h2 className='text-2xl font-semibold text-[#25BF65]'>
             Ringkasan Pengeluaran
           </h2>
+          <div>
+            <Select value={selectedYear} onValueChange={(value) => setSelectedYear(value)}>
+              <SelectTrigger className='w-[200px] bg-white border-white'>
+                <SelectValue placeholder='Pilih Tahun' />
+              </SelectTrigger>
+              <SelectContent className='bg-white border-slate-300'>
+                {years.map(year => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <div className='w-full flex flex-col gap-4  '>
           <div className='w-full flex md:flex-row flex-col gap-4 md:h-[264px] h-screen'>
@@ -46,7 +71,11 @@ export const MainDashboard = () => {
               </div>
               <div className=' w-full h-1/3 flex justify-end items-center pr-6'>
                 <span className='text-[#dedede] text-4xl font-semibold flex items-start'>
-                  {currency(data?.card?.saldo, { symbol: 'Rp ', separator: '.', decimal: ',' }).format()}
+                  {currency(data?.card?.saldo, {
+                    symbol: 'Rp ',
+                    separator: '.',
+                    decimal: ','
+                  }).format()}
                 </span>
               </div>
               <div className=' w-full h-1/3 px-6'>
@@ -65,21 +94,19 @@ export const MainDashboard = () => {
             <div className='md:w-1/2 w-full flex gap-4'>
               <div className='w-1/2'>
                 <FinanceCard
-                  title={'Pendapatan Tahun Ini'}
+                  title={'Pendapatan'}
                   amount={data?.card?.pendapatan}
                   percentage={data?.card?.pendapatanPercentage}
                   type='income'
-                  icon={<Wallet size={44} />}
-                />
+                  icon={<Wallet size={44} />} year={selectedYear}                />
               </div>
               <div className='w-1/2'>
                 <FinanceCard
-                  title={'Pengeluaran Tahun Ini'}
+                  title={'Pengeluaran '}
                   amount={data?.card?.pengeluaran}
                   percentage={data?.card?.pengeluaranPercentage}
                   type='expense'
-                  icon={<Wallet size={44} />}
-                />
+                  icon={<Wallet size={44} />} year={selectedYear}                />
               </div>
             </div>
           </div>
@@ -90,8 +117,7 @@ export const MainDashboard = () => {
                 amount={data?.card?.pemasukanSelainSpp}
                 percentage={data?.card?.pemasukanSelainSppPercentage}
                 type='Surplus'
-                icon={<Wallet size={44} />}
-              />
+                icon={<Wallet size={44} />} year={selectedYear}              />
             </div>
             <div className='w-1/2 flex gap-4'>
               <FinanceCard
@@ -99,31 +125,27 @@ export const MainDashboard = () => {
                 amount={data?.card?.pemasukanSpp}
                 percentage={data?.card?.pemasukanSppPercentage}
                 type='expense'
-                icon={<Wallet size={44} />}
-              />
+                icon={<Wallet size={44} />} year={selectedYear}              />
             </div>
           </div>
           <div className='w-full flex gap-4 h-full flex-row'>
             <div className='w-1/2 bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out'>
               <h2 className=' text-center font-semibold text-2xl'>
-                Pengeluaran tahunan
+                statistik tahunan
               </h2>
               <DonutPieChart
                 data={[
                   { name: 'Penerimaan', value: data?.card?.pendapatan },
-                  { name: 'Pengeluaran', value: data?.card?.pengeluaran },
+                  { name: 'Pengeluaran', value: data?.card?.pengeluaran }
                 ]}
               />
             </div>
             <div className='w-full bg-white rounded-2xl p-4 shadow-sm hover:shadow-xl transition-all duration-300 ease-in-out'>
               <h2 className=' text-center font-semibold text-2xl'>
-                Pengeluaran tahunan
+                pengeluaran dan pemasukan tahunan
               </h2>
               <MonthlyGroupedBarChart
-                categories={[
-                  'Pendapatan',
-                  'Pengeluaran',
-                ]}
+                categories={['Pendapatan', 'Pengeluaran']}
                 monthlyData={data?.card?.statistik?.monthlyData}
               />
             </div>

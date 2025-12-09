@@ -4,13 +4,17 @@ import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import Swal from "sweetalert2";
 import { Input } from "@/components/ui/input";
+import Cookie from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+import { useAuthModule } from "@/hooks/useAuthModule";
 
 export default function GantiPasswordPage() {
   const [newPassword, setNewPassword] = useState("");
   const [password, setPassword] = useState("passwordlama123");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showPassword] = useState(false);
-
+  const { useChangePassUser } = useAuthModule()
+  const mutate = useChangePassUser()
   const handleSavePassword = () => {
     if (!newPassword.trim()) {
       Swal.fire({
@@ -35,12 +39,16 @@ export default function GantiPasswordPage() {
         // Update password lama menjadi password baru
         setPassword(newPassword);
         setNewPassword("");
-
-        Swal.fire({
-          title: "Berhasil",
-          text: "Password berhasil diganti.",
-          icon: "success",
-        });
+        const cookie = Cookie.get('x-auth')
+        const decode:any= jwtDecode(cookie as any) 
+        const payload = {
+          data: {
+            newPass: newPassword,
+          },
+          id: decode?.id
+        }
+        mutate.mutate(payload)
+    
       }
     });
   };
@@ -96,7 +104,7 @@ export default function GantiPasswordPage() {
             className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition"
             onClick={handleSavePassword}
           >
-            Simpan
+            {mutate.isPending? "sedang menyimpan": "simpan"}
           </button>
         </div>
       </div>

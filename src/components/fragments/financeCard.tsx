@@ -12,6 +12,7 @@ interface CardWithCircleProps {
   title: string
   amount: number
   percentage: number
+  year:any
   icon: any
   type: "income"| "expense" | "Surplus"
 }
@@ -21,7 +22,8 @@ const CardWithCircle: FC<CardWithCircleProps> = ({
   amount,
   percentage,
   icon,
-  type
+  type,
+  year
 }) => {
   const [circleColor, setCircleColor] = useState("green")
  useEffect(() => {
@@ -54,7 +56,7 @@ const CardWithCircle: FC<CardWithCircleProps> = ({
             <p className='text-2xl font-semibold text-gray-900'>
               Rp. {amount.toLocaleString('id-ID')}
             </p>
-            <p className='text-md text-gray-400'>Tahun {new Date().getFullYear()}</p>
+            <p className='text-md text-gray-400'>Tahun {year}</p>
           </div>
         </div>
       </div>

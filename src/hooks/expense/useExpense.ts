@@ -52,7 +52,7 @@ export const useExpenseModule = () => {
         Swal.fire({ icon: "success", title: "Data pengeluaran diperbarui" });
         console.log(data);
         // queryClient.invalidateQueries({ queryKey: ["detail-expense", data.data] });
-        // router.push("/dashboard/expense");
+       
       },
     });
   }

@@ -33,7 +33,7 @@ export default function ChangePasswordPage() {
     try {
       setLoading(true);
       const email = sessionStorage.getItem("forgotEmail");
-      const res = await fetch("http://localhost:3232/auth/change-password", {
+      const res = await fetch("https://lap-uang-be.vercel.app/auth/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

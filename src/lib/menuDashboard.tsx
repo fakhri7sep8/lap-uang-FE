@@ -165,11 +165,6 @@ export function generateMenuDashboard({
       open: openSettings,
       children: [
         {
-          name: 'Profile Sekolah',
-          icon: <School className='mr-2' size={16} />,
-          children: null
-        },
-        {
           name: 'Ganti Password',
           icon: <KeyRound className='mr-2' size={16} />,
           link: '/dashboard/pengaturan_sistem/ganti_password',

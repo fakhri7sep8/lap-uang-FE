@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3232/auth/forgot-password", {
+      const res = await fetch("https://lap-uang-be.vercel.app/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),

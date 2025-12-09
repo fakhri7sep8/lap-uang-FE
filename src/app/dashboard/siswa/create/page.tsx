@@ -100,6 +100,7 @@ const TambahSiswa = () => {
   ) => {
     const arr = [];
     const ValueExcel = await readerExcel(event);
+    console.log(ValueExcel?.json);
     // console.log(ValueExcel?.json);
     for (const i in ValueExcel?.json) {
       const r = ValueExcel?.json[i] as any;
@@ -113,11 +114,11 @@ const TambahSiswa = () => {
           major: r?.Jurusan,
           status: r?.Status,
           isDelete: false,
-          NISN: r?.NISN,
+          NISN: r?.Nisn,
           tipeProgram: r?.Tipeprogram,
         });
     }
-
+    console.log(arr);
     mutateBulk(arr)
     // console.log(arr);
  
@@ -127,8 +128,8 @@ const TambahSiswa = () => {
   };
   const handleDownloadFormatExcel = () => {
     const link = document.createElement("a");
-    link.href = "/xlsx/format_data.xlsx"; // path dari folder public
-    link.download = "format_data.xlsx";
+    link.href = "/xlsx/Format_data_siswa_lap-uang.xlsx"; // path dari folder public
+    link.download = "Format_data_siswa_lap-uang.xlsx";
     link.click();
   };
 

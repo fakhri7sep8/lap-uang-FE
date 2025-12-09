@@ -10,8 +10,34 @@ export const useAuthModule = () => {
     return await axiosClient.post("/auth/login", payload);
   };
 
+  const changePassUser = async (payload: any, id: string) => {
+    return await axiosClient.post(`/auth/change/password/${id}`, payload);
+  };
+
   const ChangePassword = async (payload: any) => {
     return await axiosClient.post("/auth/change-password", payload);
+  };
+
+  const useChangePassUser = () => {
+    const mutation = useMutation({
+      mutationFn: (payload: any) => changePassUser(payload.data, payload.id),
+      onSuccess: (data) => {
+        Swal.fire({
+          title: "Berhasil!",
+          text: "Berhasil Ganti Password",
+          icon: "success",
+        });
+      },
+      onError: (error) => {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "gagal ganti password",
+          footer: '<a href="#">Kenapa saya mengalami masalah ini?</a>',
+        });
+      },
+    });
+    return mutation
   };
 
   const useChangePassword = () => {
@@ -72,6 +98,5 @@ export const useAuthModule = () => {
     return { ...mutation };
   };
 
-
-  return { useLogin , useChangePassword };
+  return { useLogin, useChangePassword, useChangePassUser };
 };
