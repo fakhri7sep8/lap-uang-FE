@@ -111,12 +111,14 @@ const SearchInput = ({
       {/* BUTTONS */}
       <div className='flex gap-4 items-center'>
         <Button
-          onClick={() => router.push(`/dashboard/pengeluaran/input/${category}`)}
+          onClick={() =>
+            router.push(`/dashboard/pengeluaran/input/${category}`)
+          }
           className='relative bg-blue-500 hover:bg-blue-600 text-white rounded-full p-2 shadow-md transition-transform duration-200 ease-in-out transform hover:scale-105 group'
           aria-label='Tambah Pengeluaran'
         >
           <PlusCircleIcon className='font-bold text-white transition-transform duration-200 transform group-hover:scale-110 group-hover:rotate-12' />
-
+          <span>Tambah Data</span>
           <span
             role='tooltip'
             className='absolute -top-9 left-1/2 transform -translate-x-1/2 bg-gray-700 text-white text-xs rounded px-2 py-1 opacity-0 pointer-events-none transition-opacity duration-200 group-hover:opacity-100 whitespace-nowrap'
@@ -125,12 +127,12 @@ const SearchInput = ({
           </span>
         </Button>
 
-        <Button
+        {/* <Button
           variant='outline'
           className='border-blue-500 text-blue-500 hover:bg-blue-50 rounded-xl transition-transform duration-200 transform hover:scale-105 hover:shadow-md'
         >
           Export
-        </Button>
+        </Button> */}
       </div>
     </div>
   )

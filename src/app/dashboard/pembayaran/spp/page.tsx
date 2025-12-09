@@ -192,7 +192,7 @@ const SPP = () => {
                     )}
 
                     <TableCell className="flex gap-2 justify-center">
-                      <Button
+                      {/* <Button
                         className="bg-blue-500 hover:border-blue-600 hover:bg-white hover:text-blue-400 border text-white cursor-pointer"
                         onClick={() => {
                           Swal.fire({
@@ -214,7 +214,8 @@ const SPP = () => {
                         }}
                       >
                         <Download />
-                      </Button>
+                      </Button> */}
+                      Not available
                     </TableCell>
                   </TableRow>
                 ))

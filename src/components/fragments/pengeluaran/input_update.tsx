@@ -51,7 +51,7 @@ export default function SubmitUpdateExpense ({
 
   // console.log(detailExpense?.data)
 
-  const filter = category?.data?.find((d: any) => d.id === idExpense)
+  const filter = category?.data?.find((d: any) => d.id === detailExpense?.data?.categoryId)
   const filterSub = subCategories?.data?.filter(
     (d: any) => d.category_id == categorySelectedId
   )

@@ -25,7 +25,8 @@ const updateSiswaSchema = Yup.object().shape({
   status: Yup.string().required('wajib di isi'),
   major: Yup.string().required('wajib di isi'),
   dorm: Yup.string().required('wajib di isi'),
-  NIS: Yup.string().required('Wajib di isi')
+  NISN: Yup.string().required('Wajib di isi'),
+  tipeProgram: Yup.string().required('Wajib di isi')
 })
 
 const UpdateSiswa = () => {
@@ -43,7 +44,8 @@ const UpdateSiswa = () => {
       status: dataSiswa?.status || '',
       major: dataSiswa?.major || '',
       dorm: dataSiswa?.dorm || '',
-      NIS: dataSiswa?.NIS || ''
+      NISN: dataSiswa?.NISN || '',
+      tipeProgram: dataSiswa?.tipeProgram || ''
     },
     validationSchema: updateSiswaSchema,
     onSubmit: value => {
@@ -168,14 +170,33 @@ const UpdateSiswa = () => {
             </Select>
           </div>
         </div>
+
         <div className='flex flex-col gap-1'>
-          <label className='text-sm font-medium'>NIS</label>
+          <label className='text-sm font-medium'>NISN</label>
           <Input
             type='text'
-            value={formik.values.NIS}
+            value={formik.values.NISN}
             className='w-full border-slate-300 px-3 py-6'
             onChange={e => formik.setFieldValue('NIS', e.target.value)}
           />
+        </div>
+        <div className='flex flex-col gap-1'>
+          <label className='text-sm font-medium'>Tipe Program</label>
+          <Select
+            defaultValue={dataSiswa?.tipeProgram}
+            onValueChange={value => formik.setFieldValue('tipeProgram', value)}
+          >
+            <SelectTrigger className='w-full border-slate-300 px-3 py-6'>
+              <SelectValue placeholder='Pilih status' />
+            </SelectTrigger>
+            <SelectContent className='bg-white border border-slate-300'>
+              <SelectGroup>
+                <SelectLabel>Tipe Program</SelectLabel>
+                <SelectItem value='FULLDAY'>FULLDAY</SelectItem>
+                <SelectItem value='BOARDING'>BOARDING</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Tombol */}

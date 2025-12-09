@@ -445,33 +445,33 @@ const InputSPPPage = () => {
             </button>
 
             {/* Download Template */}
-            <button
+            {/* <button
               type="button"
               onClick={downloadTemplateSPP}
               className="w-full py-5 hover:bg-blue-500 hover:text-white transition-all cursor-pointer border border-blue-500 text-blue-500 text-lg flex items-center justify-center gap-2 rounded-xl"
             >
               <FileDown size={24} />
               Download format excel
-            </button>
+            </button> */}
 
             {/* Impor dari Excel */}
-            <button
+            {/* <button
               type="button"
               onClick={handleImportClick}
               className="w-full py-5 hover:bg-purple-500 hover:text-white transition-all cursor-pointer border border-purple-500 text-purple-500 text-lg flex items-center justify-center gap-2 rounded-xl"
             >
               <FileDown size={24} />
               Impor dari Excel
-            </button>
+            </button> */}
 
             {/* Input file hidden */}
-            <input
+            {/* <input
               id="file"
               type="file"
               accept=".xlsx, .xls"
               className="hidden"
               // onChange={handleReadExcel}
-            />
+            /> */}
             <Link
               href="/dashboard/pembayaran/input/inputNonSpp"
               className="w-full py-5 hover:bg-orange-500 hover:text-white transition-all cursor-pointer border border-orange-500 text-orange-500 text-lg flex items-center justify-center gap-2 rounded-xl"

@@ -344,7 +344,7 @@ const InputNonSPP = () => {
                 : "Simpan"}
             </button>
 
-            <button
+            {/* <button
               type="button"
               onClick={downloadTemplate}
               className="w-full py-5 flex items-center justify-center gap-2 text-lg rounded-xl border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition"
@@ -360,7 +360,7 @@ const InputNonSPP = () => {
             >
               <FileDown size={24} />
               Impor dari Excel
-            </button>
+            </button> */}
           </div>
         </form>
       </section>

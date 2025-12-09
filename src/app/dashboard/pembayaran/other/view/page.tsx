@@ -328,9 +328,10 @@ const DataSelainSpp = () => {
                       })}
 
                       <TableCell className="flex gap-2 justify-center">
-                        <Button className="bg-blue-500 text-white">
+                        {/* <Button className="bg-blue-500 text-white">
                           <Download />
-                        </Button>
+                        </Button> */}
+                        Not Available
                       </TableCell>
                     </TableRow>
                   ))

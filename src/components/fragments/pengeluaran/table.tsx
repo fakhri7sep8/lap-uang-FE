@@ -123,16 +123,6 @@ export default function TablePengeluaran ({
                           className='text-green-600 group-hover:text-green-700 transition-colors'
                         />
                       </button>
-
-                      <button
-                        title='Download Kwitansi'
-                        className='flex items-center justify-center border border-gray-200 rounded-md p-1.5 transition-all duration-150 ease-in-out hover:shadow-sm hover:scale-105 bg-white group'
-                      >
-                        <Download
-                          size={14}
-                          className='text-orange-600 group-hover:text-orange-700 transition-colors'
-                        />
-                      </button>
                     </div>
                   </div>
                 </td>

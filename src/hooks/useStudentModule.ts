@@ -18,7 +18,7 @@ export const useStudentModule = () => {
   };
 
   const updateStudent = async (data: any, id: string) => {
-    return await axiosClient.put(`/student/update/${id}`, data);
+    return await axiosClient.patch(`/student/update/${id}`, data);
   };
 
   const deleteStudent = async (id: string, payload:any) => {
