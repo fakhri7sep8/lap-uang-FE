@@ -45,16 +45,25 @@ export default function SubmitUpdateExpense ({
 
   const mutate = useUpdateExpense()
   const { data: detailExpense } = useDetailExpense(idExpense)
-  const [categorySelectedId, setCategorySelectedId] = useState(
-    detailExpense?.data?.categoryId || ''
-  )
+  const [categorySelectedId, setCategorySelectedId] = useState('')
+
+  useEffect(() => {
+    if (detailExpense?.data?.categoryId) {
+      setCategorySelectedId(detailExpense.data.categoryId)
+    }
+  }, [detailExpense])
 
   // console.log(detailExpense?.data)
 
-  const filter = category?.data?.find((d: any) => d.id === detailExpense?.data?.categoryId)
-  const filterSub = subCategories?.data?.filter(
-    (d: any) => d.category_id == categorySelectedId
+  const filter = category?.data?.find(
+    (d: any) => d.id == detailExpense?.data?.categoryId
   )
+  // console.log(filter);
+  const filterSub = subCategories?.data?.filter(
+    (d: any) => d?.category?.id == categorySelectedId
+  )
+  console.log(subCategories?.data[0]?.category?.id)
+  console.log(filterSub)
 
   // console.log(subCategories)
   // console.log(category)
@@ -114,9 +123,9 @@ export default function SubmitUpdateExpense ({
     }
   })
 
-//   useEffect(() => {
-//   formik.setFieldValue('subCategoryId', '')
-// }, [formik, formik.values.categoryId])
+  //   useEffect(() => {
+  //   formik.setFieldValue('subCategoryId', '')
+  // }, [formik, formik.values.categoryId])
 
   // console.log(dataList);
   return (
@@ -381,7 +390,7 @@ export default function SubmitUpdateExpense ({
                 value={
                   formik.values.subCategoryId
                     ? String(formik.values.subCategoryId)
-                    : ""
+                    : ''
                 }
               >
                 <SelectTrigger className='w-full py-6 h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'>

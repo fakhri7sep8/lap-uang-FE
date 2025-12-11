@@ -11,12 +11,15 @@ import {
 import { Calendar } from '@/components/ui/calendar'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
+import autoTable from 'jspdf-autotable';
+import jsPDF from 'jspdf'
 
 interface SearchInputProps {
   searchTerm: string
   fromDate: Date | null
   toDate: Date | null
-  category: string
+  category: string,
+  data: any,
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onFromDateChange: (date: Date | null) => void
   onToDateChange: (date: Date | null) => void
@@ -27,11 +30,105 @@ const SearchInput = ({
   fromDate,
   toDate,
   category,
+  data,
   onSearchChange,
   onFromDateChange,
   onToDateChange
 }: SearchInputProps) => {
   const router = useRouter()
+
+  const handleDownloadPDFAll = (data: any[], category: string) => {
+  if (!data || data.length === 0) return
+
+  const doc = new jsPDF('p', 'mm', 'a4')
+
+  const kategoriUpper = category.toUpperCase()
+
+  // HEADER
+  doc.setFontSize(16)
+  doc.text('SMK MADINATUL QURAN', 105, 15, { align: 'center' })
+
+  doc.setFontSize(10)
+  doc.text('KP KEBON KELAPA JLN SINGASARI, JAWA BARAT, INDONESIA', 105, 21, {
+    align: 'center'
+  })
+
+  // TITLE
+  doc.setFontSize(13)
+  doc.text(`LAPORAN PENGELUARAN UNTUK ${kategoriUpper}`, 105, 33, {
+    align: 'center'
+  })
+
+  // TABLE
+  const tableHead = [
+    [
+      'Tanggal',
+      'Deskripsi',
+      'Penanggung Jawab',
+      'Kategori',
+      'Subkategori',
+      'Jumlah (Rp)',
+      'Sumber Dana'
+    ]
+  ]
+
+  const tableBody = data.map((item: any) => [
+    item.PayDate ? new Date(item.PayDate).toLocaleDateString('id-ID') : '-',
+    item.description || '-',
+    item.PenanggungJawab || '-',
+    item.category?.name || '-',
+    item.subCategory?.name || '-',
+    `Rp ${item.amount?.toLocaleString('id-ID')}`,
+    item.sumber_dana || '-'
+  ])
+
+  autoTable(doc, {
+    startY: 45,
+    head: tableHead,
+    body: tableBody,
+    styles: {
+      fontSize: 9,
+      cellPadding: 3
+    },
+    headStyles: {
+      fillColor: [0, 128, 0], // Hijau tua
+      textColor: 255,
+      fontStyle: 'bold'
+    },
+    alternateRowStyles: {
+      fillColor: [225, 255, 225] // Hijau muda
+    },
+    columnStyles: {
+      0: { cellWidth: 25 },
+      1: { cellWidth: 40 },
+      2: { cellWidth: 30 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: 30 },
+      6: { cellWidth: 25 }
+    }
+  })
+
+  const finalY = (doc as any).lastAutoTable.finalY + 10
+
+  // FOOTER
+  doc.setFontSize(10)
+  doc.text('Catatan:', 20, finalY)
+  doc.text(
+    '1. Laporan ini adalah bukti pengeluaran resmi sekolah.',
+    20,
+    finalY + 6
+  )
+  doc.text(
+    '2. Harap hubungi petugas jika terdapat perbedaan data.',
+    20,
+    finalY + 12
+  )
+
+  // SAVE
+  doc.save(`Laporan-Pengeluaran-${kategoriUpper}.pdf`)
+}
+
 
   return (
     <div className='flex items-center gap-8 mb-6 w-full'>
@@ -126,6 +223,14 @@ const SearchInput = ({
             Tambah Data
           </span>
         </Button>
+        <Button
+  variant='outline'
+  onClick={() => handleDownloadPDFAll(data, category)}
+  className='border-green-600 text-green-600 hover:bg-green-50 rounded-xl transition-transform duration-200 transform hover:scale-105 hover:shadow-md'
+>
+  Export PDF
+</Button>
+
 
         {/* <Button
           variant='outline'

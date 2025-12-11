@@ -114,6 +114,7 @@ const BiayaMakanPage = () => {
           <div className='bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl'>
             {/* Search + Date Filter Input */}
             <SearchInput
+              data={filteredData}
               category='Makan'
               searchTerm={searchTerm}
               fromDate={fromDate}

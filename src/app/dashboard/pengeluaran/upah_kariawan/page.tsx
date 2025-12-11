@@ -122,6 +122,7 @@ const UpahKariawanPage = () => {
           <div className='bg-white px-4 py-5 rounded-b-2xl rounded-e-2xl'>
             {/* Search + Date Filter */}
             <SearchInput
+              data={filteredData}
               category='Upah Karyawan'
               searchTerm={searchTerm}
               fromDate={fromDate}

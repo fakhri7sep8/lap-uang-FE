@@ -19,9 +19,9 @@ export const useSppPaymentModule = () => {
     return await axiosClient.get("/spp-payment/all").then((res) => res.data);
   };
 
-  const getRecapSPPPayment = async () => {
+  const getRecapSPPPayment = async (NowYear:number, nextYear:number) => {
     return await axiosClient
-      .get(`/spp-payment/rekap/${new Date().getFullYear()}/${new Date().getFullYear() + 1}`)
+      .get(`/spp-payment/rekap/${NowYear}/${nextYear}`)
       .then((res) => res.data);
   };
 
@@ -90,12 +90,12 @@ export const useSppPaymentModule = () => {
   return { data, isLoading, isError, refetch, refreshPayments };
 };
 
-  const useGetRecapPayments = () => {
+  const useGetRecapPayments = (nowYear:number, nextYear:number) => {
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["RecapSPP-Payments"],
-    queryFn: getRecapSPPPayment,
+    queryFn: () => getRecapSPPPayment(nowYear, nextYear),
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     select: (res) => res.data,
@@ -123,9 +123,9 @@ const useCreateSPPPayment = () => {
         });
       }
       queryClient.invalidateQueries({ queryKey: ["sppPayments"] });
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 1000);
     },
     onError: (error: any) => {
       Swal.fire({

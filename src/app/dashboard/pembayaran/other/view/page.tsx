@@ -14,41 +14,43 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import CardInformation from "@/components/fragments/dashboard/card-information";
-import Loader from "@/components/ui/loader";
-import { CustomPagination } from "@/components/fragments/dashboard/custom-pagination";
-import SearchDataTable from "@/components/fragments/dashboard/search-data-table";
-import { axiosClient } from "@/lib/axiosClient";
-import { AnimatePresence, motion } from "framer-motion";
+  TableRow
+} from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
+import CardInformation from '@/components/fragments/dashboard/card-information'
+import Loader from '@/components/ui/loader'
+import { CustomPagination } from '@/components/fragments/dashboard/custom-pagination'
+import SearchDataTable from '@/components/fragments/dashboard/search-data-table'
+import { axiosClient } from '@/lib/axiosClient'
+import { AnimatePresence, motion } from 'framer-motion'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const DataSelainSpp = () => {
-  const [showCount, setShowCount] = useState<any>(10);
-  const [currentPage, setCurrentPage] = useState<any>(1);
-  const [startIndex, setStartIndex] = useState<any>(0);
-  const [searchTerm, setSearchTerm] = useState<any>("");
-  const [showFilter, setShowFilter] = useState(false);
-  const maxVisible = 4;
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [filterAngkatan, setFilterAngkatan] = useState("");
+  const [showCount, setShowCount] = useState<any>(10)
+  const [currentPage, setCurrentPage] = useState<any>(1)
+  const [startIndex, setStartIndex] = useState<any>(0)
+  const [searchTerm, setSearchTerm] = useState<any>('')
+  const [showFilter, setShowFilter] = useState(false)
+  const maxVisible = 4
+  const [selectedCategory, setSelectedCategory] = useState<any>(null)
+  const [filterAngkatan, setFilterAngkatan] = useState('')
 
-  const [categories, setCategories] = useState<any[]>([]);
-  const [recap, setRecap] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filterOptions, setFilterOptions] = useState<number[]>([]);
+  const [categories, setCategories] = useState<any[]>([])
+  const [recap, setRecap] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filterOptions, setFilterOptions] = useState<number[]>([])
 
   // Fetch data payment-types + student status
   const fetchAll = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const res = await axiosClient.get("/payment-types/with-status");
-      const listKategori = res.data.data || [];
-      setCategories(listKategori);
+      const res = await axiosClient.get('/payment-types/with-status')
+      const listKategori = res.data.data || []
+      setCategories(listKategori)
 
-      const siswaUnique: any = {};
-      const generationsSet = new Set<number>();
+      const siswaUnique: any = {}
+      const generationsSet = new Set<number>()
 
       listKategori.forEach((kategori: any) => {
         kategori.students?.forEach((s: any) => {
@@ -56,39 +58,39 @@ const DataSelainSpp = () => {
             siswaUnique[s.id] = {
               id: s.id,
               name: s.name,
-              generation: s.generation,
-            };
-            generationsSet.add(s.generation); // ambil generation
+              generation: s.generation
+            }
+            generationsSet.add(s.generation) // ambil generation
           }
-        });
-      });
+        })
+      })
 
-      setRecap(Object.values(siswaUnique));
-      setFilterOptions(Array.from(generationsSet).sort((a, b) => b - a)); // urut desc
+      setRecap(Object.values(siswaUnique))
+      setFilterOptions(Array.from(generationsSet).sort((a, b) => b - a)) // urut desc
     } catch (err) {
-      console.log("Error:", err);
+      console.log('Error:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchAll();
-  }, []);
+    fetchAll()
+  }, [])
 
   const filteredData: any[] = recap.filter((p: any) => {
     const matchesSearch = searchTerm
       ? p.name.toLowerCase().includes(searchTerm.toLowerCase())
-      : true;
+      : true
 
     const matchesGeneration = filterAngkatan
       ? p.generation.toString() === filterAngkatan
-      : true;
+      : true
 
-    return matchesSearch && matchesGeneration;
-  });
+    return matchesSearch && matchesGeneration
+  })
 
-  const totalPages: any = Math.ceil(filteredData.length / showCount);
+  const totalPages: any = Math.ceil(filteredData.length / showCount)
   const paginatedData: any[] = filteredData.slice(
     (currentPage - 1) * showCount,
     currentPage * showCount
@@ -96,26 +98,114 @@ const DataSelainSpp = () => {
 
   const getStatusBadgeClass = (status: string) => {
     const baseStyle =
-      "inline-block w-28 text-center px-3 py-1 rounded-full text-xs font-medium transition-transform duration-150 hover:scale-105";
+      'inline-block w-28 text-center px-3 py-1 rounded-full text-xs font-medium transition-transform duration-150 hover:scale-105'
 
-    switch ((status || "").toUpperCase()) {
-      case "LUNAS":
-        return `${baseStyle} bg-green-100 text-green-700`;
-      case "BELUM LUNAS":
-        return `${baseStyle} bg-yellow-100 text-yellow-700`;
-      case "TUNGGAKAN":
-        return `${baseStyle} bg-red-100 text-red-700`;
-      case "NYICIL":
-        return `${baseStyle} bg-purple-100 text-purple-700`;
+    switch ((status || '').toUpperCase()) {
+      case 'LUNAS':
+        return `${baseStyle} bg-green-100 text-green-700`
+      case 'BELUM LUNAS':
+        return `${baseStyle} bg-yellow-100 text-yellow-700`
+      case 'TUNGGAKAN':
+        return `${baseStyle} bg-red-100 text-red-700`
+      case 'NYICIL':
+        return `${baseStyle} bg-purple-100 text-purple-700`
       default:
-        return `${baseStyle} bg-gray-50 text-gray-500`;
+        return `${baseStyle} bg-gray-50 text-gray-500`
     }
   }
+  const handleDownloadPDFSelainSPP = (student: any, kategori: any) => {
+    const doc = new jsPDF()
 
-  const handlePrev = () => startIndex > 0 && setStartIndex(startIndex - 1);
+    const pembayaran = kategori.payments?.find(
+      (p: any) => p.studentId === student.id
+    )
+
+    const nominal = kategori.nominal || 0
+    const paid = pembayaran?.paid || 0
+    const status = pembayaran?.status || 'BELUM LUNAS'
+    const remainder = nominal - paid
+
+    // ===============================
+    // HEADER
+    // ===============================
+    doc.setFontSize(16)
+    doc.text('SMK MADINATUL QURAN', 105, 15, { align: 'center' })
+
+    doc.setFontSize(10)
+    doc.text('KP KEBON KELAPA JLN SINGASARI, JAWA BARAT, INDONESIA', 105, 21, {
+      align: 'center'
+    })
+
+    doc.setFontSize(13)
+    doc.text('PEMBAYARAN SELAIN SPP', 105, 33, { align: 'center' })
+
+    // ===============================
+    // DATA SISWA
+    // ===============================
+    let y = 45
+
+    doc.setFontSize(11)
+    doc.text(`Nama Siswa : ${student.name}`, 20, y)
+    y += 6
+    doc.text(`No Induk    : ${student.InductNumber}`, 20, y)
+    y += 6
+    doc.text(`Asrama      : ${student.dorm}`, 20, y)
+    y += 6
+    doc.text(`Program     : ${student.tipeProgram}`, 20, y)
+    y += 6
+    doc.text(`Kategori    : ${kategori.name}`, 20, y)
+
+    // ===============================
+    // TABEL DETAIL PEMBAYARAN
+    // ===============================
+    const tableBody = [
+      ['Nominal', `Rp ${nominal.toLocaleString('id-ID')}`],
+      ['Dibayar', `Rp ${paid.toLocaleString('id-ID')}`],
+      ['Status', status],
+      ['Sisa', `Rp ${remainder.toLocaleString('id-ID')}`]
+    ]
+
+    autoTable(doc, {
+      startY: y + 10,
+      head: [['Keterangan', 'Nilai']],
+      body: tableBody,
+      styles: { fontSize: 10 },
+      headStyles: {
+        fillColor: [0, 128, 0], // hijau tua
+        textColor: 255
+      },
+      alternateRowStyles: {
+        fillColor: [200, 255, 200] // hijau muda
+      }
+    })
+
+    const afterTable = (doc as any).lastAutoTable.finalY + 10
+
+    // ===============================
+    // FOOTNOTE TEMPLATE
+    // ===============================
+    doc.setFontSize(10)
+    doc.text('Catatan:', 20, afterTable)
+    doc.text(
+      '1. Kartu ini sebagai tanda pembayaran yang sah',
+      20,
+      afterTable + 6
+    )
+    doc.text(
+      '2. Jika terdapat perbedaan data, hubungi petugas untuk dicek ulang',
+      20,
+      afterTable + 12
+    )
+
+    // ===============================
+    // SAVE FILE
+    // ===============================
+    doc.save(`Pembayaran-${kategori.name}-${student.name}.pdf`)
+  }
+
+  const handlePrev = () => startIndex > 0 && setStartIndex(startIndex - 1)
   const handleNext = () =>
-    startIndex < categories.length - maxVisible &&
-    setStartIndex(startIndex + 1);
+    startIndex < categories.length - maxVisible && setStartIndex(startIndex + 1)
 
   if (loading) {
     return (
@@ -135,14 +225,14 @@ const DataSelainSpp = () => {
           icon={<GraduationCap size={32} className='text-blue-500' />}
         />
         <CardInformation
-          color="green"
-          title="Kategori Aktif"
+          color='green'
+          title='Kategori Aktif'
           value={categories.length}
-          icon={<Users size={32} className="text-green-500" />}
+          icon={<Users size={32} className='text-green-500' />}
         />
       </section>
 
-      <section className="w-full flex flex-col gap-6 h-full pb-6">
+      <section className='w-full flex flex-col gap-6 h-full pb-6'>
         <SearchDataTable
           title={'Data Pembayaran'}
           searchTerm={searchTerm}
@@ -152,9 +242,8 @@ const DataSelainSpp = () => {
           type={'normal'}
         />
 
-
         {/* === CAROUSEL FIXED (NORMAL + INSTALLMENT = SAME MECHANISM) === */}
-        <div className="w-full flex items-center">
+        <div className='w-full flex items-center'>
           <button
             title='button'
             onClick={handlePrev}
@@ -164,7 +253,7 @@ const DataSelainSpp = () => {
             <ChevronLeft className='w-5 h-5' />
           </button>
 
-          <div className="overflow-hidden flex-1 mx-2">
+          <div className='overflow-hidden flex-1 mx-2'>
             <div
               className='flex gap-4 transition-transform duration-500'
               style={{
@@ -191,7 +280,7 @@ const DataSelainSpp = () => {
                       : 'bg-blue-500'
                   }`}
                 >
-                  <p className="text-white font-semibold text-base">
+                  <p className='text-white font-semibold text-base'>
                     {kat.name}
                   </p>
                 </div>
@@ -210,9 +299,9 @@ const DataSelainSpp = () => {
         </div>
 
         {/* ==== TABLE ==== */}
-        <div className="w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4">
+        <div className='w-full h-full rounded-xl overflow-hidden bg-white px-1 pt-2 pb-4'>
           {selectedCategory ? (
-            <Table className="w-full text-gray-700 text-center">
+            <Table className='w-full text-gray-700 text-center'>
               <TableHeader>
                 <TableRow>
                   <TableHead>No</TableHead>
@@ -230,7 +319,7 @@ const DataSelainSpp = () => {
                   selectedCategory.students.map((s: any, idx: number) => {
                     const pembayaran = selectedCategory.payments?.find(
                       (p: any) => p.studentId === s.id
-                    );
+                    )
 
                     return (
                       <TableRow key={s.id}>
@@ -238,11 +327,11 @@ const DataSelainSpp = () => {
                         <TableCell>{s.name}</TableCell>
                         <TableCell>{selectedCategory.name}</TableCell>
                         <TableCell>
-                          Rp.{" "}
-                          {selectedCategory.nominal?.toLocaleString("id-ID")}
+                          Rp.{' '}
+                          {selectedCategory.nominal?.toLocaleString('id-ID')}
                         </TableCell>
                         <TableCell>
-                          Rp. {pembayaran?.paid?.toLocaleString("id-ID") || 0}
+                          Rp. {pembayaran?.paid?.toLocaleString('id-ID') || 0}
                         </TableCell>
                         <TableCell>
                           <span
@@ -254,18 +343,23 @@ const DataSelainSpp = () => {
                           </span>
                         </TableCell>
                         <TableCell>
-                          <Button className='bg-blue-500 text-white'>
-                            <Download size={16} />
+                          <Button
+                            className='bg-green-600 text-white hover:bg-green-700'
+                            onClick={() =>
+                              handleDownloadPDFSelainSPP(s, selectedCategory)
+                            }
+                          >
+                            <Download size={16} className='mr-1' /> PDF
                           </Button>
                         </TableCell>
                       </TableRow>
-                    );
+                    )
                   })
                 ) : (
                   <TableRow>
                     <TableCell
                       colSpan={7}
-                      className="text-center text-gray-400 py-6"
+                      className='text-center text-gray-400 py-6'
                     >
                       Tidak ada data
                     </TableCell>
@@ -274,7 +368,7 @@ const DataSelainSpp = () => {
               </TableBody>
             </Table>
           ) : (
-            <Table className="w-full text-gray-700 text-center">
+            <Table className='w-full text-gray-700 text-center'>
               <TableHeader>
                 <TableRow>
                   <TableHead>No</TableHead>
@@ -304,9 +398,9 @@ const DataSelainSpp = () => {
                       {categories.map((c: any) => {
                         const student = c.students?.find(
                           (s: any) => s.name === p.name
-                        );
+                        )
 
-                        const status = student?.status;
+                        const status = student?.status
 
                         return (
                           <TableCell key={c.id}>
@@ -319,15 +413,15 @@ const DataSelainSpp = () => {
                                 {status}
                               </span>
                             ) : (
-                              <span className="inline-flex items-center justify-center w-28 px-3 py-1 rounded-full text-xs bg-gray-200 text-gray-700">
+                              <span className='inline-flex items-center justify-center w-28 px-3 py-1 rounded-full text-xs bg-gray-200 text-gray-700'>
                                 🚫 Tidak Ada
                               </span>
                             )}
                           </TableCell>
-                        );
+                        )
                       })}
 
-                      <TableCell className="flex gap-2 justify-center">
+                      <TableCell className='flex gap-2 justify-center'>
                         {/* <Button className="bg-blue-500 text-white">
                           <Download />
                         </Button> */}
@@ -352,7 +446,7 @@ const DataSelainSpp = () => {
           <>
             {/* BACKDROP */}
             <motion.div
-              className="fixed inset-0 bg-black/40 z-40"
+              className='fixed inset-0 bg-black/40 z-40'
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -362,33 +456,33 @@ const DataSelainSpp = () => {
 
             {/* DRAWER */}
             <motion.div
-              className="fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 shadow-lg p-6 flex flex-col gap-6"
-              initial={{ x: "100%" }}
+              className='fixed right-0 top-0 h-full w-full max-w-sm bg-white z-50 shadow-lg p-6 flex flex-col gap-6'
+              initial={{ x: '100%' }}
               animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "tween", duration: 0.3 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'tween', duration: 0.3 }}
             >
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold">Filter</h3>
+              <div className='flex items-center justify-between'>
+                <h3 className='text-xl font-semibold'>Filter</h3>
                 <button
                   onClick={() => setShowFilter(false)}
-                  className="text-gray-500 hover:text-gray-700 text-sm"
+                  className='text-gray-500 hover:text-gray-700 text-sm'
                 >
                   ✕
                 </button>
               </div>
 
               {/* FILTER CONTENT */}
-              <div className="flex flex-col gap-4">
-                <label className="flex flex-col text-sm">
+              <div className='flex flex-col gap-4'>
+                <label className='flex flex-col text-sm'>
                   Angkatan
                   <select
-                    className="mt-1 border border-gray-300 rounded-md px-3 py-2"
+                    className='mt-1 border border-gray-300 rounded-md px-3 py-2'
                     value={filterAngkatan}
-                    onChange={(e) => setFilterAngkatan(e.target.value)}
+                    onChange={e => setFilterAngkatan(e.target.value)}
                   >
-                    <option value="">Semua</option>
-                    {filterOptions.map((gen) => (
+                    <option value=''>Semua</option>
+                    {filterOptions.map(gen => (
                       <option key={gen} value={gen}>
                         {gen}
                       </option>
@@ -398,19 +492,19 @@ const DataSelainSpp = () => {
               </div>
 
               {/* BUTTONS */}
-              <div className="mt-auto flex flex-col gap-2">
+              <div className='mt-auto flex flex-col gap-2'>
                 <button
                   onClick={() => {
-                    setFilterAngkatan("");
+                    setFilterAngkatan('')
                   }}
-                  className="w-full py-2 px-4 bg-red-500 text-white rounded-md"
+                  className='w-full py-2 px-4 bg-red-500 text-white rounded-md'
                 >
                   Reset
                 </button>
 
                 <button
                   onClick={() => setShowFilter(false)}
-                  className="w-full py-2 px-4 bg-blue-500 text-white rounded-md"
+                  className='w-full py-2 px-4 bg-blue-500 text-white rounded-md'
                 >
                   Terapkan
                 </button>
