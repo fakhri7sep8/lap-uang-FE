@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { CalendarIcon, Send } from 'lucide-react'
+import { CalendarIcon, ChevronDown, ChevronUp, Send } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -44,10 +44,8 @@ export default function SubmitRequestPage ({
   const { useCreateExpense } = useExpenseModule()
   const mutate = useCreateExpense()
 
-  
-
   const filter = category?.data?.find((d: any) => d.name == categoryName)
-  console.log(filter);
+  console.log(filter)
   const filterSub = subCategories?.data?.filter(
     (d: any) => d.category_id == filter?.id
   )
@@ -55,7 +53,7 @@ export default function SubmitRequestPage ({
   // console.log(subCategories)
   // console.log(category)
   const formik = useFormik({
-    enableReinitialize:true,
+    enableReinitialize: true,
     initialValues: {
       categoryId: filter?.id || '',
       PayDate: '',
@@ -148,7 +146,6 @@ export default function SubmitRequestPage ({
                 </p>
               )}
             </div>
-
             {/* DATE */}
             <div className='space-y-2'>
               <Label>Tanggal Pembayaran</Label>
@@ -193,7 +190,6 @@ export default function SubmitRequestPage ({
                 <p className='text-red-500 text-sm'>{formik.errors.PayDate}</p>
               )}
             </div>
-
             {/* PENERIMA */}
             <div className='space-y-2'>
               <Label>Pihak Penerima</Label>
@@ -205,19 +201,17 @@ export default function SubmitRequestPage ({
                 onChange={formik.handleChange}
               />
             </div>
-
             {/* PENANGGUNG JAWAB */}
             <div className='space-y-2'>
               <Label>Penanggung Jawab</Label>
               <Input
                 name='PenanggungJawab'
                 placeholder='Contoh: Pak Arif'
-                className='h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'
+                className='h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400 '
                 value={formik.values.PenanggungJawab}
                 onChange={formik.handleChange}
               />
             </div>
-
             {/* ITEM COUNT */}
             <div className='space-y-2'>
               <Label>Jumlah Item</Label>
@@ -229,7 +223,6 @@ export default function SubmitRequestPage ({
                 onChange={formik.handleChange}
               />
             </div>
-
             {/* METODE PEMBAYARAN */}
             <div className='space-y-2'>
               <Label>Metode Pembayaran</Label>
@@ -259,7 +252,6 @@ export default function SubmitRequestPage ({
                 <p className='text-red-500 text-sm'>{formik.errors.method}</p>
               )}
             </div>
-
             {/* PRIORITAS */}
             <div className='space-y-2'>
               <Label>Prioritas</Label>
@@ -297,19 +289,30 @@ export default function SubmitRequestPage ({
                 </p>
               )}
             </div>
-
             {/* SUMBER DANA */}
             <div className='space-y-2'>
               <Label>Sumber Dana</Label>
-              <Input
-                name='sumber_dana'
-                placeholder='Dana BOS / Kas Operasional'
-                className='h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'
-                value={formik.values.sumber_dana}
-                onChange={formik.handleChange}
-              />
-            </div>
 
+              <Select
+                name='sumber_dana'
+                value={formik.values.sumber_dana}
+                onValueChange={val => formik.setFieldValue('sumber_dana', val)}
+              >
+                <SelectTrigger className='h-12 text-[15px] border border-gray-300 rounded-lg py-6 w-full focus-visible:ring-green-400'>
+                  <SelectValue placeholder='Pilih Sumber Dana' />
+                </SelectTrigger>
+
+                <SelectContent>
+                  <SelectItem value='Dana BOS'>Dana BOS</SelectItem>
+                  <SelectItem value='Kas Operasional'>
+                    Kas Operasional
+                  </SelectItem>
+                  <SelectItem value='Donatur'>Donatur</SelectItem>
+                  <SelectItem value='SPP'>SPP</SelectItem>
+                  <SelectItem value='Lainnya'>Lainnya</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             {/* UKURAN */}
             <div className='space-y-2'>
               <Label>Ukuran</Label>
@@ -321,7 +324,6 @@ export default function SubmitRequestPage ({
                 onChange={formik.handleChange}
               />
             </div>
-
             {/* SATUAN */}
             <div className='space-y-2'>
               <Label>Satuan Ukuran</Label>
@@ -333,27 +335,75 @@ export default function SubmitRequestPage ({
                 onChange={formik.handleChange}
               />
             </div>
-
             {/* NOMINAL */}
             <div className='space-y-2'>
               <Label>Nominal (Rp)</Label>
-              <Input
-                name='amount'
-                type='text'
-                placeholder='Rp 0'
-                className='h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400'
-                value={formatRupiah(Number(formik.values.amount || 0))}
-                onChange={e => {
-                  let raw = e.target.value.replace(/[^0-9]/g, '')
 
-                  // Jika kosong → set 0 aman
-                  if (!raw) raw = '0'
+              <div className='flex items-center gap-2'>
+                {/* INPUT */}
+                <Input
+                  name='amount'
+                  type='text'
+                  placeholder='Rp 0'
+                  className='h-12 text-[15px] border border-gray-300 rounded-lg focus-visible:ring-green-400 flex-1'
+                  value={formatRupiah(Number(formik.values.amount || 0))}
+                  onChange={e => {
+                    let raw = e.target.value.replace(/[^0-9]/g, '')
+                    if (!raw) raw = '0'
+                    formik.setFieldValue('amount', Number(raw))
+                  }}
+                />
 
-                  formik.setFieldValue('amount', Number(raw))
-                }}
-              />
+                {/* BUTTON COLUMN */}
+                <div className='flex flex-col'>
+                  {/* UP BUTTON */}
+                  <button
+                    title='button up'
+                    type='button'
+                    className='h-6 w-8 flex items-center justify-center rounded bg-green-500 hover:bg-green-600'
+                    onClick={() => {
+                      const newValue = Number(formik.values.amount) + 50000
+                      formik.setFieldValue('amount', newValue)
+                    }}
+                  >
+                    <ChevronUp size={16} color='white' />
+                  </button>
+
+                  {/* DOWN BUTTON */}
+                  <button
+                    title='button down'
+                    type='button'
+                    disabled={Number(formik.values.amount) - 50000 <= 0}
+                    className={`h-6 w-8 flex items-center justify-center rounded mt-1
+          ${
+            Number(formik.values.amount) - 50000 < 0
+              ? 'bg-gray-300 cursor-not-allowed'
+              : 'bg-red-500 hover:bg-red-600'
+          }
+        `}
+                    onClick={() => {
+                      const current = Number(formik.values.amount)
+                      const newValue = current - 50000
+
+                      // Jika hasil ≤ 0 → set jadi 0 saja
+                      formik.setFieldValue(
+                        'amount',
+                        newValue > 0 ? newValue : 0
+                      )
+                    }}
+                  >
+                    <ChevronDown
+                      size={16}
+                      color={
+                        Number(formik.values.amount) - 50000 <= 0
+                          ? '#666'
+                          : '#fff'
+                      }
+                    />
+                  </button>
+                </div>
+              </div>
             </div>
-
             {/* SUBCATEGORY */}
             <div className='space-y-2'>
               <Label>Sub Kategori</Label>

@@ -118,12 +118,12 @@ const TambahSiswa = () => {
         })
     }
 
-    if (arr.length > 3) {
+    if (arr.length > 1000) {
       Swal.fire({
         width: '70%',
         icon: 'error',
-        title: 'Maksimal 3 Data!',
-        text: 'Upload siswa dibatasi maksimal 3 data untuk menjaga stabilitas kinerja server, mengingat proses generate data SPP hingga 3 tahun membutuhkan sumber daya yang cukup besar. Silahkan upload ulang dengan jumlah data kurang dari atau sama dengan 3. berat kata kami ucapkan mohon maaf atas ketidak nyamanannya'
+        title: 'Maksimal 1000 Data!',
+        text: 'Upload siswa dibatasi maksimal 1000 data untuk menjaga stabilitas kinerja server, mengingat proses generate data SPP hingga 3 tahun membutuhkan sumber daya yang cukup besar. Silahkan upload ulang dengan jumlah data kurang dari atau sama dengan 3. berat kata kami ucapkan mohon maaf atas ketidak nyamanannya'
       })
 
       event.target.value = ''

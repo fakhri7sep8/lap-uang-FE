@@ -84,6 +84,62 @@ const SPP = () => {
     currentPage * showCount
   )
 
+  const handleDownloadAllPDF = () => {
+    if (!payments || payments.length === 0) {
+      Swal.fire('Oops!', 'Tidak ada data untuk diunduh.', 'warning')
+      return
+    }
+
+    const doc = new jsPDF('l', 'mm', 'a4') // landscape agar muat banyak kolom
+    doc.setFontSize(14)
+    doc.text('REKAP PEMBAYARAN SPP - SMK MADINATUL QURAN', 148, 14, {
+      align: 'center'
+    })
+
+    const head = [['No', 'Nama', ...months, 'Total Lunas', 'Total Kurang']]
+
+    const body = payments.map((s: any, idx: number) => {
+      const getSppNominal = () => {
+        if (s.tipeProgram?.toUpperCase() === 'BOARDING') return 2500000
+        if (s.tipeProgram?.toUpperCase() === 'FULLDAY') return 1000000
+        return 0
+      }
+
+      const sppNominal = getSppNominal()
+
+      const lunasMonths = months.filter(
+        m => s[m.toLowerCase()]?.toUpperCase() === 'LUNAS'
+      ).length
+
+      const totalTagihan = months.length * sppNominal
+      const totalLunas = lunasMonths * sppNominal
+      const totalKurang = totalTagihan - totalLunas
+
+      return [
+        idx + 1,
+        s.nama,
+        ...months.map(m => s[m.toLowerCase()]?.toUpperCase() || 'BELUM_LUNAS'),
+        `Rp ${totalLunas.toLocaleString('id-ID')}`,
+        `Rp ${totalKurang.toLocaleString('id-ID')}`
+      ]
+    })
+
+    autoTable(doc, {
+      startY: 22,
+      head,
+      body,
+      styles: { fontSize: 8 },
+      headStyles: {
+        fillColor: [0, 128, 0],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      alternateRowStyles: { fillColor: [240, 255, 240] }
+    })
+
+    doc.save(`Rekap-SPP-Semua-Siswa-${new Date().getTime()}.pdf`)
+  }
+
   const getPaymentBadge = (status: string) => {
     const baseClass =
       'inline-block min-w-[90px] px-2 py-1 rounded-full text-xs font-medium text-center'
@@ -331,7 +387,13 @@ const SPP = () => {
           setShowCount={setShowCount}
           type={'normal'}
         />
-
+        
+        <Button
+          className='w-fit bg-red-600 hover:bg-red-700 text-white ml-2'
+          onClick={handleDownloadAllPDF}
+        >
+          <Download size={16} className='mr-1' /> Export PDF Semua Data
+        </Button>
         <div className='w-full h-full rounded-xl overflow-x-auto bg-white px-1 pt-2 pb-4'>
           <Table className='w-full h-full table-auto bg-white text-gray-700'>
             <TableHeader className='text-sm font-semibold text-center'>
@@ -457,7 +519,7 @@ const SPP = () => {
                     onChange={e => setDraftAngkatan(e.target.value)}
                   />
                 </label>
-                
+
                 <label className='flex flex-col text-sm'>
                   Tahun Ajaran
                   <select

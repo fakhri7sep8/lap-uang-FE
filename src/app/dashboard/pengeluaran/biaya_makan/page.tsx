@@ -15,7 +15,7 @@ const BiayaMakanPage = () => {
 
   const tabs = ['Semua']
   const { useGetExpense } = useExpenseModule()
-  const { data: expenses } = useGetExpense('Makan')
+  const { data: expenses, isLoading, isError } = useGetExpense('Makan')
 
   // ====== DATE FILTER STATES ======
   const [fromDate, setFromDate] = useState<Date | null>(null)
@@ -29,7 +29,7 @@ const BiayaMakanPage = () => {
       const search = searchTerm.toLowerCase()
 
       // ====== FIELD TANGGAL – GANTI SESUAI API KAMU ======
-      const itemDate = item?.createdAt ? new Date(item.createdAt) : ""
+      const itemDate = item?.createdAt ? new Date(item.createdAt) : ''
 
       // Search matching
       const matchSearch =
@@ -125,11 +125,23 @@ const BiayaMakanPage = () => {
             />
 
             {/* Table */}
-            <TablePengeluaran
-              title={'Biaya Makan'}
-              data={paginatedData}
-              menu={'biaya_makan'}
-            />
+            {isLoading ? (
+              <p className='text-center text-gray-500 py-6'>Memuat data...</p>
+            ) : isError ? (
+              <p className='text-center text-red-500 py-6'>
+                Gagal memuat data pengeluaran.
+              </p>
+            ) : filteredData.length === 0 ? (
+              <p className='text-center text-gray-400 py-6'>
+                Tidak ada data ditemukan.
+              </p>
+            ) : (
+              <TablePengeluaran
+                title='Biaya Makan'
+                data={paginatedData}
+                menu='biaya_makan'
+              />
+            )}
 
             {/* Pagination */}
             <div className='flex justify-center items-center gap-2 mt-6'>
