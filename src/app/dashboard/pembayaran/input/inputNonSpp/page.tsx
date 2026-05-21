@@ -209,7 +209,7 @@ const InputNonSPP = () => {
                 label="No Induk"
                 options={siswaMQ?.map((s: any) => ({
                   label: s.InductNumber,
-                  value: s.name,
+                  value: s.InductNumber,
                 }))}
                 value={siswa?.InductNumber}
                 onChange={setSelectedSiswa}

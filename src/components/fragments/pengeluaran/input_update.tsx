@@ -328,7 +328,7 @@ export default function SubmitUpdateExpense ({
                   <SelectValue placeholder='Pilih Sumber Dana' />
                 </SelectTrigger>
 
-                <SelectContent>
+                <SelectContent className='bg-white border-slate-300'>
                   <SelectItem value='Dana BOS'>Dana BOS</SelectItem>
                   <SelectItem value='Kas Operasional'>
                     Kas Operasional

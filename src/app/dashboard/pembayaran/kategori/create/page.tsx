@@ -159,7 +159,7 @@ const CreateKategori = () => {
                 <SelectContent className="bg-white border-none">
                   <SelectGroup>
                     <SelectLabel>Semester</SelectLabel>
-                    {Array.from({ length: 6 }, (_, i) => i + 1).map((sem) => (
+                    {Array.from({ length: 2 }, (_, i) => i + 1).map((sem) => (
                       <SelectItem key={sem} value={sem.toString()}>
                         {sem}
                       </SelectItem>

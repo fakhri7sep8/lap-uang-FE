@@ -117,7 +117,7 @@ const LainLainPage = () => {
             {/* Search & Date Filter */}
             <SearchInput
               data={filteredData}
-              category='Olther'
+              category='Other'
               searchTerm={searchTerm}
               fromDate={fromDate}
               toDate={toDate}

@@ -74,12 +74,26 @@ export default function TablePengeluaran ({
     })
   }
 
+  const formatTanggal = (dateString: string) => {
+    if (!dateString) return '-'
+
+    const date = new Date(dateString)
+
+    return date.toLocaleDateString('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    })
+  }
+
   const handleDownloadPDFPengeluaran = (item: any) => {
     const doc = new jsPDF()
 
     const title = `PENGELUARAN UNTUK ${item.category?.name?.toUpperCase()} SEKTOR ${item.subCategory?.name?.toUpperCase()}`
 
+    // ===============================
     // HEADER
+    // ===============================
     doc.setFontSize(16)
     doc.text('SMK MADINATUL QURAN', 105, 15, { align: 'center' })
 
@@ -91,22 +105,46 @@ export default function TablePengeluaran ({
     doc.setFontSize(13)
     doc.text(title, 105, 32, { align: 'center' })
 
-    // DATA DETAIL
+    // ===============================
+    // HELPER UNTUK BARIS RAPIH
+    // labelWidth menentukan posisi titik dua agar rata
+    // ===============================
+    const addRow = (label: string, value: string, y: number) => {
+      const labelWidth = 40 // Semakin besar semakin ke kanan labelnya
+
+      doc.setFontSize(11)
+      doc.text(label, 20, y)
+
+      doc.text(':', 20 + labelWidth, y)
+
+      doc.text(value ?? '-', 20 + labelWidth + 3, y)
+    }
+
+    // ===============================
+    // DETAIL DATA
+    // ===============================
     let y = 45
 
-    doc.setFontSize(11)
-    doc.text(`Tanggal      : ${item.PayDate}`, 20, y)
-    y += 6
-    doc.text(`Nama         : ${item.description}`, 20, y)
-    y += 6
-    doc.text(`Penanggung   : ${item.PenanggungJawab}`, 20, y)
-    y += 6
-    doc.text(`Kategori     : ${item.category?.name}`, 20, y)
-    y += 6
-    doc.text(`Sub Kategori : ${item.subCategory?.name}`, 20, y)
-    y += 6
-    doc.text(`Sumber Dana  : ${item.sumber_dana}`, 20, y)
+    addRow('Tanggal', item.PayDate, y)
+    y += 7
 
+    addRow('Nama', item.description, y)
+    y += 7
+
+    addRow('Penanggung', item.PenanggungJawab, y)
+    y += 7
+
+    addRow('Kategori', item.category?.name, y)
+    y += 7
+
+    addRow('Sub Kategori', item.subCategory?.name, y)
+    y += 7
+
+    addRow('Sumber Dana', item.sumber_dana, y)
+
+    // ===============================
+    // TABEL JUMLAH + STATUS
+    // ===============================
     const tableBody = [
       ['Jumlah Pengeluaran', `Rp ${item.amount.toLocaleString('id-ID')}`],
       ['Status', item.status]
@@ -129,6 +167,9 @@ export default function TablePengeluaran ({
 
     const afterTable = (doc as any).lastAutoTable.finalY + 12
 
+    // ===============================
+    // FOOTNOTE
+    // ===============================
     doc.setFontSize(10)
     doc.text('Catatan:', 20, afterTable)
     doc.text(
@@ -142,6 +183,9 @@ export default function TablePengeluaran ({
       afterTable + 12
     )
 
+    // ===============================
+    // SAVE PDF
+    // ===============================
     doc.save(
       `Pengeluaran-${item.category?.name}-${item.subCategory?.name}-${item.description}.pdf`
     )
@@ -178,7 +222,7 @@ export default function TablePengeluaran ({
                 <td className='py-2 px-2 text-center text-gray-600'>
                   {index + 1}
                 </td>
-                <td className='py-2 px-2'>{item?.PayDate}</td>
+                <td className='py-2 px-2'>{formatTanggal(item?.PayDate)}</td>
                 <td className='py-2 px-2 font-medium text-gray-800'>
                   {item?.description}
                 </td>

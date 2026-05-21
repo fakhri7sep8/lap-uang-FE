@@ -51,9 +51,7 @@ const bulanListTable = [...bulanList]
 const InputSPPPage = () => {
   const [selectedSiswa, setSelectedSiswa] = useState<string>('')
   const [selectedMonths, setSelectedMonths] = useState<string[]>([])
-  const [yearSPP, setYearSPP] = useState(
-    `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`
-  )
+  const [yearSPP, setYearSPP] = useState(String(new Date().getFullYear()))
 
   const { useGetStudent } = useStudentModule()
   const { data: siswaMQ } = useGetStudent()
@@ -404,7 +402,9 @@ const InputSPPPage = () => {
           <Select
             defaultValue={yearOptions[0]}
             onValueChange={val => {
-              setYearSPP(val)
+              const [tahunAwal] = val.split('/') // ambil tahun pertama
+              setYearSPP(tahunAwal)
+
               setTimeout(() => refetchSppPayments(), 10)
             }}
           >
@@ -636,7 +636,7 @@ const InputSPPPage = () => {
 
             {/* Input file hidden */}
             <input
-            title='file'
+              title='file'
               id='file'
               type='file'
               accept='.xlsx, .xls'
